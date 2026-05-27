@@ -1,1 +1,14 @@
-<Solution />
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/IOrder.API/IOrder.API.csproj" />
+    <Project Path="src/backend/IOrder.Application/IOrder.Application.csproj" />
+    <Project Path="src/backend/IOrder.Domain/IOrder.Domain.csproj" />
+    <Project Path="src/backend/IOrder.infrastructure/IOrder.infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/IOrder.Communication/IOrder.Communication.csproj" />
+    <Project Path="src/Shared/IOrder.Exceptions/IOrder.Exceptions.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
