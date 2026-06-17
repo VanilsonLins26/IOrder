@@ -14,5 +14,5 @@ public class UpdateProductRequestDto
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
     public bool Customizable { get; set; }
-    public int storeId { get; set; }
+    //public int storeId { get; set; }
 }

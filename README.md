@@ -32,7 +32,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 ### 2. Backend (Core Business)
 * **Tecnologia:** ASP.NET Core Web API (C#)
 * **Arquitetura:** Clean Architecture + Domain-Driven Design (DDD). Isolamento rigoroso de regras de negócio das integrações de infraestrutura.
-* **Qualidade de Código:** Testes de unidade com **xUnit** e **FluentAssertions**, garantindo confiabilidade nas lógicas de aprovação de pedidos e cálculos de valores.
+* **Qualidade de Código:** Testes de unidade com **xUnit**, **Shouldly** e **Bogus** (para geração de dados fakes estruturados), garantindo confiabilidade nas validações (FluentValidation) e regras de negócio.
 * **Processamento Assíncrono:** Uso de `BackgroundService` (Workers) nativos para executar tarefas em segundo plano (como varredura e ativação de promoções em tempo real) sem penalizar a performance das buscas na API.
 
 ### 3. Autenticação e Segurança
@@ -40,7 +40,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 * **Papel:** Gerenciar login, cadastro e perfis de acesso (Cliente, Lojista, Entregador), garantindo segurança via tokens JWT.
 
 ### 4. Bancos de Dados (Persistência Poliglota)
-* **Relacional (MySQL/SQLite/PostgreSQL):** Responsável pelo core do negócio (Lojas, Produtos, Pedidos, Transações financeiras) garantindo consistência ACID.
+* **Relacional (MySQL via Docker):** Responsável pelo core do negócio (Lojas, Produtos, Pedidos, Transações financeiras) garantindo consistência ACID.
 * **NoSQL (MongoDB):** Exclusivo para o módulo de Chat, garantindo alta performance para leitura/escrita massiva de mensagens desestruturadas sem onerar o banco principal.
 
 ### 5. Comunicação em Tempo Real

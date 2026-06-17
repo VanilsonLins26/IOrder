@@ -7,7 +7,7 @@ public class Product : EntityBase
     public IEnumerable<PromotionPrice>? Promotions { get; set; }
     public string Description { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
-    public string UnitOfMeasure { get; set; } = string.Empty;
+    public UnitOfMeasure UnitOfMeasure { get; set; } = 0;
     public bool Customizable { get; set; }
     //public int StoreId { get; set; }
     //public Store? Store { get; set; }

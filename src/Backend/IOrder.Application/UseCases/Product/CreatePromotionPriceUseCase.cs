@@ -43,7 +43,7 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         if (dto.Price >= product.Price)
             throw new ErrorOnValidationException([ResourceMessagesException.PROMOTION_PRICE_INVALID]);
 
-        var exitsPromotionInDate = await _readOnlyRepository.ExistsPromotionInDate(dto.InitialTime, dto.FinalTime);
+        var exitsPromotionInDate = await _readOnlyRepository.ExistsPromotionInDate(dto.InitialTime!.Value, dto.FinalTime!.Value);
 
         if (exitsPromotionInDate)
             throw new ErrorOnValidationException([ResourceMessagesException.EXISTS_PROMOTION_IN_THIS_DATE]);

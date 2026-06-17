@@ -11,15 +11,17 @@ public class CreatePromotionPriceValidator : AbstractValidator<PromotionPriceRes
 {
     public CreatePromotionPriceValidator()
     {
-        RuleFor(request => request.ProductId).NotEmpty().WithMessage(ResourceMessagesException.PRICE_EMPTY);
-        RuleFor(request => request.Price).NotEmpty().WithMessage(ResourceMessagesException.PRICE_EMPTY);
-        RuleFor(request => request.Price).GreaterThan(0).WithMessage(ResourceMessagesException.PRICE_GREATER_THAN_0);
-        RuleFor(request => request.InitialTime).NotEmpty().WithMessage(ResourceMessagesException.INITIAL_TIME_EMPTY);
-        RuleFor(request => request.InitialTime).LessThan(DateTime.Now).WithMessage(ResourceMessagesException.INITIAL_TIME_LESS_THAN_NOW);
-        RuleFor(request => request.FinalTime).LessThanOrEqualTo(request => request.InitialTime).WithMessage(ResourceMessagesException.FINAL_TIME_LESS_THAN_INITIAL);
-        RuleFor(request => request.FinalTime).NotEmpty().WithMessage(ResourceMessagesException.FINAL_TIME_EMPTY);
-
-
+        RuleFor(request => request.ProductId).NotEmpty().WithMessage(ResourceMessagesException.PRODUCT_ID_EMPTY);
+        RuleFor(request => request.Price).Cascade(CascadeMode.Stop).NotNull().WithMessage(ResourceMessagesException.PRICE_EMPTY)
+                                         .GreaterThan(0).WithMessage(ResourceMessagesException.PRICE_GREATER_THAN_0);
+        RuleFor(request => request.InitialTime).Cascade(CascadeMode.Stop).NotNull().WithMessage(ResourceMessagesException.INITIAL_TIME_EMPTY)
+                                               .GreaterThanOrEqualTo(DateTime.UtcNow).WithMessage(ResourceMessagesException.INITIAL_TIME_LESS_THAN_NOW);
+        RuleFor(request => request.FinalTime).Cascade(CascadeMode.Stop).NotNull().WithMessage(ResourceMessagesException.FINAL_TIME_EMPTY);
+        When(request => request.InitialTime.HasValue && request.FinalTime.HasValue, () =>
+        {
+            RuleFor(request => request.FinalTime)
+                .GreaterThanOrEqualTo(request => request.InitialTime).WithMessage(ResourceMessagesException.FINAL_TIME_LESS_THAN_INITIAL);
+        });
     }
 
 }
