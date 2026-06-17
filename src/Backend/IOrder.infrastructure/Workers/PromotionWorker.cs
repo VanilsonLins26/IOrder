@@ -1,4 +1,4 @@
-﻿using IOrder.infrastructure.DataAccess;
+using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,8 +9,8 @@ namespace IOrder.infrastructure.Workers;
 public class PromotionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly Logger<PromotionWorker> _logger;
-    public PromotionWorker(IServiceScopeFactory scopeFactory, Logger<PromotionWorker> logger)
+    private readonly ILogger<PromotionWorker> _logger;
+    public PromotionWorker(IServiceScopeFactory scopeFactory, ILogger<PromotionWorker> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;

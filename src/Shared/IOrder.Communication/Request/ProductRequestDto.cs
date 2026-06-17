@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace IOrder.Communication.Request;
 
@@ -7,7 +7,7 @@ public class ProductRequestDto
     [Required(ErrorMessage = "Informe o nome do produto!!")]
     public string? Name { get; set; }
     [Required(ErrorMessage = "Informe o valor do produto!!")]
-    [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "O preço deve ser maior que 0")]
+    [Range(0.01, 99999999999.99, ErrorMessage = "O preço deve ser maior que 0")]
     public decimal? Price { get; set; }
     [Required(ErrorMessage = "Informe a descrição!!")]
     public string? Description { get; set; }

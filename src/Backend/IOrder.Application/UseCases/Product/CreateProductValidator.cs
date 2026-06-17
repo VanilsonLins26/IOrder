@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using IOrder.Communication.Request;
 using IOrder.Exceptions;
-using IOrder.Exceptions.ExceptionBase;
 
 namespace IOrder.Application.UseCases.Product;
 
