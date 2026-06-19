@@ -16,6 +16,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - [x] Filtros dinâmicos, paginação e ordenação centralizados em uma única Query.
 - [x] Tratamento global de exceções (Global Exception Filter) e padronização de retornos de erro (ex: `ErrorOnValidationException`, `NotFoundException`).
 - [x] Implementação de **Background Service (Worker)** para sincronização assíncrona de preços promocionais, adotando padrões de *Read Model / Desnormalização*.
+- [x] **Boa cobertura de testes automatizados** focada no que importa: as regras de negócio (Casos de Uso e Validações). Isso garante a segurança da aplicação sem criar testes desnecessários só para bater meta de cobertura.
 - [ ] Módulo de Lojas e Categorias.
 - [ ] Fluxo de Pedidos e Carrinho.
 - [ ] Módulo de Chat via SignalR.
@@ -32,8 +33,9 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 ### 2. Backend (Core Business)
 * **Tecnologia:** ASP.NET Core Web API (C#)
 * **Arquitetura:** Clean Architecture + Domain-Driven Design (DDD). Isolamento rigoroso de regras de negócio das integrações de infraestrutura.
-* **Qualidade de Código:** Testes de unidade com **xUnit**, **Shouldly** e **Bogus** (para geração de dados fakes estruturados), garantindo confiabilidade nas validações (FluentValidation) e regras de negócio.
+* **Qualidade de Código:** Testes de Unidade e **Testes de Integração** com **xUnit**, **Shouldly** e **Bogus** (para geração de dados fakes estruturados). Validações robustas via FluentValidation.
 * **Processamento Assíncrono:** Uso de `BackgroundService` (Workers) nativos para executar tarefas em segundo plano (como varredura e ativação de promoções em tempo real) sem penalizar a performance das buscas na API.
+* **CI/CD:** Pipelines automatizados no GitHub/DevOps para execução de testes e cálculo de Cobertura de Código em cada Push.
 
 ### 3. Autenticação e Segurança
 * **Tecnologia:** Auth0 (OAuth 2.0 / JWT)

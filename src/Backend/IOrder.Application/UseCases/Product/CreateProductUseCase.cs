@@ -39,17 +39,20 @@ public class CreateProductUseCase : ICreateProductUseCase
         var validator = new CreateProductValidator();
         var result = validator.Validate(productRequest);
 
-        var nameExists = await _readOnlyRepository.NameExists(productRequest.Name);
-
-        if (nameExists)
-            throw new ErrorOnValidationException([ResourceMessagesException.NAME_ALREADY_EXISTS]);
-
         if (!result.IsValid)
         {
             var errorMessages = result.Errors.Select(e => e.ErrorMessage).ToList();
 
             throw new ErrorOnValidationException(errorMessages);
         }
+
+        var nameExists = await _readOnlyRepository.NameExists(productRequest.Name);
+
+
+        if (nameExists)
+            throw new ErrorOnValidationException([ResourceMessagesException.NAME_ALREADY_EXISTS]);
+
+        
 
 
     }

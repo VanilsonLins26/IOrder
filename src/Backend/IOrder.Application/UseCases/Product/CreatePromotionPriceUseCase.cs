@@ -38,6 +38,13 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         var validator = new CreatePromotionPriceValidator();
         var result = validator.Validate(dto);
 
+        if (!result.IsValid)
+        {
+            var errorMessages = result.Errors.Select(e => e.ErrorMessage).ToList();
+
+            throw new ErrorOnValidationException(errorMessages);
+        }
+
         var product = await _readOnlyRepository.GetByIdAsync(dto.ProductId) ?? throw new NotFoundException([ResourceMessagesException.PRODUCT_NOT_FOUND]);
 
         if (dto.Price >= product.Price)
@@ -48,11 +55,6 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         if (exitsPromotionInDate)
             throw new ErrorOnValidationException([ResourceMessagesException.EXISTS_PROMOTION_IN_THIS_DATE]);
 
-        if (!result.IsValid)
-        {
-            var errorMessages = result.Errors.Select(e => e.ErrorMessage).ToList();
-
-            throw new ErrorOnValidationException(errorMessages);
-        }
+ 
     }
 }
