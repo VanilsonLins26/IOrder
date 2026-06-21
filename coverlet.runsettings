@@ -5,8 +5,10 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>cobertura,opencover</Format>
-          <ExcludeByFile>**/obj/**</ExcludeByFile>
-          <Exclude>[*.Test]*</Exclude> 
+          <ExcludeByFile>**/obj/**,**/Migrations/**</ExcludeByFile>
+          
+          <!-- Aqui nós dizemos para ignorar projetos de Teste, Utilitários e a pasta de Migrations -->
+          <Exclude>[*.Test]*,[CommomTestUtilities]*</Exclude> 
         </Configuration>
       </DataCollector>
     </DataCollectors>
