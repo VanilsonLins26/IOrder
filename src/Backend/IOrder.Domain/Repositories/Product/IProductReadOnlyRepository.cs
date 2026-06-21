@@ -10,7 +10,7 @@ public interface IProductReadOnlyRepository
 {
     IEnumerable<Entities.Product> GetAll();
 
-    Task<bool> ExistsPromotionInDate(DateTime inicialDate, DateTime finalDate);
+    Task<bool> ExistsPromotionInDate(Guid productId, DateTime inicialDate, DateTime finalDate);
 
     Task<Entities.Product> GetByIdAsync(Guid id);
 

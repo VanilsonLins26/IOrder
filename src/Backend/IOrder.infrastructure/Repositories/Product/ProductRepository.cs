@@ -113,8 +113,10 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         return promotionPrice;
     }
 
-    public async Task<bool> ExistsPromotionInDate(DateTime inicialDate, DateTime finalDate)
+    public async Task<bool> ExistsPromotionInDate(Guid productId, DateTime inicialDate, DateTime finalDate)
     {
-        return await _context.Promotions.AnyAsync(pp => inicialDate <= pp.FinalTime && finalDate >= pp.InitialTime);
+        return await _context.Promotions.AnyAsync(pp =>
+            pp.ProductId == productId &&
+            inicialDate <= pp.FinalTime && finalDate >= pp.InitialTime);
     }
 }

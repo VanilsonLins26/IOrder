@@ -14,8 +14,8 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-// Configuração do Swagger com Swashbuckle baseada no seu outro projeto
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "IOrder API", Version = "v1" });
@@ -77,3 +77,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+    protected Program() { }
+}

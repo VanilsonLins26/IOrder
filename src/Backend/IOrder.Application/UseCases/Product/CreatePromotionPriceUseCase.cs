@@ -29,7 +29,7 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         var promotionPrice = dto.Adapt<PromotionPrice>();
 
         var createdPromotionPrice = await _writeOnlyRepository.CreatePromotion(promotionPrice);
-
+        await _uof.Commit();
         return createdPromotionPrice.Adapt<PromotionPriceResponse>();
     }
 
@@ -50,11 +50,13 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         if (dto.Price >= product.Price)
             throw new ErrorOnValidationException([ResourceMessagesException.PROMOTION_PRICE_INVALID]);
 
-        var exitsPromotionInDate = await _readOnlyRepository.ExistsPromotionInDate(dto.InitialTime!.Value, dto.FinalTime!.Value);
+        var exitsPromotionInDate = await _readOnlyRepository.ExistsPromotionInDate(dto.ProductId, dto.InitialTime!.Value, dto.FinalTime!.Value);
 
         if (exitsPromotionInDate)
             throw new ErrorOnValidationException([ResourceMessagesException.EXISTS_PROMOTION_IN_THIS_DATE]);
 
  
     }
+
+
 }

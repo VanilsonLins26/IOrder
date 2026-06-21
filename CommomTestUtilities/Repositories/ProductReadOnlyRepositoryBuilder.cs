@@ -31,9 +31,9 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetByIdAsync(productId)).ReturnsAsync(product);
     }
 
-    public void ExistsPromotionInDate(DateTime initialDate, DateTime finalDate)
+    public void ExistsPromotionInDate(Guid ProductId, DateTime initialDate, DateTime finalDate)
     {
-        _repository.Setup(repository => repository.ExistsPromotionInDate(initialDate, finalDate)).ReturnsAsync(true);
+        _repository.Setup(repository => repository.ExistsPromotionInDate(ProductId, initialDate, finalDate)).ReturnsAsync(true);
     }
 
     public void GetAllPagFiltroPrecoAsync(ProductSearchQuery filter)

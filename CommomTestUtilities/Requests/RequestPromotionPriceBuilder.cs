@@ -12,7 +12,7 @@ public class RequestPromotionPriceBuilder
     {
         return new Faker<PromotionPriceResquestDto>()
             .RuleFor(promotion => promotion.ProductId, Guid.CreateVersion7())
-            .RuleFor(promotion => promotion.Price, (f) => decimal.Parse(f.Commerce.Price()))
+            .RuleFor(promotion => promotion.Price, 0.000001m)
             .RuleFor(promotion => promotion.InitialTime, (f) => DateTime.UtcNow.AddDays(1))
             .RuleFor(p => p.FinalTime, (f, p) => DateTime.UtcNow.AddDays(1));
 
