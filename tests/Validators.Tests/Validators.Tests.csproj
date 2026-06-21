@@ -16,8 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\backend\IOrder.Application\IOrder.Application.csproj" />
     <ProjectReference Include="..\CommomTestUtilities\CommomTestUtilities.csproj" />
-    <ProjectReference Include="..\src\backend\IOrder.Application\IOrder.Application.csproj" />
+   
   </ItemGroup>
 
   <ItemGroup>

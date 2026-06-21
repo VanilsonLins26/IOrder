@@ -100,7 +100,7 @@ public class CreatePromotionPriceUseCaseTest
             readRepository.GetByIdAsync(productId.Value);
 
         if (initialTime != null && finalTime != null)
-            readRepository.ExistsPromotionInDate(initialTime.Value, finalTime.Value);
+            readRepository.ExistsPromotionInDate(productId!.Value, initialTime.Value, finalTime.Value);
 
 
         return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork);

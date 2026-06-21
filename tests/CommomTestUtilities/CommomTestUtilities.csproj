@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\backend\IOrder.Application\IOrder.Application.csproj" />
-    <ProjectReference Include="..\src\backend\IOrder.infrastructure\IOrder.infrastructure.csproj" />
-    <ProjectReference Include="..\src\Shared\IOrder.Communication\IOrder.Communication.csproj" />
+    <ProjectReference Include="..\..\src\backend\IOrder.Application\IOrder.Application.csproj" />
+    <ProjectReference Include="..\..\src\backend\IOrder.infrastructure\IOrder.infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Shared\IOrder.Communication\IOrder.Communication.csproj" />
   </ItemGroup>
 
 </Project>
