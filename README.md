@@ -16,7 +16,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - [x] Filtros dinâmicos, paginação e ordenação centralizados em uma única Query.
 - [x] Tratamento global de exceções (Global Exception Filter) e padronização de retornos de erro (ex: `ErrorOnValidationException`, `NotFoundException`).
 - [x] Implementação de **Background Service (Worker)** para sincronização assíncrona de preços promocionais, adotando padrões de *Read Model / Desnormalização*.
-- [x] **Boa cobertura de testes automatizados** focada no que importa: as regras de negócio (Casos de Uso e Validações). Isso garante a segurança da aplicação sem criar testes desnecessários só para bater meta de cobertura.
+- [x] **Excelente cobertura de testes automatizados**, abrangendo tanto **Testes de Unidade** focados nas regras de negócio (Casos de Uso e Validações), quanto **Testes de Integração** avançados que utilizam **TestContainers** para validar o fluxo completo contra um banco de dados real rodando em Docker.
 - [ ] Módulo de Lojas e Categorias.
 - [ ] Fluxo de Pedidos e Carrinho.
 - [ ] Módulo de Chat via SignalR.
