@@ -1,0 +1,35 @@
+trigger:
+- develop
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage:
+  displayName: 'Stage Build & Tests'
+  jobs:
+  - job:
+    displayName: 'Build & Tests'
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Installing .NET SDK'
+      inputs:
+        version: 10.x
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build' 
+      inputs:
+        command: build
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Tests'
+      inputs:
+        command: test   
+        publishTestResults:  true
+        arguments: '--settings coverlet.runsettings'
+
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Code Coverage'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
