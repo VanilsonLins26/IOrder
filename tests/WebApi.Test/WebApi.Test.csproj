@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -19,11 +19,9 @@
 
   <ItemGroup>
    
-    <ProjectReference Include="..\..\src\backend\IOrder.API\IOrder.API.csproj" />
-   
-    <ProjectReference Include="..\..\src\backend\IOrder.Domain\IOrder.Domain.csproj" />
-   
-    <ProjectReference Include="..\CommomTestUtilities\CommomTestUtilities.csproj" />
+    <ProjectReference Include="..\..\src\Backend\IOrder.API\IOrder.API.csproj" />
+    <ProjectReference Include="..\..\src\Shared\IOrder.Exceptions\IOrder.Exceptions.csproj" />
+    <ProjectReference Include="..\..\src\Backend\IOrder.Domain\IOrder.Domain.csproj" />
 
   </ItemGroup>
 
