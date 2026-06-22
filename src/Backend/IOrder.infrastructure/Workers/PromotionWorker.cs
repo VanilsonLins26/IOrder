@@ -4,8 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace IOrder.infrastructure.Workers;
 
+[ExcludeFromCodeCoverage]
 public class PromotionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;

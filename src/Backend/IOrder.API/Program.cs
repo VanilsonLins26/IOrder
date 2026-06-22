@@ -3,7 +3,7 @@ using IOrder.Application;
 using IOrder.infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
-
+using System.Diagnostics.CodeAnalysis;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -57,6 +57,8 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -78,6 +80,7 @@ app.MapControllers();
 
 app.Run();
 
+[ExcludeFromCodeCoverage]
 public partial class Program
 {
     protected Program() { }

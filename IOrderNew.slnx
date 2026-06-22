@@ -1,16 +1,17 @@
 <Solution>
   <Folder Name="/src/" />
-  <Folder Name="/src/Backend/">
-    <Project Path="src/Backend/IOrder.API/IOrder.API.csproj" />
-    <Project Path="src/Backend/IOrder.Application/IOrder.Application.csproj" />
-    <Project Path="src/Backend/IOrder.Domain/IOrder.Domain.csproj" />
-    <Project Path="src/Backend/IOrder.infrastructure/IOrder.infrastructure.csproj" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/IOrder.API/IOrder.API.csproj" />
+    <Project Path="src/backend/IOrder.Application/IOrder.Application.csproj" />
+    <Project Path="src/backend/IOrder.Domain/IOrder.Domain.csproj" />
+    <Project Path="src/backend/IOrder.infrastructure/IOrder.infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/IOrder.Communication/IOrder.Communication.csproj" />
     <Project Path="src/Shared/IOrder.Exceptions/IOrder.Exceptions.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <File Path="coverlet.runsettings" />
     <Project Path="tests/CommomTestUtilities/CommomTestUtilities.csproj" Id="22125a6d-f673-4ac5-a574-5bd187a737e7" />
     <Project Path="tests/UseCases.Test/UseCases.Test.csproj" Id="720e5752-f534-4ece-974c-2c5a140e349d" />
     <Project Path="tests/Validators.Tests/Validators.Tests.csproj" Id="f04a85c0-2b9c-4016-9e2d-1e2b6e251963" />

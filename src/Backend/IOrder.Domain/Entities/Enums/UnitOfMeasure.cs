@@ -1,4 +1,4 @@
-﻿namespace IOrder.Domain.Entities;
+﻿namespace IOrder.Domain.Entities.Enums;
 
 public enum UnitOfMeasure
 {

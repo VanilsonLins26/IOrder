@@ -1,4 +1,5 @@
 ﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.SeedWork.Pagination;

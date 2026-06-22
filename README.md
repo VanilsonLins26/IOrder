@@ -42,8 +42,9 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 * **Papel:** Gerenciar login, cadastro e perfis de acesso (Cliente, Lojista, Entregador), garantindo segurança via tokens JWT.
 
 ### 4. Bancos de Dados (Persistência Poliglota)
-* **Relacional (MySQL via Docker):** Responsável pelo core do negócio (Lojas, Produtos, Pedidos, Transações financeiras) garantindo consistência ACID.
+* **Relacional (MySQL via Docker):** Responsável pelo core do negócio (Lojas, Produtos, Pedidos, Transações financeiras) garantindo consistência ACID. A modelagem normalizada prevê a preservação de histórico de preços nas transações.
 * **NoSQL (MongoDB):** Exclusivo para o módulo de Chat, garantindo alta performance para leitura/escrita massiva de mensagens desestruturadas sem onerar o banco principal.
+* **Cache em Memória (Redis):** Gerenciamento de **Carrinho de Compras** (Cart) com limpeza automática por inatividade (TTL), além de cache de performance para vitrines muito acessadas.
 
 ### 5. Comunicação em Tempo Real
 * **Tecnologia:** SignalR (WebSockets)

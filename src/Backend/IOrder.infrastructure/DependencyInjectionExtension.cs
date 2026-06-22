@@ -44,4 +44,11 @@ public static class DependencyInjectionExtension
     {
         services.AddHostedService<Workers.PromotionWorker>();
     }
+
+    public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
 }

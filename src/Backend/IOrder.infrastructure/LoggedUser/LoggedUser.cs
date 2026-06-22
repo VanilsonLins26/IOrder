@@ -1,10 +1,13 @@
-﻿using IOrder.Application.Services.LoggedUser;
+using IOrder.Application.Services.LoggedUser;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace IOrder.infrastructure.LoggedUser;
 
+[ExcludeFromCodeCoverage]
 internal class LoggedUserService : ILoggedUserService
 {
     private readonly IHttpContextAccessor _accessor;

@@ -1,4 +1,6 @@
-﻿namespace IOrder.Domain.Entities;
+﻿using IOrder.Domain.Entities.Enums;
+
+namespace IOrder.Domain.Entities;
 
 public class Product : EntityBase
 {
