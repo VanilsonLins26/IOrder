@@ -4,9 +4,8 @@ using System.Text;
 
 namespace IOrder.Domain.Entities;
 
-public class OpeningHour
+public class OpeningHour : EntityBase
 {
-    public int Id { get; set; }
     public Store? Store { get; set; }
     public int StoreId { get; set; }
     public int DayOfWeek { get; set; }

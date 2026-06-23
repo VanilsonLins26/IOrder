@@ -13,6 +13,7 @@ internal class AppDbContext  : DbContext
 
     public DbSet<Product> Products { get; set; }
     public DbSet<PromotionPrice> Promotions { get; set; }
+    public DbSet<Store> Stores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
