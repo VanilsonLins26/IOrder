@@ -52,9 +52,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         await dbContext.Database.EnsureCreatedAsync();
 
 
+        var store = new IOrder.Domain.Entities.Store { 
+            Name = "Test Store", 
+            UserId = "test-user-123",
+            ImageUrl = "test.png"
+        };
+        await dbContext.Stores.AddAsync(store);
+
         IOrder.Domain.Entities.Product product1 = ProductBuilder.Build();
+        product1.StoreId = store.Id;
+        
         IOrder.Domain.Entities.Product product2 = ProductBuilder.Build();
+        product2.StoreId = store.Id;
+        
         IOrder.Domain.Entities.Product product3 = ProductBuilder.Build();
+        product3.StoreId = store.Id;
 
         ProductList = [product1, product2, product3];
 

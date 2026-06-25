@@ -1,4 +1,5 @@
-﻿using IOrder.Communication.Request;
+using IOrder.Application.Services.StorePermission;
+using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
@@ -13,12 +14,14 @@ public class CreateProductUseCase : ICreateProductUseCase
     private readonly IProductWriteOnlyRepository _writeOnlyRepository;
     private readonly IProductReadOnlyRepository _readOnlyRepository;
     private readonly IUnitOfWork _uof;
+    private readonly IStorePermissionService _storePermissionService;
 
-    public CreateProductUseCase(IProductWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, IProductReadOnlyRepository readOnlyRepository)
+    public CreateProductUseCase(IProductWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, IProductReadOnlyRepository readOnlyRepository, IStorePermissionService storePermissionService)
     {
         _writeOnlyRepository = writeOnlyRepository;
         _uof = uof;
         _readOnlyRepository = readOnlyRepository;
+        _storePermissionService = storePermissionService;
     }
 
     public async Task<ProductResponseDto> Execute(ProductRequestDto productRequest)
@@ -26,7 +29,7 @@ public class CreateProductUseCase : ICreateProductUseCase
         await Validate(productRequest);
 
         var product = productRequest.Adapt<Domain.Entities.Product>();
-        //product.StoreId = productRequest.storeId;
+        product.StoreId = await _storePermissionService.GetLoggedUserStoreIdAsync();
         var createdProduct = await _writeOnlyRepository.Create(product);
 
         await _uof.Commit();

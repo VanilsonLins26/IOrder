@@ -1,4 +1,5 @@
 ﻿using IOrder.Application.Services.LoggedUser;
+using IOrder.Application.Services.StorePermission;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
@@ -18,23 +19,23 @@ public class UpdateStoreUseCase : IUpdateStoreUseCase
     private readonly IStoreWriteOnlyRepository _writeOnlyRepository;
     private readonly IUnitOfWork _uof;
     private readonly ILoggedUserService _loggedUserService;
+    private readonly IStorePermissionService _storePermissionService;
 
-    public UpdateStoreUseCase(IStoreReadOnlyRepository readOnlyRepository, IStoreWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, ILoggedUserService loggedUserService)
+    public UpdateStoreUseCase(IStoreReadOnlyRepository readOnlyRepository, IStoreWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, ILoggedUserService loggedUserService, IStorePermissionService storePermissionService)
     {
         _readOnlyRepository = readOnlyRepository;
         _writeOnlyRepository = writeOnlyRepository;
         _uof = uof;
         _loggedUserService = loggedUserService;
+        _storePermissionService = storePermissionService;
     }
     public async Task<StoreResponseDto> Execute(UpdateStoreRequestDto request, Guid storeId)
     {
-        var userId = _loggedUserService.GetUserId();
         var store = await _writeOnlyRepository.GetByIdTracking(storeId) ?? throw new NotFoundException([ResourceMessagesException.STORE_NOT_FOUND]);
 
-        if (userId != store.UserId)
-            throw new UnauthorizedStoreException([ResourceMessagesException.UNAUTHORIZED_STORE]);
+        await _storePermissionService.ValidateStoreOwnerAsync(store);
 
-        await Validate(request, store.Name!, userId);
+        await Validate(request, store.Name!);
 
         request.Adapt(store);
 
@@ -43,7 +44,7 @@ public class UpdateStoreUseCase : IUpdateStoreUseCase
         return store.Adapt<StoreResponseDto>();
     }
 
-    private async Task Validate(UpdateStoreRequestDto request, string storeName, string userId )
+    private async Task Validate(UpdateStoreRequestDto request, string storeName)
     {
         
 

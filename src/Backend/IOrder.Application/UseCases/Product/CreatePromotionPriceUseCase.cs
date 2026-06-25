@@ -1,4 +1,5 @@
-﻿using IOrder.Communication.Request;
+using IOrder.Application.Services.StorePermission;
+using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories;
@@ -14,12 +15,14 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
     private readonly IProductWriteOnlyRepository _writeOnlyRepository;
     private readonly IProductReadOnlyRepository _readOnlyRepository;
     private readonly IUnitOfWork _uof;
+    private readonly IStorePermissionService _storePermissionService;
 
-    public CreatePromotionPriceUseCase(IProductWriteOnlyRepository writeOnlyRepository, IProductReadOnlyRepository readOnlyRepository, IUnitOfWork uof)
+    public CreatePromotionPriceUseCase(IProductWriteOnlyRepository writeOnlyRepository, IProductReadOnlyRepository readOnlyRepository, IUnitOfWork uof, IStorePermissionService storePermissionService)
     {
         _writeOnlyRepository = writeOnlyRepository;
         _readOnlyRepository = readOnlyRepository;
         _uof = uof;
+        _storePermissionService = storePermissionService;
     }
 
     public async Task<PromotionPriceResponseDto> Execute(PromotionPriceResquestDto dto)
@@ -46,6 +49,8 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         }
 
         var product = await _readOnlyRepository.GetByIdAsync(dto.ProductId) ?? throw new NotFoundException([ResourceMessagesException.PRODUCT_NOT_FOUND]);
+
+        await _storePermissionService.ValidateProductOwnershipAsync(product);
 
         if (dto.Price >= product.Price)
             throw new ErrorOnValidationException([ResourceMessagesException.PROMOTION_PRICE_INVALID]);
