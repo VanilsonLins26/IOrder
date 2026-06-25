@@ -11,6 +11,7 @@ public static class DependencyInjectionExtension
     public static void AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
         AddUseCase(services);
+        services.AddScoped<IOrder.Application.Services.StorePermission.IStorePermissionService, IOrder.Application.Services.StorePermission.StorePermissionService>();
         MapsterSettings.Configure();
     }
 
