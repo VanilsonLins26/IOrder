@@ -1,10 +1,10 @@
 <Solution>
   <Folder Name="/src/" />
-  <Folder Name="/src/backend/">
-    <Project Path="src/backend/IOrder.API/IOrder.API.csproj" />
-    <Project Path="src/backend/IOrder.Application/IOrder.Application.csproj" />
-    <Project Path="src/backend/IOrder.Domain/IOrder.Domain.csproj" />
-    <Project Path="src/backend/IOrder.infrastructure/IOrder.infrastructure.csproj" />
+  <Folder Name="/src/Backend/">
+    <Project Path="src/Backend/IOrder.API/IOrder.API.csproj" />
+    <Project Path="src/Backend/IOrder.Application/IOrder.Application.csproj" />
+    <Project Path="src/Backend/IOrder.Domain/IOrder.Domain.csproj" />
+    <Project Path="src/Backend/IOrder.infrastructure/IOrder.infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/IOrder.Communication/IOrder.Communication.csproj" />
