@@ -13,7 +13,7 @@ public class Store : EntityBase
     public string ImageUrl { get; set; }
     public ICollection<Product> Products { get; set; } = [];
     public ICollection<OpeningHour> OpeningHours { get; set; } = [];
-    public int CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
     //public Category? Category { get; set; }
 
