@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Repositories;
+using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests;
 using IOrder.Application.UseCases.Product;
 using IOrder.Exceptions;
@@ -76,7 +76,9 @@ public class UpdateProductUseCaseTest
 
 
 
-        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build());
+        var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
+
+        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build(), storePermissionService);
 
     }
 }

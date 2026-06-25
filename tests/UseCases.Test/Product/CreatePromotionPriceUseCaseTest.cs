@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Repositories;
+using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests;
 using IOrder.Application.UseCases.Product;
 using IOrder.Communication.Request;
@@ -103,7 +103,9 @@ public class CreatePromotionPriceUseCaseTest
             readRepository.ExistsPromotionInDate(productId!.Value, initialTime.Value, finalTime.Value);
 
 
-        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork);
+        var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
+
+        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork, storePermissionService);
 
     }
 }

@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Repositories;
+using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests;
 using IOrder.Application.UseCases.Product;
 using IOrder.Exceptions;
@@ -50,7 +50,9 @@ public class DeleteProductUseCaseTest
 
 
 
-        return new DeleteProductUseCase(writeRepository.Build(), unitOfWork);
+        var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
+
+        return new DeleteProductUseCase(writeRepository.Build(), unitOfWork, storePermissionService);
 
     }
 }
