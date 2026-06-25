@@ -62,11 +62,12 @@ await app.MigrateDatabaseAsync();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    var clientId = builder.Configuration["Authentication:ClientId"];
     app.UseSwagger();   
     app.UseSwaggerUI(options => 
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "IOrder API");
-        options.OAuthClientId("aNd8zsy1b7HYxFTcfRXCNbnbGeDr1l9V"); 
+        options.OAuthClientId(clientId); 
     });
 }
 

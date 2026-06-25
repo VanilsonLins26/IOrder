@@ -9,4 +9,5 @@ public interface ILoggedUserService
     string GetUserId();
     string GetUserEmail();
     bool IsShopkeeper();
+    bool IsClient();
 }

@@ -61,11 +61,92 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Insira uma descrição sobre a loja.
+        /// </summary>
+        public static string ABOUT_EMPTY {
+            get {
+                return ResourceManager.GetString("ABOUT_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O endereço da loja precisa ser informado.
+        /// </summary>
+        public static string ADDRESS_EMPTY {
+            get {
+                return ResourceManager.GetString("ADDRESS_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A cidade é obrigatória.
+        /// </summary>
+        public static string CITY_EMPTY {
+            get {
+                return ResourceManager.GetString("CITY_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A cidade não pode passar de 100 caracteres..
+        /// </summary>
+        public static string CITY_INVALID {
+            get {
+                return ResourceManager.GetString("CITY_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O complemento não pode passar de 50 caracteres..
+        /// </summary>
+        public static string COMPLEMENT_INVALID {
+            get {
+                return ResourceManager.GetString("COMPLEMENT_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O dia de abertura não pode estar vazio.
+        /// </summary>
+        public static string DAY_OF_WEEK_EMPTY {
+            get {
+                return ResourceManager.GetString("DAY_OF_WEEK_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O dia de abertura deve ser de 0 a 6.
+        /// </summary>
+        public static string DAY_OF_WEEK_INVALID {
+            get {
+                return ResourceManager.GetString("DAY_OF_WEEK_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Existe dia(s) duplicado(s).
+        /// </summary>
+        public static string DUPLICATED_DAY_OF_WEEK {
+            get {
+                return ResourceManager.GetString("DUPLICATED_DAY_OF_WEEK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Já existe uma promoção ativa nesse intervalo de datas.
         /// </summary>
         public static string EXISTS_PROMOTION_IN_THIS_DATE {
             get {
                 return ResourceManager.GetString("EXISTS_PROMOTION_IN_THIS_DATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O horário final não pode estar vazio.
+        /// </summary>
+        public static string FINAL_OPENING_HOUR_EMPTY {
+            get {
+                return ResourceManager.GetString("FINAL_OPENING_HOUR_EMPTY", resourceCulture);
             }
         }
         
@@ -84,6 +165,15 @@ namespace IOrder.Exceptions {
         public static string FINAL_TIME_LESS_THAN_INITIAL {
             get {
                 return ResourceManager.GetString("FINAL_TIME_LESS_THAN_INITIAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O url da imagem nao pode estar vazia.
+        /// </summary>
+        public static string IMAGE_URL_EMPTY {
+            get {
+                return ResourceManager.GetString("IMAGE_URL_EMPTY", resourceCulture);
             }
         }
         
@@ -120,6 +210,60 @@ namespace IOrder.Exceptions {
         public static string NAME_EMPTY {
             get {
                 return ResourceManager.GetString("NAME_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O bairro é obrigatório.
+        /// </summary>
+        public static string NEIGHBORHOOD_EMPTY {
+            get {
+                return ResourceManager.GetString("NEIGHBORHOOD_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O bairro não pode passar de 100 caracteres..
+        /// </summary>
+        public static string NEIGHBORHOOD_INVALID {
+            get {
+                return ResourceManager.GetString("NEIGHBORHOOD_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O numero é obrigatório.
+        /// </summary>
+        public static string NUMBER_EMPTY {
+            get {
+                return ResourceManager.GetString("NUMBER_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número está muito longo..
+        /// </summary>
+        public static string NUMBER_INVALID {
+            get {
+                return ResourceManager.GetString("NUMBER_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O horário inicial não pode estar vazio.
+        /// </summary>
+        public static string OPENING_HOUR_EMPTY {
+            get {
+                return ResourceManager.GetString("OPENING_HOUR_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Os horários da loja não podem estar vazios.
+        /// </summary>
+        public static string OPENING_HOURS_EMPTY {
+            get {
+                return ResourceManager.GetString("OPENING_HOURS_EMPTY", resourceCulture);
             }
         }
         
@@ -169,6 +313,60 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O estado é obrigatório.
+        /// </summary>
+        public static string STATE_EMPTY {
+            get {
+                return ResourceManager.GetString("STATE_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Estado deve conter exatamente 2 letras..
+        /// </summary>
+        public static string STATE_INVALID {
+            get {
+                return ResourceManager.GetString("STATE_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Loja não encontrada.
+        /// </summary>
+        public static string STORE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("STORE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A rua é obrigatório.
+        /// </summary>
+        public static string STREET_EMPTY {
+            get {
+                return ResourceManager.GetString("STREET_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A rua não pode passar de 150 caracteres.
+        /// </summary>
+        public static string STREET_INVALID {
+            get {
+                return ResourceManager.GetString("STREET_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Você não tem permissão nessa loja.
+        /// </summary>
+        public static string UNAUTHORIZED_STORE {
+            get {
+                return ResourceManager.GetString("UNAUTHORIZED_STORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a A medida não pode estar vazio.
         /// </summary>
         public static string UNIT_OF_MEASURE_EMPTY {
@@ -183,6 +381,33 @@ namespace IOrder.Exceptions {
         public static string UNKNOWN_ERROR {
             get {
                 return ResourceManager.GetString("UNKNOWN_ERROR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Usuário ja possui uma loja.
+        /// </summary>
+        public static string USER_ALREADY_HAS_STORE {
+            get {
+                return ResourceManager.GetString("USER_ALREADY_HAS_STORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Cep não pode estar vazio.
+        /// </summary>
+        public static string ZIP_CODE_EMPTY {
+            get {
+                return ResourceManager.GetString("ZIP_CODE_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Cep deve ter entre 8 e 9 caracteres.
+        /// </summary>
+        public static string ZIP_CODE_INVALID {
+            get {
+                return ResourceManager.GetString("ZIP_CODE_INVALID", resourceCulture);
             }
         }
     }

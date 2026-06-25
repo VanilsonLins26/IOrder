@@ -42,15 +42,15 @@ public class DeleteProductUseCaseTest
 
     private static DeleteProductUseCase CreateUseCase(Guid productId)
     {
-        var writeRepository = new ProductWriteOnlyRepositoryBuilder().Create().Build();
+        var writeRepository = new ProductWriteOnlyRepositoryBuilder().Create();
         var readRepository = new ProductReadOnlyRepositoryBuilder();
         var unitOfWork = UnitOfWorkBuilder.Build();
 
-        readRepository.GetByIdAsync(productId);
+        writeRepository.GetByIdTracking(productId);
 
 
 
-        return new DeleteProductUseCase(writeRepository, readRepository.Build(), unitOfWork);
+        return new DeleteProductUseCase(writeRepository.Build(), unitOfWork);
 
     }
 }

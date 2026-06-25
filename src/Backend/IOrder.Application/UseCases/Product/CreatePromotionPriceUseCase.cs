@@ -22,7 +22,7 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
         _uof = uof;
     }
 
-    public async Task<PromotionPriceResponse> Execute(PromotionPriceResquestDto dto)
+    public async Task<PromotionPriceResponseDto> Execute(PromotionPriceResquestDto dto)
     {
         await Validate(dto);
 
@@ -30,7 +30,7 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
 
         var createdPromotionPrice = await _writeOnlyRepository.CreatePromotion(promotionPrice);
         await _uof.Commit();
-        return createdPromotionPrice.Adapt<PromotionPriceResponse>();
+        return createdPromotionPrice.Adapt<PromotionPriceResponseDto>();
     }
 
     private async Task Validate(PromotionPriceResquestDto dto)

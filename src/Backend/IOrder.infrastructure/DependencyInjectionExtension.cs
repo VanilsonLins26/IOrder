@@ -1,9 +1,11 @@
 using IOrder.Application.Services.LoggedUser;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
+using IOrder.Domain.Repositories.Store;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Repositories;
 using IOrder.infrastructure.Repositories.Product;
+using IOrder.infrastructure.Repositories.Store;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,10 @@ public static class DependencyInjectionExtension
     {
         services.AddScoped<IProductWriteOnlyRepository, ProductRepository>();
         services.AddScoped<IProductReadOnlyRepository, ProductRepository>();
+        
+        services.AddScoped<IStoreWriteOnlyRepository, StoreRepository>();
+        services.AddScoped<IStoreReadOnlyRepository, StoreRepository>();
+        
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
