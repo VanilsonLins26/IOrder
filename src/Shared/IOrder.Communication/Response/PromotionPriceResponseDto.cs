@@ -1,6 +1,6 @@
 ﻿namespace IOrder.Communication.Response;
 
-public class PromotionPriceResponse
+public class PromotionPriceResponseDto
 {
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }

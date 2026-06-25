@@ -5,5 +5,5 @@ namespace IOrder.Application.UseCases.Product;
 
 public interface ICreatePromotionPriceUseCase
 {
-    Task<PromotionPriceResponse> Execute(PromotionPriceResquestDto dto);
+    Task<PromotionPriceResponseDto> Execute(PromotionPriceResquestDto dto);
 }

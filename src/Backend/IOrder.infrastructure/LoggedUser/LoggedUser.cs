@@ -31,4 +31,9 @@ internal class LoggedUserService : ILoggedUserService
     {
         return _accessor.HttpContext?.User?.IsInRole("Shopkeeper") ?? false;
     }
+
+    public bool IsClient()
+    {
+        return _accessor.HttpContext?.User?.IsInRole("Client") ?? false;
+    }
 }

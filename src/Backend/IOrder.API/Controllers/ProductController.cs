@@ -62,9 +62,9 @@ public class ProductController : IOrderBaseController
     }
 
     [HttpPost("promotion")]
-    [ProducesResponseType(typeof(PromotionPriceResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(PromotionPriceResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(PromotionPriceResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(PromotionPriceResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(PromotionPriceResponseDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(PromotionPriceResponseDto), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> CreatePromotion([FromServices] ICreatePromotionPriceUseCase useCase, [FromBody] PromotionPriceResquestDto dto)
     {
         var promotionPrice = await useCase.Execute(dto);

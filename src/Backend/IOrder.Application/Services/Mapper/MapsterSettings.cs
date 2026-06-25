@@ -9,7 +9,7 @@ public static class MapsterSettings
 
     public static void Configure()
     {
-        TypeAdapterConfig<PromotionPrice, PromotionPriceResponse>
+        TypeAdapterConfig<PromotionPrice, PromotionPriceResponseDto>
             .NewConfig()
             .Map(dest => dest.Active, src => src.IsActive());
     }

@@ -87,4 +87,12 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
     {
         return await _dbContext.Stores.AnyAsync(store => store.Name!.Equals(name));
     }
+
+    public async Task<Domain.Entities.Store?> GetByUserIdAsync(string userId)
+    {
+        return await _dbContext.Stores
+            .AsNoTracking()
+            .Include(s => s.OpeningHours)
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+    }
 }

@@ -13,4 +13,5 @@ public interface IStoreReadOnlyRepository
     Task<Entities.Store> GetByIdAsync(Guid id);
     Task<bool> NameExists(string name);
     Task<bool> HasStore(string userId);
+    Task<Entities.Store?> GetByUserIdAsync(string userId);
 }

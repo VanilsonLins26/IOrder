@@ -117,14 +117,44 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ABOUT_EMPTY" xml:space="preserve">
+    <value>Insira uma descrição sobre a loja</value>
+  </data>
+  <data name="ADDRESS_EMPTY" xml:space="preserve">
+    <value>O endereço da loja precisa ser informado</value>
+  </data>
+  <data name="CITY_EMPTY" xml:space="preserve">
+    <value>A cidade é obrigatória</value>
+  </data>
+  <data name="CITY_INVALID" xml:space="preserve">
+    <value>A cidade não pode passar de 100 caracteres.</value>
+  </data>
+  <data name="COMPLEMENT_INVALID" xml:space="preserve">
+    <value>O complemento não pode passar de 50 caracteres.</value>
+  </data>
+  <data name="DAY_OF_WEEK_EMPTY" xml:space="preserve">
+    <value>O dia de abertura não pode estar vazio</value>
+  </data>
+  <data name="DAY_OF_WEEK_INVALID" xml:space="preserve">
+    <value>O dia de abertura deve ser de 0 a 6</value>
+  </data>
+  <data name="DUPLICATED_DAY_OF_WEEK" xml:space="preserve">
+    <value>Existe dia(s) duplicado(s)</value>
+  </data>
   <data name="EXISTS_PROMOTION_IN_THIS_DATE" xml:space="preserve">
     <value>Já existe uma promoção ativa nesse intervalo de datas</value>
+  </data>
+  <data name="FINAL_OPENING_HOUR_EMPTY" xml:space="preserve">
+    <value>O horário final não pode estar vazio</value>
   </data>
   <data name="FINAL_TIME_EMPTY" xml:space="preserve">
     <value>A data final não pode estar vazia</value>
   </data>
   <data name="FINAL_TIME_LESS_THAN_INITIAL" xml:space="preserve">
     <value>A data final precisa ser maior que a inicial</value>
+  </data>
+  <data name="IMAGE_URL_EMPTY" xml:space="preserve">
+    <value>O url da imagem nao pode estar vazia</value>
   </data>
   <data name="INITIAL_TIME_EMPTY" xml:space="preserve">
     <value>A data inicial não pode estar vazia</value>
@@ -137,6 +167,24 @@
   </data>
   <data name="NAME_EMPTY" xml:space="preserve">
     <value>O nome não pode estar vazio</value>
+  </data>
+  <data name="NEIGHBORHOOD_EMPTY" xml:space="preserve">
+    <value>O bairro é obrigatório</value>
+  </data>
+  <data name="NEIGHBORHOOD_INVALID" xml:space="preserve">
+    <value>O bairro não pode passar de 100 caracteres.</value>
+  </data>
+  <data name="NUMBER_EMPTY" xml:space="preserve">
+    <value>O numero é obrigatório</value>
+  </data>
+  <data name="NUMBER_INVALID" xml:space="preserve">
+    <value>O número está muito longo.</value>
+  </data>
+  <data name="OPENING_HOURS_EMPTY" xml:space="preserve">
+    <value>Os horários da loja não podem estar vazios</value>
+  </data>
+  <data name="OPENING_HOUR_EMPTY" xml:space="preserve">
+    <value>O horário inicial não pode estar vazio</value>
   </data>
   <data name="PRICE_EMPTY" xml:space="preserve">
     <value>O preço não pode estar vazio</value>
@@ -153,10 +201,37 @@
   <data name="PROMOTION_PRICE_INVALID" xml:space="preserve">
     <value>O valor promocional deve ser menos que o preço base</value>
   </data>
+  <data name="STATE_EMPTY" xml:space="preserve">
+    <value>O estado é obrigatório</value>
+  </data>
+  <data name="STATE_INVALID" xml:space="preserve">
+    <value>O Estado deve conter exatamente 2 letras.</value>
+  </data>
+  <data name="STORE_NOT_FOUND" xml:space="preserve">
+    <value>Loja não encontrada</value>
+  </data>
+  <data name="STREET_EMPTY" xml:space="preserve">
+    <value>A rua é obrigatório</value>
+  </data>
+  <data name="STREET_INVALID" xml:space="preserve">
+    <value>A rua não pode passar de 150 caracteres</value>
+  </data>
+  <data name="UNAUTHORIZED_STORE" xml:space="preserve">
+    <value>Você não tem permissão nessa loja</value>
+  </data>
   <data name="UNIT_OF_MEASURE_EMPTY" xml:space="preserve">
     <value>A medida não pode estar vazio</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>Erro desconhecido</value>
+  </data>
+  <data name="USER_ALREADY_HAS_STORE" xml:space="preserve">
+    <value>O Usuário ja possui uma loja</value>
+  </data>
+  <data name="ZIP_CODE_EMPTY" xml:space="preserve">
+    <value>O Cep não pode estar vazio</value>
+  </data>
+  <data name="ZIP_CODE_INVALID" xml:space="preserve">
+    <value>O Cep deve ter entre 8 e 9 caracteres</value>
   </data>
 </root>

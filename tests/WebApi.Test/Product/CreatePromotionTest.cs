@@ -31,7 +31,7 @@ public class CreatePromotionTest : IOrderClassFixture
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
 
-        var responseData = await response.Content.ReadFromJsonAsync<PromotionPriceResponse>();
+        var responseData = await response.Content.ReadFromJsonAsync<PromotionPriceResponseDto>();
 
         responseData.ShouldNotBeNull();
         responseData.Id.ShouldNotBe(Guid.Empty);
