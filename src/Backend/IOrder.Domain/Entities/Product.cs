@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Entities.Enums;
 
 namespace IOrder.Domain.Entities;
 
@@ -13,6 +13,10 @@ public class Product : EntityBase
     public bool Customizable { get; set; }
     public Guid StoreId { get; set; }
     public Store? Store { get; set; }
+    
+    public Guid? CategoryId { get; set; }
+    public Category? Category { get; set; }
+
     public decimal? CurrentPromotionalPrice { get; private set; }
 
 

@@ -1,4 +1,5 @@
 using IOrder.Application.Services.Mapper;
+using IOrder.Application.UseCases.Category;
 using IOrder.Application.UseCases.Product;
 using IOrder.Application.UseCases.Store;
 using Microsoft.Extensions.Configuration;
@@ -32,5 +33,14 @@ public static class DependencyInjectionExtension
         services.AddScoped<IGetAllStore, GetAllStore>();
         services.AddScoped<IGetByIdStoreUseCase, GetByIdStore>();
         services.AddScoped<IGetMyStoreUseCase, GetMyStoreUseCase>();
+
+        services.AddScoped<ICreateCategoryUseCase, CreateCategoryUseCase>();
+        services.AddScoped<IUpdateCategoryUseCase, UpdateCategoryUseCase>();
+        services.AddScoped<IDeleteCategoryUseCase, DeleteCategoryUseCase>();
+        services.AddScoped<IGetCategoriesByStoreUseCase, GetCategoriesByStoreUseCase>();
+        services.AddScoped<IGetCategoryByIdUseCase, GetCategoryByIdUseCase>();
+        services.AddScoped<IAddProductsToCategoryUseCase, AddProductsToCategoryUseCase>();
+        services.AddScoped<IEmptyCategoryUseCase, EmptyCategoryUseCase>();
+        services.AddScoped<IUpdateCategoryPositionsUseCase, UpdateCategoryPositionsUseCase>();
     }
 }

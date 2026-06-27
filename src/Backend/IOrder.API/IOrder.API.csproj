@@ -19,7 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\IOrder.Communication\IOrder.Communication.csproj" />
     <ProjectReference Include="..\IOrder.Application\IOrder.Application.csproj" />
-    <ProjectReference Include="..\IOrder.Domain\IOrder.Domain.csproj" />
     <ProjectReference Include="..\IOrder.infrastructure\IOrder.infrastructure.csproj" />
   </ItemGroup>
 

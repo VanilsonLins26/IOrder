@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Product;
@@ -36,6 +36,11 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
     public async Task<Domain.Entities.Product> GetByIdTracking(Guid id)
     {
         return await _context.Products.FirstOrDefaultAsync(product => product.Id == id);
+    }
+
+    public async Task<IList<Domain.Entities.Product>> GetByIdsTracking(IList<Guid> ids)
+    {
+        return await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync();
     }
 
 

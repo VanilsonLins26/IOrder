@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,5 +9,7 @@ public interface IStorePermissionService
 {
     Task<Guid> GetLoggedUserStoreIdAsync();
     Task ValidateProductOwnershipAsync(Product product);
+    Task ValidateCategoryOwnershipAsync(Category category);
+    Task ValidateStoreOwnerAsync(Guid storeID);
     Task ValidateStoreOwnerAsync(Store store);
 }

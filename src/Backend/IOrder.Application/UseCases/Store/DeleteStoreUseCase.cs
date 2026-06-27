@@ -31,7 +31,7 @@ public class DeleteStoreUseCase : IDeleteStoreUseCase
     {
         var store = await _writeOnlyRepository.GetByIdTracking(id) ?? throw new NotFoundException([ResourceMessagesException.STORE_NOT_FOUND]);
 
-        await _storePermissionService.ValidateStoreOwnerAsync(store);
+        await _storePermissionService.ValidateStoreOwnerAsync(id);
 
         _writeOnlyRepository.Delete(store);
 

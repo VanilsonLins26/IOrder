@@ -32,7 +32,7 @@ public class UpdateAddressUseCase : IUpdateAddressUseCase
     {
         var store = await _writeOnlyRepository.GetByIdTracking(storeId) ?? throw new NotFoundException([ResourceMessagesException.STORE_NOT_FOUND]);
 
-        await _storePermissionService.ValidateStoreOwnerAsync(store);
+        await _storePermissionService.ValidateStoreOwnerAsync(storeId);
 
         await Validate(request);
 
