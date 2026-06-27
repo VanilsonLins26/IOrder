@@ -37,6 +37,11 @@ public static class DependencyInjectionExtension
         
         services.AddScoped<IStoreWriteOnlyRepository, StoreRepository>();
         services.AddScoped<IStoreReadOnlyRepository, StoreRepository>();
+
+        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryWriteOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
+        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryReadOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
+        
+        services.AddScoped<IOrder.Domain.Repositories.StoreCategory.IStoreCategoryReadOnlyRepository, IOrder.infrastructure.Repositories.StoreCategory.StoreCategoryRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }

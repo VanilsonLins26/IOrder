@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,5 +11,5 @@ public class StoreRequestDto
     public string? About { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public ICollection<OpeningHourRequestDto> OpeningHours { get; set; } = [];
-    //public int CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
 }

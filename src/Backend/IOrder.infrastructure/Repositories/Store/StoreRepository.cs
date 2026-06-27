@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.SeedWork.Pagination;
@@ -39,6 +39,9 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
 
         if (!string.IsNullOrWhiteSpace(storeFilter.Name))
             query = query.Where(p => p.Name!.Contains(storeFilter.Name));
+
+        if (storeFilter.CategoryId.HasValue)
+            query = query.Where(p => p.CategoryId == storeFilter.CategoryId.Value);
 
         var currentDay = (int)DateTime.UtcNow.DayOfWeek;
         var previousDay = currentDay == 0 ? 6 : currentDay - 1;
