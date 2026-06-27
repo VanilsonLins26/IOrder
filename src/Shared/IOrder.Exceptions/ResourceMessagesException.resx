@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -162,6 +162,9 @@
   <data name="INITIAL_TIME_LESS_THAN_NOW" xml:space="preserve">
     <value>O horário inicial preciso ser maior igual que o horário atual</value>
   </data>
+  <data name="INVALID_POSITION" xml:space="preserve">
+    <value>A posição não pode ser menor que 0</value>
+  </data>
   <data name="NAME_ALREADY_EXISTS" xml:space="preserve">
     <value>O nome já existe</value>
   </data>
@@ -186,6 +189,9 @@
   <data name="OPENING_HOUR_EMPTY" xml:space="preserve">
     <value>O horário inicial não pode estar vazio</value>
   </data>
+  <data name="POSITION_NULL" xml:space="preserve">
+    <value>A posição da categoria não pode ser nula</value>
+  </data>
   <data name="PRICE_EMPTY" xml:space="preserve">
     <value>O preço não pode estar vazio</value>
   </data>
@@ -206,6 +212,9 @@
   </data>
   <data name="STATE_INVALID" xml:space="preserve">
     <value>O Estado deve conter exatamente 2 letras.</value>
+  </data>
+  <data name="STORE_ID_EMPTY" xml:space="preserve">
+    <value>O id da loja não pode estar vazio</value>
   </data>
   <data name="STORE_NOT_FOUND" xml:space="preserve">
     <value>Loja não encontrada</value>
@@ -233,5 +242,8 @@
   </data>
   <data name="ZIP_CODE_INVALID" xml:space="preserve">
     <value>O Cep deve ter entre 8 e 9 caracteres</value>
+  </data>
+  <data name="CATEGORY_NOT_FOUND" xml:space="preserve">
+    <value>Categoria não encontrada</value>
   </data>
 </root>
