@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -15,7 +15,7 @@ public class Store : EntityBase
     public ICollection<OpeningHour> OpeningHours { get; set; } = [];
     public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
-    //public Category? Category { get; set; }
+    public StoreCategory? Category { get; set; }
 
     public bool IsOpen()
     {
