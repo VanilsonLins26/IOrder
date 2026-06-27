@@ -42,5 +42,7 @@ public static class DependencyInjectionExtension
         services.AddScoped<IAddProductsToCategoryUseCase, AddProductsToCategoryUseCase>();
         services.AddScoped<IEmptyCategoryUseCase, EmptyCategoryUseCase>();
         services.AddScoped<IUpdateCategoryPositionsUseCase, UpdateCategoryPositionsUseCase>();
+        
+        services.AddScoped<IOrder.Application.UseCases.StoreCategory.IGetAllStoreCategoryUseCase, IOrder.Application.UseCases.StoreCategory.GetAllStoreCategoryUseCase>();
     }
 }
