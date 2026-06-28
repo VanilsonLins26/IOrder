@@ -1,0 +1,61 @@
+using CommomTestUtilities.Entities;
+using CommomTestUtilities.Repositories;
+using CommomTestUtilities.Services;
+using IOrder.Application.UseCases.Category;
+using IOrder.Exceptions;
+using IOrder.Exceptions.ExceptionBase;
+using Shouldly;
+using System;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace UseCases.Test.Category;
+
+public class DeleteCategoryUseCaseTest
+{
+    [Fact]
+    public async Task Success()
+    {
+        var storeId = Guid.NewGuid();
+        var category = CategoryBuilder.Build(storeId);
+        
+        var useCase = CreateUseCase(storeId, category);
+
+        var response = await useCase.Execute(category.Id);
+
+        response.ShouldNotBeNull();
+        response.Name.ShouldBe(category.Name);
+    }
+
+    [Fact]
+    public async Task Error_Category_Not_Found()
+    {
+        var storeId = Guid.NewGuid();
+        var useCase = CreateUseCase(storeId);
+
+        Func<Task> act = async () => await useCase.Execute(Guid.NewGuid());
+
+        var exception = await act.ShouldThrowAsync<NotFoundException>();
+        exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.CATEGORY_NOT_FOUND);
+    }
+
+    private DeleteCategoryUseCase CreateUseCase(Guid storeId, IOrder.Domain.Entities.Category? category = null)
+    {
+        var writeOnlyRepository = new CategoryWriteOnlyRepositoryBuilder();
+        if (category is not null)
+            writeOnlyRepository.GetByIdTracking(category.Id, category);
+
+        var productWriteOnlyRepository = new ProductWriteOnlyRepositoryBuilder();
+        var productReadOnlyRepository = new ProductReadOnlyRepositoryBuilder();
+
+        var uow = UnitOfWorkBuilder.Build();
+        var permissionService = StorePermissionServiceBuilder.Build(storeId);
+
+        return new DeleteCategoryUseCase(
+            writeOnlyRepository.Build(),
+            productWriteOnlyRepository.Build(),
+            productReadOnlyRepository.Build(),
+            uow,
+            permissionService);
+    }
+}

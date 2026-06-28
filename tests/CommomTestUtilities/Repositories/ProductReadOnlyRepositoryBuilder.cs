@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities;
 using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.SeedWork.Pagination;
@@ -23,6 +23,11 @@ public class ProductReadOnlyRepositoryBuilder
     public void NameExists(string productName)
     {
         _repository.Setup(repository => repository.NameExists(productName)).ReturnsAsync(true);
+    }
+
+    public void GetAll(IEnumerable<Product> products)
+    {
+        _repository.Setup(repository => repository.GetAll()).Returns(products);
     }
 
     public void GetByIdAsync(Guid productId)
