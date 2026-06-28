@@ -1,0 +1,18 @@
+// ============================================
+// IOrder — Global Styles Entry Point
+// ============================================
+
+// Design tokens & variables
+@use 'styles/variables';
+
+// Dark theme overrides
+@use 'styles/dark-theme';
+
+// CSS Reset & normalization
+@use 'styles/reset';
+
+// Typography system
+@use 'styles/typography';
+
+// Global animations
+@use 'styles/animations';
