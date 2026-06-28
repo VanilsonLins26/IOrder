@@ -4,6 +4,7 @@ using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IOrder.infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260628034827_SeedInitialData")]
+    partial class SeedInitialData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +55,7 @@ namespace IOrder.infrastructure.Migrations
                         {
                             Id = new Guid("30000000-0000-0000-0000-000000000001"),
                             Active = true,
-                            Name = "Bolos de Casamento",
+                            Name = "Hambúrgueres",
                             Position = 1,
                             StoreId = new Guid("20000000-0000-0000-0000-000000000001")
                         },
@@ -60,33 +63,9 @@ namespace IOrder.infrastructure.Migrations
                         {
                             Id = new Guid("30000000-0000-0000-0000-000000000002"),
                             Active = true,
-                            Name = "Doces Gourmet",
+                            Name = "Bebidas",
                             Position = 2,
                             StoreId = new Guid("20000000-0000-0000-0000-000000000001")
-                        },
-                        new
-                        {
-                            Id = new Guid("30000000-0000-0000-0000-000000000003"),
-                            Active = true,
-                            Name = "Fritos na Hora",
-                            Position = 1,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000002")
-                        },
-                        new
-                        {
-                            Id = new Guid("30000000-0000-0000-0000-000000000004"),
-                            Active = true,
-                            Name = "Tortas e Assados",
-                            Position = 2,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000002")
-                        },
-                        new
-                        {
-                            Id = new Guid("30000000-0000-0000-0000-000000000005"),
-                            Active = true,
-                            Name = "Cestas Românticas",
-                            Position = 1,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000003")
                         });
                 });
 
@@ -173,10 +152,10 @@ namespace IOrder.infrastructure.Migrations
                             Active = true,
                             CategoryId = new Guid("30000000-0000-0000-0000-000000000001"),
                             Customizable = true,
-                            Description = "Bolo com recheio a escolha e cobertura de pasta americana.",
-                            ImageUrl = "https://example.com/bolo_casamento.png",
-                            Name = "Bolo de Casamento 3 Andares",
-                            Price = 350.00m,
+                            Description = "Hambúrguer com carne grelhada.",
+                            ImageUrl = "https://example.com/whopper.png",
+                            Name = "Whopper",
+                            Price = 29.90m,
                             StoreId = new Guid("20000000-0000-0000-0000-000000000001"),
                             UnitOfMeasure = "Unidade"
                         },
@@ -186,50 +165,11 @@ namespace IOrder.infrastructure.Migrations
                             Active = true,
                             CategoryId = new Guid("30000000-0000-0000-0000-000000000002"),
                             Customizable = false,
-                            Description = "100 unidades de delicioso camafeu fondant com nozes.",
-                            ImageUrl = "https://example.com/camafeu.png",
-                            Name = "Camafeu de Nozes (Cento)",
-                            Price = 180.00m,
+                            Description = "Refrigerante lata",
+                            ImageUrl = "https://example.com/coca.png",
+                            Name = "Coca-Cola 350ml",
+                            Price = 6.50m,
                             StoreId = new Guid("20000000-0000-0000-0000-000000000001"),
-                            UnitOfMeasure = "Unidade"
-                        },
-                        new
-                        {
-                            Id = new Guid("40000000-0000-0000-0000-000000000003"),
-                            Active = true,
-                            CategoryId = new Guid("30000000-0000-0000-0000-000000000003"),
-                            Customizable = false,
-                            Description = "100 coxinhas de frango para festa, massa de batata.",
-                            ImageUrl = "https://example.com/coxinha.png",
-                            Name = "Cento de Coxinha",
-                            Price = 75.00m,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000002"),
-                            UnitOfMeasure = "Unidade"
-                        },
-                        new
-                        {
-                            Id = new Guid("40000000-0000-0000-0000-000000000004"),
-                            Active = true,
-                            CategoryId = new Guid("30000000-0000-0000-0000-000000000004"),
-                            Customizable = true,
-                            Description = "Empadão familiar de 2kg com bastante recheio.",
-                            ImageUrl = "https://example.com/empadao.png",
-                            Name = "Empadão de Frango 2kg",
-                            Price = 65.00m,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000002"),
-                            UnitOfMeasure = "Unidade"
-                        },
-                        new
-                        {
-                            Id = new Guid("40000000-0000-0000-0000-000000000005"),
-                            Active = true,
-                            CategoryId = new Guid("30000000-0000-0000-0000-000000000005"),
-                            Customizable = true,
-                            Description = "Cesta de vime com pães, frutas, sucos, xícara decorada e um ursinho.",
-                            ImageUrl = "https://example.com/cesta.png",
-                            Name = "Cesta de Café da Manhã Amor",
-                            Price = 220.00m,
-                            StoreId = new Guid("20000000-0000-0000-0000-000000000003"),
                             UnitOfMeasure = "Unidade"
                         });
                 });
@@ -298,32 +238,12 @@ namespace IOrder.infrastructure.Migrations
                         new
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000001"),
-                            About = "Bolos decorados e doces finos sob encomenda para o seu evento.",
+                            About = "O melhor hambúrguer da região.",
                             Active = true,
                             CategoryId = new Guid("10000000-0000-0000-0000-000000000001"),
-                            ImageUrl = "https://example.com/doceria.png",
-                            Name = "Doceria da Maria",
-                            UserId = "auth0|maria123"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
-                            About = "Salgados fritos e assados frescos para sua festa.",
-                            Active = true,
-                            CategoryId = new Guid("10000000-0000-0000-0000-000000000003"),
-                            ImageUrl = "https://example.com/salgados.png",
-                            Name = "Salgados Express (Sob Encomenda)",
-                            UserId = "auth0|salgados123"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
-                            About = "Presenteie quem você ama com cestas maravilhosas personalizadas.",
-                            Active = true,
-                            CategoryId = new Guid("10000000-0000-0000-0000-000000000004"),
-                            ImageUrl = "https://example.com/cestas.png",
-                            Name = "Cestas & Cia",
-                            UserId = "auth0|cestas123"
+                            ImageUrl = "https://example.com/bk.png",
+                            Name = "Burger King",
+                            UserId = "auth0|testuser123"
                         });
                 });
 
@@ -354,70 +274,70 @@ namespace IOrder.infrastructure.Migrations
                             Id = new Guid("10000000-0000-0000-0000-000000000001"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Bolos Decorados"
+                            Name = "Lanches"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000002"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Doces Finos"
+                            Name = "Pizzaria"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000003"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Salgados para Festa"
+                            Name = "Açaí"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000004"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Cestas de Café da Manhã"
+                            Name = "Japonês"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000005"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Lembrancinhas Customizadas"
+                            Name = "Brasileira"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000006"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Marmitas Saudáveis (Pré-preparo)"
+                            Name = "Doces e Bolos"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000007"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Tortas Salgadas"
+                            Name = "Farmácia"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000008"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Artesanato"
+                            Name = "Mercado"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000009"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Kits Festa"
+                            Name = "Bebidas"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000010"),
                             Active = true,
                             IconUrl = "",
-                            Name = "Bebidas Artesanais"
+                            Name = "Saudável"
                         });
                 });
 
@@ -524,34 +444,12 @@ namespace IOrder.infrastructure.Migrations
                                 {
                                     StoreId = new Guid("20000000-0000-0000-0000-000000000001"),
                                     City = "São Paulo",
-                                    Complement = "Casa",
+                                    Complement = "Loja 1",
                                     Neighborhood = "Centro",
                                     Number = "100",
                                     State = "SP",
-                                    Street = "Rua das Flores",
-                                    ZipCode = "12345-001"
-                                },
-                                new
-                                {
-                                    StoreId = new Guid("20000000-0000-0000-0000-000000000002"),
-                                    City = "São Paulo",
-                                    Complement = "Loja 2",
-                                    Neighborhood = "Bela Vista",
-                                    Number = "200",
-                                    State = "SP",
-                                    Street = "Av. Brasil",
-                                    ZipCode = "12345-002"
-                                },
-                                new
-                                {
-                                    StoreId = new Guid("20000000-0000-0000-0000-000000000003"),
-                                    City = "São Paulo",
-                                    Complement = "Apto 101",
-                                    Neighborhood = "Jardins",
-                                    Number = "300",
-                                    State = "SP",
-                                    Street = "Rua do Amor",
-                                    ZipCode = "12345-003"
+                                    Street = "Av. Principal",
+                                    ZipCode = "12345-678"
                                 });
                         });
 

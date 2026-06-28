@@ -34,18 +34,129 @@ internal class AppDbContext  : DbContext
             .WithMany(sc => sc.Stores)
             .HasForeignKey(s => s.CategoryId);
 
+        // Constant GUIDs for seeding
+        var catBolosId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+        var catDocesId = Guid.Parse("10000000-0000-0000-0000-000000000002");
+        var catSalgadosId = Guid.Parse("10000000-0000-0000-0000-000000000003");
+        var catCestasId = Guid.Parse("10000000-0000-0000-0000-000000000004");
+        var catLembrancinhasId = Guid.Parse("10000000-0000-0000-0000-000000000005");
+        var catMarmitasId = Guid.Parse("10000000-0000-0000-0000-000000000006");
+        var catTortasId = Guid.Parse("10000000-0000-0000-0000-000000000007");
+        var catArtesanatoId = Guid.Parse("10000000-0000-0000-0000-000000000008");
+        var catKitsFestaId = Guid.Parse("10000000-0000-0000-0000-000000000009");
+        var catBebidasArtesanaisId = Guid.Parse("10000000-0000-0000-0000-000000000010");
+
         // Seed Store Categories
         modelBuilder.Entity<StoreCategory>().HasData(
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Lanches", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Pizzaria", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Açaí", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Japonês", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Brasileira", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Doces e Bolos", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Farmácia", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Mercado", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Bebidas", IconUrl = "" },
-            new StoreCategory { Id = Guid.NewGuid(), Name = "Saudável", IconUrl = "" }
+            new StoreCategory { Id = catBolosId, Name = "Bolos Decorados", IconUrl = "" },
+            new StoreCategory { Id = catDocesId, Name = "Doces Finos", IconUrl = "" },
+            new StoreCategory { Id = catSalgadosId, Name = "Salgados para Festa", IconUrl = "" },
+            new StoreCategory { Id = catCestasId, Name = "Cestas de Café da Manhã", IconUrl = "" },
+            new StoreCategory { Id = catLembrancinhasId, Name = "Lembrancinhas Customizadas", IconUrl = "" },
+            new StoreCategory { Id = catMarmitasId, Name = "Marmitas Saudáveis (Pré-preparo)", IconUrl = "" },
+            new StoreCategory { Id = catTortasId, Name = "Tortas Salgadas", IconUrl = "" },
+            new StoreCategory { Id = catArtesanatoId, Name = "Artesanato", IconUrl = "" },
+            new StoreCategory { Id = catKitsFestaId, Name = "Kits Festa", IconUrl = "" },
+            new StoreCategory { Id = catBebidasArtesanaisId, Name = "Bebidas Artesanais", IconUrl = "" }
+        );
+
+        // Seed Stores
+        var storeMariaId = Guid.Parse("20000000-0000-0000-0000-000000000001");
+        var storeSalgadosId = Guid.Parse("20000000-0000-0000-0000-000000000002");
+        var storeCestasId = Guid.Parse("20000000-0000-0000-0000-000000000003");
+
+        modelBuilder.Entity<Store>().HasData(
+            new Store 
+            { 
+                Id = storeMariaId, 
+                Name = "Doceria da Maria", 
+                About = "Bolos decorados e doces finos sob encomenda para o seu evento.",
+                ImageUrl = "https://example.com/doceria.png", 
+                CategoryId = catBolosId,
+                UserId = "auth0|maria123",
+                Active = true
+            },
+            new Store 
+            { 
+                Id = storeSalgadosId, 
+                Name = "Salgados Express (Sob Encomenda)", 
+                About = "Salgados fritos e assados frescos para sua festa.",
+                ImageUrl = "https://example.com/salgados.png", 
+                CategoryId = catSalgadosId,
+                UserId = "auth0|salgados123",
+                Active = true
+            },
+            new Store 
+            { 
+                Id = storeCestasId, 
+                Name = "Cestas & Cia", 
+                About = "Presenteie quem você ama com cestas maravilhosas personalizadas.",
+                ImageUrl = "https://example.com/cestas.png", 
+                CategoryId = catCestasId,
+                UserId = "auth0|cestas123",
+                Active = true
+            }
+        );
+        
+        // Seed Addresses
+        modelBuilder.Entity<Store>().OwnsOne(s => s.Address).HasData(
+            new { StoreId = storeMariaId, ZipCode = "12345-001", Street = "Rua das Flores", Number = "100", Complement = "Casa", Neighborhood = "Centro", City = "São Paulo", State = "SP" },
+            new { StoreId = storeSalgadosId, ZipCode = "12345-002", Street = "Av. Brasil", Number = "200", Complement = "Loja 2", Neighborhood = "Bela Vista", City = "São Paulo", State = "SP" },
+            new { StoreId = storeCestasId, ZipCode = "12345-003", Street = "Rua do Amor", Number = "300", Complement = "Apto 101", Neighborhood = "Jardins", City = "São Paulo", State = "SP" }
+        );
+
+        // Seed Categories (Menu Categories)
+        var menuBolosId = Guid.Parse("30000000-0000-0000-0000-000000000001");
+        var menuDocesId = Guid.Parse("30000000-0000-0000-0000-000000000002");
+        var menuFritosId = Guid.Parse("30000000-0000-0000-0000-000000000003");
+        var menuAssadosId = Guid.Parse("30000000-0000-0000-0000-000000000004");
+        var menuRomanticasId = Guid.Parse("30000000-0000-0000-0000-000000000005");
+
+        modelBuilder.Entity<Category>().HasData(
+            new Category { Id = menuBolosId, Name = "Bolos de Casamento", Position = 1, StoreId = storeMariaId, Active = true },
+            new Category { Id = menuDocesId, Name = "Doces Gourmet", Position = 2, StoreId = storeMariaId, Active = true },
+            new Category { Id = menuFritosId, Name = "Fritos na Hora", Position = 1, StoreId = storeSalgadosId, Active = true },
+            new Category { Id = menuAssadosId, Name = "Tortas e Assados", Position = 2, StoreId = storeSalgadosId, Active = true },
+            new Category { Id = menuRomanticasId, Name = "Cestas Românticas", Position = 1, StoreId = storeCestasId, Active = true }
+        );
+
+        // Seed Products
+        modelBuilder.Entity<Product>().HasData(
+            new Product { 
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000001"), 
+                Name = "Bolo de Casamento 3 Andares", 
+                Description = "Bolo com recheio a escolha e cobertura de pasta americana.",
+                Price = 350.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/bolo_casamento.png",
+                StoreId = storeMariaId, CategoryId = menuBolosId, Customizable = true, Active = true
+            },
+            new Product { 
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000002"), 
+                Name = "Camafeu de Nozes (Cento)", 
+                Description = "100 unidades de delicioso camafeu fondant com nozes.",
+                Price = 180.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/camafeu.png",
+                StoreId = storeMariaId, CategoryId = menuDocesId, Customizable = false, Active = true
+            },
+            new Product { 
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000003"), 
+                Name = "Cento de Coxinha", 
+                Description = "100 coxinhas de frango para festa, massa de batata.",
+                Price = 75.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/coxinha.png",
+                StoreId = storeSalgadosId, CategoryId = menuFritosId, Customizable = false, Active = true
+            },
+            new Product { 
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000004"), 
+                Name = "Empadão de Frango 2kg", 
+                Description = "Empadão familiar de 2kg com bastante recheio.",
+                Price = 65.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/empadao.png",
+                StoreId = storeSalgadosId, CategoryId = menuAssadosId, Customizable = true, Active = true
+            },
+            new Product { 
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000005"), 
+                Name = "Cesta de Café da Manhã Amor", 
+                Description = "Cesta de vime com pães, frutas, sucos, xícara decorada e um ursinho.",
+                Price = 220.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/cesta.png",
+                StoreId = storeCestasId, CategoryId = menuRomanticasId, Customizable = true, Active = true
+            }
         );
     }
 
