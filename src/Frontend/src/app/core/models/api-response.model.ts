@@ -26,6 +26,7 @@ export interface ProductSearchQuery extends PaginationQuery {
   name?:        string;
   price?:       number;
   priceFilter?: number;
+  storeId?:     string;
 }
 
 export interface StoreSearchQuery extends PaginationQuery {

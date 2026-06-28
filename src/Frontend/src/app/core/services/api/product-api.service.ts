@@ -34,6 +34,7 @@ export class ProductApiService {
     if (query.isDescending !== undefined) params = params.set('IsDescending', query.isDescending);
     if (query.price !== undefined)     params = params.set('Price',        query.price);
     if (query.priceFilter !== undefined) params = params.set('PriceFilter', query.priceFilter);
+    if (query.storeId)                 params = params.set('StoreId',      query.storeId);
     return this.http.get<PagedList<ProductResponse>>(`${this.baseUrl}/paged`, { params });
   }
 

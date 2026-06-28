@@ -78,7 +78,15 @@
       <p class="section-subtitle">Explore por categoria</p>
     </div>
 
-    <div class="categories__scroll" role="list">
+    <div 
+      class="categories__scroll" 
+      role="list"
+      #scrollContainer
+      (mousedown)="onMouseDown($event)"
+      (mouseleave)="onMouseLeave()"
+      (mouseup)="onMouseUp()"
+      (mousemove)="onMouseMove($event)"
+    >
       <!-- All -->
       <button
         class="category-chip"
@@ -152,33 +160,7 @@
     } @else {
       <div class="stores__grid">
         @for (store of filteredStores(); track store.id) {
-          <a [routerLink]="['/stores', store.id]" class="store-card" [attr.aria-label]="'Ver loja ' + store.name">
-            <!-- Image -->
-            <div class="store-card__image-wrapper">
-              @if (store.imageUrl) {
-                <img [src]="store.imageUrl" [alt]="store.name" class="store-card__image" loading="lazy" />
-              } @else {
-                <div class="store-card__image-placeholder">🏪</div>
-              }
-              <!-- Open badge -->
-              <span class="store-card__status" [class.store-card__status--open]="store.isOpen">
-                {{ store.isOpen ? 'Aberto' : 'Fechado' }}
-              </span>
-            </div>
-
-            <!-- Body -->
-            <div class="store-card__body">
-              <h3 class="store-card__name">{{ store.name }}</h3>
-              @if (store.about) {
-                <p class="store-card__about">{{ store.about }}</p>
-              }
-              @if (store.address) {
-                <p class="store-card__location">
-                  📍 {{ store.address.city }}, {{ store.address.state }}
-                </p>
-              }
-            </div>
-          </a>
+          <app-store-card [store]="store" />
         }
       </div>
     }

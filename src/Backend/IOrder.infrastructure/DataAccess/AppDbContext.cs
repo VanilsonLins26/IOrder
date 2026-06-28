@@ -71,7 +71,7 @@ internal class AppDbContext  : DbContext
                 Id = storeMariaId, 
                 Name = "Doceria da Maria", 
                 About = "Bolos decorados e doces finos sob encomenda para o seu evento.",
-                ImageUrl = "https://example.com/doceria.png", 
+                ImageUrl = "https://images.unsplash.com/photo-1559598467-f8b76c8155d0?w=500", 
                 CategoryId = catBolosId,
                 UserId = "auth0|maria123",
                 Active = true
@@ -81,7 +81,7 @@ internal class AppDbContext  : DbContext
                 Id = storeSalgadosId, 
                 Name = "Salgados Express (Sob Encomenda)", 
                 About = "Salgados fritos e assados frescos para sua festa.",
-                ImageUrl = "https://example.com/salgados.png", 
+                ImageUrl = "https://images.unsplash.com/photo-1626082895617-2c6ab3abfa01?w=500", 
                 CategoryId = catSalgadosId,
                 UserId = "auth0|salgados123",
                 Active = true
@@ -91,7 +91,7 @@ internal class AppDbContext  : DbContext
                 Id = storeCestasId, 
                 Name = "Cestas & Cia", 
                 About = "Presenteie quem você ama com cestas maravilhosas personalizadas.",
-                ImageUrl = "https://example.com/cestas.png", 
+                ImageUrl = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500", 
                 CategoryId = catCestasId,
                 UserId = "auth0|cestas123",
                 Active = true
@@ -126,35 +126,35 @@ internal class AppDbContext  : DbContext
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000001"), 
                 Name = "Bolo de Casamento 3 Andares", 
                 Description = "Bolo com recheio a escolha e cobertura de pasta americana.",
-                Price = 350.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/bolo_casamento.png",
+                Price = 350.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500",
                 StoreId = storeMariaId, CategoryId = menuBolosId, Customizable = true, Active = true
             },
             new Product { 
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000002"), 
                 Name = "Camafeu de Nozes (Cento)", 
                 Description = "100 unidades de delicioso camafeu fondant com nozes.",
-                Price = 180.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/camafeu.png",
+                Price = 180.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=500",
                 StoreId = storeMariaId, CategoryId = menuDocesId, Customizable = false, Active = true
             },
             new Product { 
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000003"), 
                 Name = "Cento de Coxinha", 
                 Description = "100 coxinhas de frango para festa, massa de batata.",
-                Price = 75.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/coxinha.png",
+                Price = 75.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://images.unsplash.com/photo-1628198755050-482eebe9b165?w=500",
                 StoreId = storeSalgadosId, CategoryId = menuFritosId, Customizable = false, Active = true
             },
             new Product { 
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000004"), 
                 Name = "Empadão de Frango 2kg", 
                 Description = "Empadão familiar de 2kg com bastante recheio.",
-                Price = 65.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/empadao.png",
+                Price = 65.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500",
                 StoreId = storeSalgadosId, CategoryId = menuAssadosId, Customizable = true, Active = true
             },
             new Product { 
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000005"), 
                 Name = "Cesta de Café da Manhã Amor", 
                 Description = "Cesta de vime com pães, frutas, sucos, xícara decorada e um ursinho.",
-                Price = 220.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://example.com/cesta.png",
+                Price = 220.00m, UnitOfMeasure = Domain.Entities.Enums.UnitOfMeasure.Unidade, ImageUrl = "https://images.unsplash.com/photo-1528659101188-11116c4832ce?w=500",
                 StoreId = storeCestasId, CategoryId = menuRomanticasId, Customizable = true, Active = true
             }
         );

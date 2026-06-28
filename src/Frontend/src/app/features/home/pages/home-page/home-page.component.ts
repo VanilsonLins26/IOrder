@@ -4,6 +4,8 @@ import {
   inject,
   signal,
   computed,
+  ElementRef,
+  ViewChild
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -11,6 +13,7 @@ import { StoreCategoryApiService } from '../../../../core/services/api/store-cat
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { StoreCardComponent } from '../../../../shared/components/store-card/store-card';
 import type { StoreCategoryResponse } from '../../../../core/models/store-category.model';
 import type { StoreResponse } from '../../../../core/models/store.model';
 
@@ -18,7 +21,7 @@ import type { StoreResponse } from '../../../../core/models/store.model';
   selector: 'app-home-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LoadingSkeletonComponent, EmptyStateComponent],
+  imports: [RouterLink, LoadingSkeletonComponent, EmptyStateComponent, StoreCardComponent],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss',
 })
@@ -62,16 +65,49 @@ export class HomePageComponent {
     const query = this.searchQuery().toLowerCase().trim();
 
     return this.stores().filter((s: StoreResponse) => {
-      const matchesCat   = !catId || s.storeCategoryId === catId;
+      const matchesCat   = !catId || s.categoryId === catId;
       const matchesQuery = !query || s.name.toLowerCase().includes(query);
       return matchesCat && matchesQuery;
     });
   });
+
+  // ---- Drag to Scroll State ----
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
+  private isDragging = false;
+  private startX = 0;
+  private scrollLeft = 0;
 
   // ---- User actions ----
   selectCategory(id: string | null): void { this.selectedCatId.set(id); }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  onMouseDown(e: MouseEvent) {
+    this.isDragging = true;
+    const el = this.scrollContainer.nativeElement;
+    el.classList.add('categories__scroll--dragging');
+    this.startX = e.pageX - el.offsetLeft;
+    this.scrollLeft = el.scrollLeft;
+  }
+
+  onMouseLeave() {
+    this.isDragging = false;
+    this.scrollContainer?.nativeElement.classList.remove('categories__scroll--dragging');
+  }
+
+  onMouseUp() {
+    this.isDragging = false;
+    this.scrollContainer?.nativeElement.classList.remove('categories__scroll--dragging');
+  }
+
+  onMouseMove(e: MouseEvent) {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    const el = this.scrollContainer.nativeElement;
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - this.startX) * 2; // Scroll-fast
+    el.scrollLeft = this.scrollLeft - walk;
   }
 }
