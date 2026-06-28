@@ -42,7 +42,7 @@ public class UpdateStoreUseCaseTest
     public async Task Error_Store_Not_Found()
     {
         var request = UpdateStoreRequestBuilder.Build();
-        var useCase = CreateUseCase(store: null); // User has no store
+        var useCase = CreateUseCase(store: null);
 
         Func<Task> act = async () => await useCase.Execute(request, Guid.NewGuid());
 

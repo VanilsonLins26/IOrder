@@ -81,6 +81,22 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return await _dbContext.Stores.Include(store => store.OpeningHours).FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public void ClearOpeningHours(Domain.Entities.Store store)
+    {
+        _dbContext.Set<Domain.Entities.OpeningHour>().RemoveRange(store.OpeningHours);
+        store.OpeningHours.Clear();
+    }
+
+    public void DeleteOpeningHour(Domain.Entities.OpeningHour openingHour)
+    {
+        _dbContext.Set<Domain.Entities.OpeningHour>().Remove(openingHour);
+    }
+
+    public void AddOpeningHour(Domain.Entities.OpeningHour openingHour)
+    {
+        _dbContext.Set<Domain.Entities.OpeningHour>().Add(openingHour);
+    }
+
     public async Task<bool> HasStore(string userId)
     {
         return await _dbContext.Stores.AnyAsync(store => store.UserId.Equals(userId));

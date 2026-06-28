@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text;
@@ -13,15 +13,15 @@ public class IOrderClassFixture : IClassFixture<CustomWebApplicationFactory>
         _httpCLient = factory.CreateClient();
     }
 
-    protected async Task<HttpResponseMessage> DoPost(string method, object request)
+    protected async Task<HttpResponseMessage> DoPost(string method, object request, string token = "")
     {
-        
+        AuthorizeRequest(token);
         return await _httpCLient.PostAsJsonAsync(method, request);
     }
 
-    protected async Task<HttpResponseMessage> DoPut(string method, object request)
+    protected async Task<HttpResponseMessage> DoPut(string method, object request, string token = "")
     {
-
+        AuthorizeRequest(token);
         return await _httpCLient.PutAsJsonAsync(method, request);
     }
 

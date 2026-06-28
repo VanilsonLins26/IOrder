@@ -35,13 +35,17 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             if (descriptor != null)
                 services.Remove(descriptor);
 
-            var loggedUserServiceDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IOrder.Application.Services.LoggedUser.ILoggedUserService));
-            if (loggedUserServiceDescriptor != null)
-                services.Remove(loggedUserServiceDescriptor);
 
-            var mockLoggedUser = new Moq.Mock<IOrder.Application.Services.LoggedUser.ILoggedUserService>();
-            mockLoggedUser.Setup(x => x.GetUserId()).Returns("test-user-123");
-            services.AddScoped(x => mockLoggedUser.Object);
+
+            services.AddAuthentication("Test")
+                    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
+                        "Test", options => { });
+            
+            services.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = "Test";
+                options.DefaultChallengeScheme = "Test";
+            });
 
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
             services.AddDbContext<AppDbContext>(options =>

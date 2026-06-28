@@ -36,11 +36,36 @@ public class UpdateOpeningHourUseCase : IUpdateOpeningHourUseCase
 
         await Validate(request);
 
-        var newHours = request.OpeningHours.Adapt<ICollection<OpeningHour>>();
-        store.OpeningHours.Clear();
+        // Remove hours that are not in the new request
+        var newDays = request.OpeningHours.Select(h => h.DayOfWeek).ToList();
+        var hoursToRemove = store.OpeningHours.Where(h => !newDays.Contains(h.DayOfWeek)).ToList();
+        foreach (var h in hoursToRemove)
+        {
+            store.OpeningHours.Remove(h);
+            _writeOnlyRepository.DeleteOpeningHour(h); // We'll add this method
+        }
 
-        foreach (var hours in newHours)
-            store.OpeningHours.Add(hours);
+        foreach (var reqHour in request.OpeningHours)
+        {
+            var existing = store.OpeningHours.FirstOrDefault(h => h.DayOfWeek == reqHour.DayOfWeek);
+            if (existing != null)
+            {
+                existing.OpenHour = reqHour.OpenHour;
+                existing.CloseHour = reqHour.CloseHour;
+            }
+            else
+            {
+                var newHour = new OpeningHour
+                {
+                    DayOfWeek = reqHour.DayOfWeek.Value,
+                    OpenHour = reqHour.OpenHour,
+                    CloseHour = reqHour.CloseHour,
+                    StoreId = storeId
+                };
+                store.OpeningHours.Add(newHour);
+                _writeOnlyRepository.AddOpeningHour(newHour);
+            }
+        }
 
         await _uof.Commit();
 
