@@ -24,6 +24,16 @@ internal class AppDbContext  : DbContext
             .Property(p => p.UnitOfMeasure)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Category>()
+            .HasOne(c => c.Store)
+            .WithMany()
+            .HasForeignKey(c => c.StoreId);
+
+        modelBuilder.Entity<Store>()
+            .HasOne(s => s.Category)
+            .WithMany(sc => sc.Stores)
+            .HasForeignKey(s => s.CategoryId);
+
         // Seed Store Categories
         modelBuilder.Entity<StoreCategory>().HasData(
             new StoreCategory { Id = Guid.NewGuid(), Name = "Lanches", IconUrl = "" },
