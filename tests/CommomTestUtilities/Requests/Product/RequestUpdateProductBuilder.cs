@@ -1,17 +1,18 @@
 ﻿using Bogus;
-using IOrder.Communication.Enums;
 using IOrder.Communication.Request;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace CommomTestUtilities.Requests;
+namespace CommomTestUtilities.Requests.Product;
 
-public class RequestCreateProductBuilder
+public class RequestUpdateProductBuilder
 {
-    public static ProductRequestDto Build()
+    public static UpdateProductRequestDto Build()
     {
-        return new Faker<ProductRequestDto>()
+        return new Faker<UpdateProductRequestDto>()
             .RuleFor(product => product.Name, (f) => f.Commerce.ProductName())
             .RuleFor(product => product.Price, (f) => decimal.Parse(f.Commerce.Price()))
-            .RuleFor(product => product.UnitOfMeasure, (f) => f.PickRandom<UnitOfMeasure>())
             .RuleFor(product => product.Description, (f) => f.Commerce.ProductDescription())
             .RuleFor(product => product.ImageUrl, (f) => f.Image.PicsumUrl(800, 600))
             .RuleFor(product => product.Customizable, (f) => f.Random.Bool());
@@ -19,3 +20,4 @@ public class RequestCreateProductBuilder
 
     }
 }
+

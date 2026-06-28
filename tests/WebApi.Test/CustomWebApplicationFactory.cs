@@ -59,10 +59,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         await dbContext.Database.EnsureCreatedAsync();
 
 
+        var category = await dbContext.StoreCategories.FirstOrDefaultAsync();
+        
         var store = new IOrder.Domain.Entities.Store { 
             Name = "Test Store", 
             UserId = "test-user-123",
-            ImageUrl = "test.png"
+            ImageUrl = "test.png",
+            CategoryId = category!.Id
         };
         await dbContext.Stores.AddAsync(store);
 

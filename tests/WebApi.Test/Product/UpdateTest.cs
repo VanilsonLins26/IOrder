@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Requests;
+﻿using CommomTestUtilities.Requests.Product;
 using IOrder.Communication.Response;
 using IOrder.Exceptions;
 using IOrder.infrastructure.DataAccess;

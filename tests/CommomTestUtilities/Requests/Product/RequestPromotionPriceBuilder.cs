@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CommomTestUtilities.Requests;
+namespace CommomTestUtilities.Requests.Product;
 
 public class RequestPromotionPriceBuilder
 {

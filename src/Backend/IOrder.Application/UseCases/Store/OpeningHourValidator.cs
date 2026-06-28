@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using IOrder.Communication.Request;
 using IOrder.Domain.Entities;
 using IOrder.Exceptions;
@@ -13,7 +13,8 @@ public class OpeningHourValidator : AbstractValidator<OpeningHourRequestDto>
     public OpeningHourValidator()
     {
         RuleFor(openingHour => openingHour.DayOfWeek).NotNull().WithMessage(ResourceMessagesException.DAY_OF_WEEK_EMPTY)
-                                                     .GreaterThanOrEqualTo(0).LessThan(7).WithMessage(ResourceMessagesException.DAY_OF_WEEK_INVALID);
+                                                     .GreaterThanOrEqualTo(0).WithMessage(ResourceMessagesException.DAY_OF_WEEK_INVALID)
+                                                     .LessThan(7).WithMessage(ResourceMessagesException.DAY_OF_WEEK_INVALID);
       
     }
 }

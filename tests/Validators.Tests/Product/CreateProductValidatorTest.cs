@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Requests;
+﻿using CommomTestUtilities.Requests.Product;
 using IOrder.Application.UseCases.Product;
 using IOrder.Exceptions;
 using Shouldly;

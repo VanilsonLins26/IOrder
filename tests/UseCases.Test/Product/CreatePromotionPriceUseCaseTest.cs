@@ -1,5 +1,5 @@
 using CommomTestUtilities.Repositories;
-using CommomTestUtilities.Requests;
+using CommomTestUtilities.Requests.Product;
 using IOrder.Application.UseCases.Product;
 using IOrder.Communication.Request;
 using IOrder.Exceptions;
