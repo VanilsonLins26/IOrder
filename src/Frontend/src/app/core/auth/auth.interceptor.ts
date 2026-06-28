@@ -1,29 +1,39 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { switchMap, catchError, of } from 'rxjs';
+import { switchMap, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 
-  // Only add auth header for API requests
+  // Only intercept requests going to our API
   if (!req.url.startsWith(environment.apiUrl)) {
     return next(req);
   }
 
-  return auth.getAccessTokenSilently().pipe(
-    switchMap((token) => {
-      const cloned = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return next(cloned);
-    }),
-    catchError(() => {
-      // If token retrieval fails, proceed without auth header
-      return next(req);
+  // Check authentication state FIRST (synchronously via snapshot).
+  // Only fetch a token if the user is already authenticated.
+  // This avoids the ~60s Auth0 silent-auth timeout on public endpoints.
+  return auth.isAuthenticated$.pipe(
+    take(1),
+    switchMap((isAuthenticated) => {
+      if (!isAuthenticated) {
+        // User is not logged in → send request without Authorization header
+        return next(req);
+      }
+
+      // User is logged in → attach the JWT Bearer token
+      return auth.getAccessTokenSilently().pipe(
+        take(1),
+        switchMap((token) =>
+          next(
+            req.clone({
+              setHeaders: { Authorization: `Bearer ${token}` },
+            }),
+          ),
+        ),
+      );
     }),
   );
 };
