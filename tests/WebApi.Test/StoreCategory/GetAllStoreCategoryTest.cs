@@ -19,15 +19,13 @@ public class GetAllStoreCategoryTest : IOrderClassFixture
     [Fact]
     public async Task Success()
     {
-        // StoreCategory uses AllowAnonymous essentially (Controller has no [Authorize])
+
         var response = await DoGet(method);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var responseData = await response.Content.ReadFromJsonAsync<IList<StoreCategoryResponseDto>>();
         
-        // Since database may or may not be seeded with store categories depending on the factory, 
-        // we just assert it returns a valid list.
         responseData.ShouldNotBeNull();
     }
 }
