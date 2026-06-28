@@ -1,6 +1,10 @@
 trigger:
 - develop
 
+# Variáveis globais para padronizar
+variables:
+  buildConfiguration: 'Release'
+
 pool:
   vmImage: ubuntu-latest
 
@@ -17,16 +21,22 @@ stages:
         version: 10.x
 
     - task: DotNetCoreCLI@2
+      displayName: 'Restore packages'
+      inputs:
+        command: 'restore'
+
+    - task: DotNetCoreCLI@2
       displayName: 'Build' 
       inputs:
         command: build
+        arguments: '--configuration $(buildConfiguration) --no-restore' # Adicionado
 
     - task: DotNetCoreCLI@2
       displayName: 'Tests'
       inputs:
         command: test   
-        publishTestResults:  true
-        arguments: '--settings coverlet.runsettings'
+        publishTestResults: true
+        arguments: '--configuration $(buildConfiguration) --no-build --settings coverlet.runsettings'
 
     - task: PublishCodeCoverageResults@2
       displayName: 'Publish Code Coverage'
