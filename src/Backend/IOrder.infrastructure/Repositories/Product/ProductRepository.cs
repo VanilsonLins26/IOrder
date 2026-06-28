@@ -66,6 +66,9 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         if (!string.IsNullOrWhiteSpace(productFilter.Name))
             query = query.Where(p => p.Name.Contains(productFilter.Name));
 
+        if (productFilter.StoreId.HasValue)
+            query = query.Where(p => p.StoreId == productFilter.StoreId.Value);
+
         var property = productFilter.OrderBy?.ToLower().Trim();
 
         query = property switch

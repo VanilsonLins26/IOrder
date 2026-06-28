@@ -1,0 +1,23 @@
+<div class="page-container">
+  @if (loadingStore()) {
+    <div class="store-skeleton">
+      <app-loading-skeleton height="280px" border-radius="var(--radius-2xl)" />
+    </div>
+  } @else if (store()) {
+    <app-store-info-header [store]="store()!" />
+
+    <div class="store-products-section">
+      <app-product-grid 
+        [products]="products()"
+        [isLoading]="loadingProducts()"
+        (addToCart)="onAddToCart($event)"
+      />
+    </div>
+  } @else {
+    <!-- Error or not found state -->
+    <div class="store-not-found">
+      <h1>Loja não encontrada</h1>
+      <p>A loja que você procura não existe ou está indisponível.</p>
+    </div>
+  }
+</div>

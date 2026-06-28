@@ -1,0 +1,62 @@
+<div class="filters">
+  <!-- Search -->
+  <div class="filters__search">
+    <span class="filters__search-icon">🔍</span>
+    <input
+      type="search"
+      class="filters__search-input"
+      placeholder="Buscar lojas..."
+      [value]="searchQuery()"
+      (input)="onSearch($event)"
+      aria-label="Buscar lojas"
+    />
+  </div>
+
+  <!-- Categories -->
+  <div class="filters__categories">
+    <div 
+      class="categories__scroll" 
+      role="list"
+      #scrollContainer
+      (mousedown)="onMouseDown($event)"
+      (mouseleave)="onMouseLeave()"
+      (mouseup)="onMouseUp()"
+      (mousemove)="onMouseMove($event)"
+    >
+      <!-- All -->
+      <button
+        class="category-chip"
+        [class.category-chip--active]="selectedCategoryId() === null"
+        (click)="categorySelect.emit(null)"
+        role="listitem"
+      >
+        <span class="category-chip__icon">🏪</span>
+        <span>Todas</span>
+      </button>
+
+      @if (loadingCategories()) {
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="category-chip category-chip--skeleton">
+            <app-loading-skeleton width="80px" height="16px" />
+          </div>
+        }
+      } @else {
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="category-chip"
+            [class.category-chip--active]="selectedCategoryId() === cat.id"
+            (click)="categorySelect.emit(cat.id)"
+            role="listitem"
+          >
+            @if (cat.imageUrl) {
+              <img [src]="cat.imageUrl" [alt]="cat.name" class="category-chip__img" width="24" height="24" />
+            } @else {
+              <span class="category-chip__icon">🏷️</span>
+            }
+            <span>{{ cat.name }}</span>
+          </button>
+        }
+      }
+    </div>
+  </div>
+</div>

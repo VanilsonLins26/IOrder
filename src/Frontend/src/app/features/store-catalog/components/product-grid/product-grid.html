@@ -1,0 +1,40 @@
+<div class="product-grid-container">
+  <div class="product-grid-header">
+    <h2 class="product-grid-title">Produtos</h2>
+  </div>
+
+  @if (isLoading()) {
+    <div class="products-grid">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="product-skeleton">
+          <app-loading-skeleton height="160px" border-radius="var(--radius-xl) var(--radius-xl) 0 0" />
+          <div class="product-skeleton__body">
+            <app-loading-skeleton height="20px" width="80%" />
+            <app-loading-skeleton height="14px" width="100%" />
+            <app-loading-skeleton height="14px" width="60%" />
+            
+            <div class="product-skeleton__footer">
+              <app-loading-skeleton height="24px" width="40%" />
+              <app-loading-skeleton height="32px" width="32px" border-radius="50%" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (products().length === 0) {
+    <app-empty-state
+      icon="🛍️"
+      title="Nenhum produto encontrado"
+      description="Esta loja ainda não possui produtos cadastrados ou disponíveis."
+    />
+  } @else {
+    <div class="products-grid">
+      @for (product of products(); track product.id) {
+        <app-product-card 
+          [product]="product"
+          (addToCart)="addToCart.emit($event)"
+        />
+      }
+    </div>
+  }
+</div>

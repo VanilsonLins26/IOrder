@@ -4,7 +4,7 @@ export interface StoreRequest {
   imageUrl: string;
   address: AddressRequest;
   openingHours: OpeningHourRequest[];
-  storeCategoryId: string;
+  categoryId: string;
 }
 
 export interface StoreResponse {
@@ -16,7 +16,7 @@ export interface StoreResponse {
   openingHours: OpeningHourResponse[];
   userId: string;
   isOpen: boolean;
-  storeCategoryId: string;
+  categoryId: string;
 }
 
 export interface UpdateStoreRequest {
