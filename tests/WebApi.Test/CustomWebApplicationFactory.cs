@@ -16,6 +16,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 {
     private readonly MySqlContainer _mySqlContainer;
     public IEnumerable<IOrder.Domain.Entities.Product> ProductList { get; private set; } = [];
+    public IEnumerable<IOrder.Domain.Entities.Category> CategoryList { get; private set; } = [];
 
     public CustomWebApplicationFactory()
     {
@@ -83,8 +84,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         product3.StoreId = store.Id;
 
         ProductList = [product1, product2, product3];
-
         await dbContext.Products.AddRangeAsync(product1, product2, product3);
+
+        var category1 = CategoryBuilder.Build(store.Id);
+        var category2 = CategoryBuilder.Build(store.Id);
+        CategoryList = [category1, category2];
+        await dbContext.Categories.AddRangeAsync(category1, category2);
         await dbContext.SaveChangesAsync();
     }
 

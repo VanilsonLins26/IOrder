@@ -1,4 +1,4 @@
-﻿using CommomTestUtilities.Requests;
+using CommomTestUtilities.Requests;
 using IOrder.Communication.Request;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories.Product;
@@ -33,6 +33,11 @@ public class ProductWriteOnlyRepositoryBuilder
     {
         var product = new Product { Id = productId, Price = 50000m };
         _repository.Setup(repository => repository.GetByIdTracking(productId)).ReturnsAsync(product);
+    }
+
+    public void GetByIdsTracking(IList<Guid> productIds, IList<Product> products)
+    {
+        _repository.Setup(repository => repository.GetByIdsTracking(productIds)).ReturnsAsync(products);
     }
 
 }

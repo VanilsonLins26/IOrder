@@ -39,7 +39,7 @@ public class UpdateCategoryUseCase : IUpdateCategoryUseCase
         await Validate(request, category);
 
         category.Name = request.Name;
-        category.Position = request.Position;
+        category.Position = request.Position.Value;
 
         await _uof.Commit();
 
