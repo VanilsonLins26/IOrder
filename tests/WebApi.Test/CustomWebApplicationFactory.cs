@@ -41,7 +41,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             services.AddAuthentication("Test")
                     .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
                         "Test", options => { });
-            
+
             services.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(options =>
             {
                 options.DefaultAuthenticateScheme = "Test";
@@ -63,11 +63,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
         await dbContext.Database.EnsureCreatedAsync();
 
-
         var category = await dbContext.StoreCategories.FirstOrDefaultAsync();
-        
-        var store = new IOrder.Domain.Entities.Store { 
-            Name = "Test Store", 
+
+        var store = new IOrder.Domain.Entities.Store
+        {
+            Name = "Test Store",
             UserId = "test-user-123",
             ImageUrl = "test.png",
             CategoryId = category!.Id
@@ -76,10 +76,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
         IOrder.Domain.Entities.Product product1 = ProductBuilder.Build();
         product1.StoreId = store.Id;
-        
+
         IOrder.Domain.Entities.Product product2 = ProductBuilder.Build();
         product2.StoreId = store.Id;
-        
+
         IOrder.Domain.Entities.Product product3 = ProductBuilder.Build();
         product3.StoreId = store.Id;
 

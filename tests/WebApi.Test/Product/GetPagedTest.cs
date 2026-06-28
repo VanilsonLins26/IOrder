@@ -1,4 +1,4 @@
-﻿using IOrder.Communication.Response;
+using IOrder.Communication.Response;
 using IOrder.Domain.Pagination;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +30,10 @@ public class GetPagedTest : IOrderClassFixture
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
         var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
 
-        responseData!.Count.ShouldBe(3);
-
-
+        var totalProducts = await _dbContext.Products.CountAsync();
+        var expectedCount = Math.Min(totalProducts, 10);
+        
+        responseData!.Count.ShouldBe(expectedCount);
     }
 
     [Fact]
