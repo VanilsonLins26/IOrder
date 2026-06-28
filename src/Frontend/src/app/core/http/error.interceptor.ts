@@ -1,0 +1,71 @@
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+import { ToastService } from '../services/toast.service';
+import type { ResponseError } from '../models';
+
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const toast = inject(ToastService);
+  const router = inject(Router);
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      switch (error.status) {
+        case 0:
+          toast.error(
+            'Sem conexão com o servidor. Verifique sua internet.',
+          );
+          break;
+
+        case 400: {
+          const body = error.error as ResponseError;
+          if (body?.errors?.length) {
+            body.errors.forEach((msg) => toast.error(msg));
+          } else {
+            toast.error('Dados inválidos. Verifique os campos e tente novamente.');
+          }
+          break;
+        }
+
+        case 401:
+          toast.warning('Sessão expirada. Faça login novamente.');
+          break;
+
+        case 403:
+          toast.error('Você não tem permissão para realizar esta ação.');
+          break;
+
+        case 404:
+          toast.error('Recurso não encontrado.');
+          break;
+
+        case 409:
+          toast.error('Conflito: este recurso já existe.');
+          break;
+
+        case 422: {
+          const body422 = error.error as ResponseError;
+          if (body422?.errors?.length) {
+            body422.errors.forEach((msg) => toast.error(msg));
+          } else {
+            toast.error('Erro de validação.');
+          }
+          break;
+        }
+
+        case 500:
+          toast.error(
+            'Erro interno do servidor. Tente novamente mais tarde.',
+          );
+          break;
+
+        default:
+          toast.error('Ocorreu um erro inesperado.');
+          break;
+      }
+
+      return throwError(() => error);
+    }),
+  );
+};
