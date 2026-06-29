@@ -1,0 +1,165 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div class="admin-header-main">
+      <div>
+        <h1 class="admin-title">Produtos</h1>
+        <p class="admin-subtitle">Gerencie o seu catálogo de produtos e ative promoções</p>
+      </div>
+      <button class="btn btn--primary" (click)="openCreateProduct()">
+        + Novo Produto
+      </button>
+    </div>
+  </header>
+
+  @if (adminStore.loading()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="60px" />
+      <app-loading-skeleton height="60px" />
+      <app-loading-skeleton height="60px" />
+    </div>
+  } @else if (adminStore.products().length === 0) {
+    <div class="empty-list">
+      <span class="empty-icon">🍔</span>
+      <h3>Nenhum produto cadastrado</h3>
+      <p>Crie seu primeiro produto para começar a vender.</p>
+      <button class="btn btn--outline" (click)="openCreateProduct()">Criar Produto</button>
+    </div>
+  } @else {
+    <div class="products-grid">
+      @for (prod of adminStore.products(); track prod.id) {
+        <div class="product-row">
+          <div class="product-row-image">
+            @if (prod.imageUrl) {
+              <img [src]="prod.imageUrl" [alt]="prod.name" />
+            } @else {
+              <div class="product-img-placeholder">🍽️</div>
+            }
+          </div>
+          
+          <div class="product-row-info">
+            <span class="product-name">{{ prod.name }}</span>
+            <span class="product-price">
+              @if (prod.currentPromotionalPrice) {
+                <span class="old-price">{{ prod.price | currency:'BRL' }}</span>
+                <span class="promo-price">{{ prod.currentPromotionalPrice | currency:'BRL' }}</span>
+              } @else {
+                {{ prod.price | currency:'BRL' }}
+              }
+            </span>
+          </div>
+
+          <div class="product-actions">
+            <!-- Promo Button -->
+            <button class="btn-icon btn-icon--promo" (click)="openPromoModal(prod)" title="Ativar Promoção">
+              🔥
+            </button>
+            <button class="btn-icon" (click)="openEditProduct(prod)" title="Editar Produto">
+              ✏️
+            </button>
+            <button class="btn-icon btn-icon--danger" (click)="deleteProduct(prod.id)" title="Excluir Produto">
+              🗑️
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal Produto -->
+<app-modal
+  [isOpen]="isProductModalOpen()"
+  [title]="editingProduct() ? 'Editar Produto' : 'Novo Produto'"
+  (close)="closeProductModal()"
+>
+  <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="settings-form">
+    <div class="form-group">
+      <label for="prodName">Nome do Produto</label>
+      <input id="prodName" type="text" formControlName="name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label for="prodDesc">Descrição</label>
+      <textarea id="prodDesc" formControlName="description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group flex-2">
+        <label for="prodPrice">Preço (R$)</label>
+        <input id="prodPrice" type="number" step="0.01" formControlName="price" class="form-control" />
+      </div>
+      <div class="form-group flex-2">
+        <label for="prodUom">Unidade</label>
+        <select id="prodUom" formControlName="unitOfMeasure" class="form-control">
+          <option [value]="UnitOfMeasure.Unit">Unidade</option>
+          <option [value]="UnitOfMeasure.Kg">Kg</option>
+          <option [value]="UnitOfMeasure.Gram">Grama (g)</option>
+          <option [value]="UnitOfMeasure.Liter">Litro (L)</option>
+          <option [value]="UnitOfMeasure.Ml">Mililitro (ml)</option>
+          <option [value]="UnitOfMeasure.Meter">Metro (m)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="prodCategory">Categoria</label>
+      <select id="prodCategory" formControlName="categoryId" class="form-control">
+        <option value="">Nenhuma / Sem categoria</option>
+        @for (cat of adminStore.categories(); track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="prodImage">URL da Imagem</label>
+      <input id="prodImage" type="url" formControlName="imageUrl" class="form-control" placeholder="https://..." />
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn--outline" (click)="closeProductModal()">Cancelar</button>
+      <button type="submit" class="btn btn--primary" [disabled]="productForm.invalid || isSaving()">
+        {{ isSaving() ? 'Salvando...' : 'Salvar Produto' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
+
+
+<!-- Modal Promoção -->
+<app-modal
+  [isOpen]="isPromoModalOpen()"
+  title="Ativar Promoção"
+  (close)="closePromoModal()"
+>
+  <form [formGroup]="promoForm" (ngSubmit)="savePromo()" class="settings-form">
+    
+    <div class="promo-header">
+      <span class="promo-title">🔥 {{ editingProduct()?.name }}</span>
+      <span class="promo-original">Preço original: {{ editingProduct()?.price | currency:'BRL' }}</span>
+    </div>
+
+    <div class="form-group">
+      <label for="promoPrice">Preço Promocional (R$)</label>
+      <input id="promoPrice" type="number" step="0.01" formControlName="price" class="form-control" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group flex-2">
+        <label for="promoStart">Início</label>
+        <input id="promoStart" type="datetime-local" formControlName="initialTime" class="form-control" />
+      </div>
+      <div class="form-group flex-2">
+        <label for="promoEnd">Fim</label>
+        <input id="promoEnd" type="datetime-local" formControlName="finalTime" class="form-control" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn--outline" (click)="closePromoModal()">Cancelar</button>
+      <button type="submit" class="btn btn--promo" [disabled]="promoForm.invalid || isSaving()">
+        {{ isSaving() ? 'Ativando...' : 'Ativar Promoção' }}
+      </button>
+    </div>
+  </form>
+</app-modal>

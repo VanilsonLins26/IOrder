@@ -1,0 +1,168 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <h1 class="admin-title">Configurações da Loja</h1>
+    <p class="admin-subtitle">Atualize as informações, endereço e horários de funcionamento</p>
+  </header>
+
+  @if (adminStore.loading()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="48px" />
+      <app-loading-skeleton height="300px" />
+    </div>
+  } @else {
+    <div class="settings-container">
+      <!-- TABS -->
+      <nav class="settings-tabs" role="tablist">
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'general'" 
+          (click)="setTab('general')">
+          ⚙️ Geral
+        </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'address'" 
+          (click)="setTab('address')">
+          📍 Endereço
+        </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'hours'" 
+          (click)="setTab('hours')">
+          🕒 Horários
+        </button>
+      </nav>
+
+      <div class="settings-content">
+        <!-- Feedback de Sucesso -->
+        @if (saveSuccess()) {
+          <div class="alert alert--success">
+            Alterações salvas com sucesso!
+          </div>
+        }
+
+        <!-- TAB GERAL -->
+        @if (activeTab() === 'general') {
+          <form [formGroup]="generalForm" (ngSubmit)="saveGeneral()" class="settings-form">
+            
+            <div class="form-group">
+              <label for="storeName">Nome da Loja</label>
+              <input id="storeName" type="text" formControlName="name" class="form-control" placeholder="Nome do seu negócio" />
+            </div>
+
+            <div class="form-group">
+              <label for="storeAbout">Sobre (Descrição)</label>
+              <textarea id="storeAbout" formControlName="about" class="form-control" rows="4" placeholder="Descreva sua loja, o que você vende..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="storeImageUrl">URL da Imagem de Perfil / Capa</label>
+              <input id="storeImageUrl" type="url" formControlName="imageUrl" class="form-control" placeholder="https://exemplo.com/imagem.png" />
+            </div>
+
+            <!-- Previews image if valid url -->
+            @if (generalForm.value.imageUrl) {
+              <div class="image-preview">
+                <img [src]="generalForm.value.imageUrl" alt="Preview da Loja" onerror="this.style.display='none'" />
+              </div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="generalForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Geral' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB ENDEREÇO -->
+        @if (activeTab() === 'address') {
+          <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="settings-form">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="zipCode">CEP</label>
+                <input id="zipCode" type="text" formControlName="zipCode" class="form-control" />
+              </div>
+              <div class="form-group flex-2">
+                <label for="street">Rua/Logradouro</label>
+                <input id="street" type="text" formControlName="street" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="number">Número</label>
+                <input id="number" type="text" formControlName="number" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="complement">Complemento</label>
+                <input id="complement" type="text" formControlName="complement" class="form-control" />
+              </div>
+              <div class="form-group flex-2">
+                <label for="neighborhood">Bairro</label>
+                <input id="neighborhood" type="text" formControlName="neighborhood" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="city">Cidade</label>
+                <input id="city" type="text" formControlName="city" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="state">UF</label>
+                <input id="state" type="text" formControlName="state" class="form-control" maxLength="2" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="addressForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Endereço' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB HORÁRIOS -->
+        @if (activeTab() === 'hours') {
+          <form [formGroup]="hoursForm" (ngSubmit)="saveHours()" class="settings-form">
+            <div formArrayName="openingHours" class="hours-list">
+              @for (control of hoursControls; track i; let i = $index) {
+                <div [formGroupName]="i" class="hour-row" [class.is-closed]="control.value.isClosed">
+                  <div class="hour-day">
+                    {{ getDayName(i) }}
+                  </div>
+                  
+                  <div class="hour-inputs" *ngIf="!control.value.isClosed">
+                    <input type="time" formControlName="openHour" class="form-control time-input" />
+                    <span>até</span>
+                    <input type="time" formControlName="closeHour" class="form-control time-input" />
+                  </div>
+
+                  <div class="hour-closed-msg" *ngIf="control.value.isClosed">
+                    Fechado
+                  </div>
+
+                  <div class="hour-toggle">
+                    <label class="toggle-switch">
+                      <input type="checkbox" formControlName="isClosed" />
+                      <span class="toggle-slider"></span>
+                      Fechado
+                    </label>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="hoursForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Horários' }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  }
+</div>

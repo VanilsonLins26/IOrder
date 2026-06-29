@@ -35,7 +35,6 @@ export class StoreFiltersComponent {
   onMouseDown(e: MouseEvent) {
     this.isDragging = true;
     const el = this.scrollContainer.nativeElement;
-    el.classList.add('categories__scroll--dragging');
     this.startX = e.pageX - el.offsetLeft;
     this.scrollLeft = el.scrollLeft;
   }
@@ -54,6 +53,7 @@ export class StoreFiltersComponent {
     if (!this.isDragging) return;
     e.preventDefault();
     const el = this.scrollContainer.nativeElement;
+    el.classList.add('categories__scroll--dragging');
     const x = e.pageX - el.offsetLeft;
     const walk = (x - this.startX) * 2; // Scroll-fast
     el.scrollLeft = this.scrollLeft - walk;

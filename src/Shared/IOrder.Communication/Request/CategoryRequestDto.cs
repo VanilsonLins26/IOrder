@@ -8,4 +8,5 @@ public class CategoryRequestDto
 {
     public string Name { get; set; } = string.Empty;
     public int? Position { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
 }

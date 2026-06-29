@@ -2,8 +2,8 @@ import { ProductResponse } from './product.model';
 
 export interface CategoryRequest {
   name: string;
-  storeId: string;
   position: number;
+  imageUrl?: string;
 }
 
 export interface CategoryResponse {
@@ -11,6 +11,7 @@ export interface CategoryResponse {
   name: string;
   storeId: string;
   position: number;
+  imageUrl?: string;
   products: ProductResponse[];
 }
 
