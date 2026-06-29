@@ -244,6 +244,22 @@ textarea.form-control {
 .time-input {
   width: auto;
   min-width: 110px;
+  
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  :host-context([data-theme='dark']) & {
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(0.8);
+    }
+  }
 }
 
 .hour-closed-msg {

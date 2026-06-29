@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard, Roles } from './core/auth/role.guard';
+import { storeGuard } from './core/guards/store.guard';
 
 export const routes: Routes = [
+
   // Public routes — with Navbar + Footer
   {
     path: '',
@@ -35,23 +37,27 @@ export const routes: Routes = [
     ],
   },
 
-  // Admin routes — ShopKeeper only
   {
     path: 'admin',
-    loadComponent: () =>
-      import('./layouts/admin-layout/admin-layout.component').then(
-        (m) => m.AdminLayoutComponent,
-      ),
     canActivate: [authGuard, roleGuard(Roles.ShopKeeper)],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./features/admin/pages/dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent,
-          ),
+        path: 'setup-store',
+        loadComponent: () => import('./features/admin/pages/setup-store/setup-store.component').then(m => m.SetupStoreComponent)
       },
+      {
+        path: '',
+        loadComponent: () => import('./layouts/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+        canActivate: [storeGuard],
+        children: [
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/admin/pages/dashboard/dashboard.component').then(
+                (m) => m.DashboardComponent,
+              ),
+          },
       {
         path: 'products',
         loadComponent: () =>
@@ -73,7 +79,9 @@ export const routes: Routes = [
             (m) => m.StoreSettingsComponent,
           ),
       },
-    ],
+        ],
+      }
+    ]
   },
 
   // Fallback

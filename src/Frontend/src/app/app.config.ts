@@ -5,8 +5,9 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideAuth0 } from '@auth0/auth0-angular';
 
+
+import { provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/auth/auth.interceptor';
@@ -30,6 +31,7 @@ export const appConfig: ApplicationConfig = {
       httpInterceptor: {
         allowedList: [`${environment.apiUrl}/*`],
       },
-    }),
-  ],
+      useRefreshTokens: true,
+      cacheLocation: 'memory',
+    }),  ],
 };

@@ -37,7 +37,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 404:
-          toast.error('Recurso não encontrado.');
+          // Ignore 404 for mystore, the store guard will handle it
+          if (!req.url.toLowerCase().includes('mystore')) {
+            toast.error('Recurso não encontrado.');
+          }
           break;
 
         case 409:

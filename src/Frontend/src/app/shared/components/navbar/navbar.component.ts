@@ -35,15 +35,45 @@ import { ThemeService } from '../../../core/services/theme.service';
 
           @if (auth.isAuthenticated$ | async) {
             @if (auth.user$ | async; as user) {
-              <div class="navbar__user">
+              <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">
                 @if (user.picture) {
                   <img [src]="user.picture" [alt]="user.name || 'Avatar'"
                        class="navbar__avatar" width="32" height="32" />
                 }
                 <span class="navbar__user-name">{{ user.name }}</span>
+                <span class="navbar__user-chevron">▼</span>
+                
+                @if (dropdownOpen()) {
+                  <div class="navbar__dropdown">
+                    <div class="navbar__dropdown-header">
+                      <span class="navbar__dropdown-name">{{ user.name }}</span>
+                      <span class="navbar__dropdown-email">{{ user.email }}</span>
+                    </div>
+                    
+                    <div class="navbar__dropdown-body">
+                      @if (hasRole(user, 'ShopKeeper')) {
+                        <a routerLink="/admin" class="navbar__dropdown-item" (click)="closeDropdown()">
+                          <span class="navbar__dropdown-icon">🏪</span>
+                          Painel Lojista
+                        </a>
+                      } @else {
+                        <a routerLink="/become-partner" class="navbar__dropdown-item" (click)="closeDropdown()">
+                          <span class="navbar__dropdown-icon">💼</span>
+                          Venda no IOrder
+                        </a>
+                      }
+                    </div>
+                    
+                    <div class="navbar__dropdown-footer">
+                      <button class="navbar__dropdown-item navbar__dropdown-item--danger" (click)="logout()">
+                        <span class="navbar__dropdown-icon">🚪</span>
+                        Sair da conta
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
             }
-            <button class="navbar__btn navbar__btn--outline" (click)="logout()">Sair</button>
           } @else {
             <button class="navbar__btn navbar__btn--primary" (click)="login()">Entrar</button>
           }
@@ -177,6 +207,18 @@ import { ThemeService } from '../../../core/services/theme.service';
       display: none;
       align-items: center;
       gap: var(--space-2);
+      padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      position: relative;
+      transition: background var(--transition-fast);
+      border: 1px solid transparent;
+
+      &:hover, &:focus-visible {
+        background: var(--surface-secondary);
+        border-color: var(--border-color);
+      }
+      
       @media (min-width: 768px) { display: flex; }
     }
 
@@ -196,6 +238,105 @@ import { ThemeService } from '../../../core/services/theme.service';
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    
+    .navbar__user-chevron {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    
+    .navbar__dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 240px;
+      background: var(--surface-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+      animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: top right;
+      z-index: 100;
+      
+      :host-context([data-theme='dark']) & {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+    }
+    
+    .navbar__dropdown-header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .navbar__dropdown-name {
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+    }
+    
+    .navbar__dropdown-email {
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .navbar__dropdown-body {
+      padding: var(--space-2);
+    }
+    
+    .navbar__dropdown-footer {
+      padding: var(--space-2);
+      border-top: 1px solid var(--border-color);
+      background: var(--surface-secondary);
+    }
+    
+    .navbar__dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      width: 100%;
+      text-align: left;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-secondary);
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      
+      &:hover {
+        background: var(--color-primary-50);
+        color: var(--color-primary-600);
+        
+        :host-context([data-theme='dark']) & {
+          background: rgba(249, 115, 22, 0.1);
+          color: var(--color-primary-400);
+        }
+      }
+      
+      &--danger {
+        &:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+        }
+      }
+    }
+    
+    .navbar__dropdown-icon {
+      font-size: 1.1rem;
+    }
+    
+    @keyframes dropdownFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .navbar__btn {
@@ -287,9 +428,18 @@ export class NavbarComponent {
   protected readonly auth         = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
   protected readonly mobileMenuOpen = signal(false);
+  protected readonly dropdownOpen = signal(false);
 
   login():  void { this.auth.loginWithRedirect(); }
   logout(): void { this.auth.logout({ logoutParams: { returnTo: window.location.origin } }); }
   toggleMobileMenu(): void { this.mobileMenuOpen.update((v) => !v); }
   closeMobileMenu():  void { this.mobileMenuOpen.set(false); }
+  
+  toggleDropdown(): void { this.dropdownOpen.update(v => !v); }
+  closeDropdown(): void { this.dropdownOpen.set(false); }
+
+  hasRole(user: any, role: string): boolean {
+    const roles: string[] = user?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
+    return roles.includes(role);
+  }
 }

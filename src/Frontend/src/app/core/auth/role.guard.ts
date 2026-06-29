@@ -11,7 +11,7 @@ export function roleGuard(requiredRole: string): CanActivateFn {
     return auth.user$.pipe(
       map((user) => {
         const roles: string[] =
-          user?.['https://iorder.com/roles'] ?? [];
+          user?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
 
         if (roles.includes(requiredRole)) {
           return true;
