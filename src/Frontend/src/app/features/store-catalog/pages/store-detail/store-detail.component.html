@@ -7,11 +7,20 @@
     <app-store-info-header [store]="store()!" />
 
     <div class="store-products-section">
-      <app-product-grid 
-        [products]="products()"
-        [isLoading]="loadingProducts()"
-        (addToCart)="onAddToCart($event)"
-      />
+      @if (loadingProducts() || loadingCategories()) {
+        <app-loading-skeleton height="200px" />
+      } @else {
+        @for (group of groupedProducts(); track group.id) {
+          <div class="category-group">
+            <h2 class="category-title">{{ group.name }}</h2>
+            <app-product-grid 
+              [products]="group.products"
+              [isLoading]="false"
+              (addToCart)="onAddToCart($event)"
+            />
+          </div>
+        }
+      }
     </div>
   } @else {
     <!-- Error or not found state -->

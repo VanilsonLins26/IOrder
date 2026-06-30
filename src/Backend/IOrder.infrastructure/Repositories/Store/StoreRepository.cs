@@ -35,7 +35,7 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
 
     public async Task<PagedList<Domain.Entities.Store>> GetAllPaged(StoreSearchQuery storeFilter)
     {
-        var query = _dbContext.Stores.Include(store => store.OpeningHours).AsNoTracking();
+        var query = _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(storeFilter.Name))
             query = query.Where(p => p.Name!.Contains(storeFilter.Name));
@@ -43,9 +43,10 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         if (storeFilter.CategoryId.HasValue)
             query = query.Where(p => p.CategoryId == storeFilter.CategoryId.Value);
 
-        var currentDay = (int)DateTime.UtcNow.DayOfWeek;
+        var brazilTime = DateTime.UtcNow.AddHours(-3);
+        var currentDay = (int)brazilTime.DayOfWeek;
         var previousDay = currentDay == 0 ? 6 : currentDay - 1;
-        var currentTime = TimeOnly.FromDateTime(DateTime.UtcNow);
+        var currentTime = TimeOnly.FromDateTime(brazilTime);
 
         var orderedQuery = query.OrderByDescending(s => s.OpeningHours.Any(oh =>
             (oh.DayOfWeek == currentDay && oh.OpenHour <= oh.CloseHour && currentTime >= oh.OpenHour && currentTime <= oh.CloseHour)
@@ -73,12 +74,12 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
 
     public async Task<Domain.Entities.Store> GetByIdAsync(Guid id)
     {
-        return await _dbContext.Stores.Include(store => store.OpeningHours).AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
+        return await _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public async Task<Domain.Entities.Store> GetByIdTracking(Guid id)
     {
-        return await _dbContext.Stores.Include(store => store.OpeningHours).FirstOrDefaultAsync(s => s.Id == id);
+        return await _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public void ClearOpeningHours(Domain.Entities.Store store)
@@ -112,6 +113,7 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return await _dbContext.Stores
             .AsNoTracking()
             .Include(s => s.OpeningHours)
+            .Include(s => s.Category)
             .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 }

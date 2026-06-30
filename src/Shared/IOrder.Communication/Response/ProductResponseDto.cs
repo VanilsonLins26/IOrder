@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,6 +15,7 @@ public class ProductResponseDto
     public bool Active { get; set; } = true;
     public string? UnitOfMeasure { get; set; }
     public bool Customizable { get; set; }
+    public Guid? CategoryId { get; set; }
     //public int StoreId { get; set; }
     // public StoreProductResponseDto Store { get; set; }
 }

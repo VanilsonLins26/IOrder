@@ -19,42 +19,35 @@ public class Store : EntityBase
 
     public bool IsOpen()
     {
-        var currentDay = (int)DateTime.UtcNow.DayOfWeek;
+        var brazilTime = DateTime.UtcNow.AddHours(-3);
+        var currentDay = (int)brazilTime.DayOfWeek;
         var previousDay = currentDay == 0 ? 6 : currentDay - 1;
-        var currentTime = TimeOnly.FromDateTime(DateTime.UtcNow);
+        var currentTime = TimeOnly.FromDateTime(brazilTime);
+
+        var yesterdayHours = OpeningHours.FirstOrDefault(oh => oh.DayOfWeek == previousDay);
+        if (yesterdayHours != null)
+        {
+            bool isOvernight = yesterdayHours.OpenHour > yesterdayHours.CloseHour;
+            if (isOvernight && currentTime <= yesterdayHours.CloseHour)
+            {
+                return true;
+            }
+        }
 
         var todayHours = OpeningHours.FirstOrDefault(oh => oh.DayOfWeek == currentDay);
-
         if (todayHours != null)
         {
-
-
             bool isOvernight = todayHours.OpenHour > todayHours.CloseHour;
-
             if (isOvernight)
             {
-
                 if (currentTime >= todayHours.OpenHour) return true;
             }
             else
             {
-
                 if (currentTime >= todayHours.OpenHour && currentTime <= todayHours.CloseHour) return true;
             }
-
-            var yesterdayHours = OpeningHours.FirstOrDefault(oh => oh.DayOfWeek == previousDay);
-            if (yesterdayHours != null)
-            {
-                isOvernight = yesterdayHours.OpenHour > yesterdayHours.CloseHour;
-
-                if (isOvernight)
-                {
-
-                    if (currentTime <= yesterdayHours.CloseHour) return true;
-                }
-            }
-
         }
+
         return false;
     }
   

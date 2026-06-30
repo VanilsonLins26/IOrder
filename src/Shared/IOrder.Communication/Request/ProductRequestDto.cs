@@ -12,4 +12,5 @@ public class ProductRequestDto
     public string? ImageUrl { get; set; }
     public UnitOfMeasure? UnitOfMeasure { get; set; }
     public bool Customizable { get; set; }
+    public Guid? CategoryId { get; set; }
 }

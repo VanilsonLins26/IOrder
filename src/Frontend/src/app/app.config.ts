@@ -27,11 +27,12 @@ export const appConfig: ApplicationConfig = {
       authorizationParams: {
         redirect_uri: environment.auth0.redirectUri,
         audience: environment.auth0.audience,
+        scope: 'openid profile email offline_access',
       },
       httpInterceptor: {
         allowedList: [`${environment.apiUrl}/*`],
       },
       useRefreshTokens: true,
-      cacheLocation: 'memory',
+      cacheLocation: 'localstorage',
     }),  ],
 };

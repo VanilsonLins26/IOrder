@@ -77,12 +77,17 @@ export class ProductManagementComponent implements OnInit {
       unitOfMeasure: product.unitOfMeasure,
       // Para o categoryId teríamos que descobrir em qual categoria o produto está.
       // O admin.store tem categories, com a lista de products.
-      categoryId: this.findCategoryForProduct(product.id)
+      categoryId: this.findCategoryForProduct(product.id, product)
     });
     this.isProductModalOpen.set(true);
   }
 
-  private findCategoryForProduct(productId: string): string {
+  private findCategoryForProduct(productId: string, product?: ProductResponse): string {
+    if (product?.categoryId) {
+      return product.categoryId;
+    }
+    
+    // Fallback just in case
     const categories = this.adminStore.categories();
     for (const cat of categories) {
       if ((cat as any).products?.some((p: any) => p.id === productId)) {
@@ -123,7 +128,7 @@ export class ProductManagementComponent implements OnInit {
       this.productApi.update(currentEditing.id, req).subscribe({
         next: (res) => {
           this.adminStore.updateProduct(res);
-          this.syncCategory(res.id, formVal.categoryId, this.findCategoryForProduct(currentEditing.id));
+          this.syncCategory(res.id, formVal.categoryId, this.findCategoryForProduct(currentEditing.id, currentEditing));
         },
         error: () => this.isSaving.set(false)
       });

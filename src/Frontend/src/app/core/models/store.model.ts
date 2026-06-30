@@ -17,6 +17,7 @@ export interface StoreResponse {
   userId: string;
   isOpen: boolean;
   categoryId: string;
+  categoryName?: string;
 }
 
 export interface UpdateStoreRequest {

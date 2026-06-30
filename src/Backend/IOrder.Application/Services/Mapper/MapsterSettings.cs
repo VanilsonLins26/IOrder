@@ -1,4 +1,4 @@
-﻿using IOrder.Communication.Response;
+using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using Mapster;
 
@@ -12,5 +12,9 @@ public static class MapsterSettings
         TypeAdapterConfig<PromotionPrice, PromotionPriceResponseDto>
             .NewConfig()
             .Map(dest => dest.Active, src => src.IsActive());
+
+        TypeAdapterConfig<Store, StoreResponseDto>
+            .NewConfig()
+            .Map(dest => dest.IsOpen, src => src.IsOpen());
     }
 }

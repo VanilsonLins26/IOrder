@@ -10,6 +10,13 @@
     <span class="store-card__status" [class.store-card__status--open]="store().isOpen">
       {{ store().isOpen ? 'Aberto' : 'Fechado' }}
     </span>
+    
+    <!-- Category badge -->
+    @if (store().categoryName) {
+      <span class="store-card__category">
+        {{ store().categoryName }}
+      </span>
+    }
   </div>
 
   <!-- Body -->

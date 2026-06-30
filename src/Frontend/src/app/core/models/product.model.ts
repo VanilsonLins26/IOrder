@@ -5,6 +5,7 @@ export interface ProductRequest {
   unitOfMeasure: UnitOfMeasure;
   imageUrl: string;
   description: string;
+  categoryId?: string;
 }
 
 export interface ProductResponse {
@@ -18,6 +19,7 @@ export interface ProductResponse {
   active: boolean;
   currentPromotionalPrice: number | null;
   promotions: PromotionPriceResponse[];
+  categoryId?: string;
 }
 
 export interface UpdateProductRequest {
@@ -27,6 +29,7 @@ export interface UpdateProductRequest {
   imageUrl: string;
   description: string;
   active: boolean;
+  categoryId?: string;
 }
 
 export interface PromotionPriceRequest {

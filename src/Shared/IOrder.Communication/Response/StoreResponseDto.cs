@@ -15,6 +15,7 @@ public class StoreResponseDto
     public ICollection<ProductResponseDto> Products { get; set; } = [];
     public ICollection<OpeningHourResponseDto> OpeningHours { get; set; } = [];
     public Guid CategoryId { get; set; }
+    public string? CategoryName { get; set; }
     public String UserId { get; set; } = string.Empty;
     public bool IsOpen { get; set; }
 }
