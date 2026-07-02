@@ -3,6 +3,7 @@ using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,6 +71,29 @@ public class ProductController : IOrderBaseController
         var promotionPrice = await useCase.Execute(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = promotionPrice.ProductId }, promotionPrice);
+    }
+
+    [Authorize(Roles = "ShopKeeper")]
+    [HttpPut("image/{id:guid}")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> UpdateImage(
+        [FromServices] IUpdateProductImageUseCase usecase,
+        Guid id,
+        IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new ResponseErrorDto("Nenhuma imagem foi enviada."));
+        }
+
+        using var stream = file.OpenReadStream();
+        var imageUrl = await usecase.Execute(id, stream, file.FileName);
+
+        return Ok(new { ImageUrl = imageUrl });
     }
 
 
