@@ -1,4 +1,4 @@
-using IOrder.Application.UseCases.StoreCategory;
+using IOrder.Application.UseCases.StoreCategory.Queries;
 using IOrder.Communication.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,3 +20,4 @@ public class StoreCategoryController : ControllerBase
         return Ok(response);
     }
 }
+

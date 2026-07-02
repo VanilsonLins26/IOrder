@@ -1,7 +1,6 @@
-﻿
 
-using IOrder.Domain.Pagination;
-using IOrder.Domain.SeedWork.Pagination;
+
+using IOrder.Domain.Entities.Enums;
 using System.Runtime.CompilerServices;
 
 namespace IOrder.Domain.Repositories.Product;
@@ -14,7 +13,7 @@ public interface IProductReadOnlyRepository
 
     Task<Entities.Product> GetByIdAsync(Guid id);
 
-    Task<PagedList<Entities.Product>> GetAllPagFiltroPrecoAsync(ProductSearchQuery productFilterPrice);
+    Task<(IList<Entities.Product> Items, int TotalCount)> GetAllPagFiltroPrecoAsync(ProductSearchCriteria criteria);
 
     Task<bool> NameExists(string name);
 }

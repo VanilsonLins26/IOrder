@@ -1,4 +1,5 @@
-using IOrder.Application.UseCases.Category;
+using IOrder.Application.UseCases.Category.Commands;
+using IOrder.Application.UseCases.Category.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -112,3 +113,4 @@ public class CategoryController : IOrderBaseController
         return NoContent();
     }
 }
+

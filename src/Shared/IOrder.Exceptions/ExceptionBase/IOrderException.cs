@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
 namespace IOrder.Exceptions.ExceptionBase;
 
-public abstract class IOrderException : SystemException
+public abstract class IOrderException : Exception
 {
     public IOrderException(string message) : base(message) { }
 

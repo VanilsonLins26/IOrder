@@ -1,4 +1,4 @@
-using IOrder.Application.Services.LoggedUser;
+using IOrder.Domain.Security.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 

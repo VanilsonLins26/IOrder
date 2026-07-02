@@ -29,11 +29,14 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("Position")
                         .HasColumnType("int");
@@ -45,7 +48,7 @@ namespace IOrder.infrastructure.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -97,7 +100,9 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<TimeOnly>("CloseHour")
                         .HasColumnType("time(6)");
@@ -115,7 +120,7 @@ namespace IOrder.infrastructure.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("OpeningHour");
+                    b.ToTable("OpeningHours", (string)null);
                 });
 
             modelBuilder.Entity("IOrder.Domain.Entities.Product", b =>
@@ -125,38 +130,44 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("char(36)");
 
                     b.Property<decimal?>("CurrentPromotionalPrice")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<bool>("Customizable")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<Guid>("StoreId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("UnitOfMeasure")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
@@ -164,7 +175,7 @@ namespace IOrder.infrastructure.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
 
                     b.HasData(
                         new
@@ -241,7 +252,9 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("FinalTime")
                         .HasColumnType("datetime(6)");
@@ -250,7 +263,7 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("char(36)");
@@ -259,7 +272,7 @@ namespace IOrder.infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Promotions");
+                    b.ToTable("PromotionPrices", (string)null);
                 });
 
             modelBuilder.Entity("IOrder.Domain.Entities.Store", b =>
@@ -269,30 +282,38 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("About")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Stores");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Stores", (string)null);
 
                     b.HasData(
                         new
@@ -334,19 +355,23 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("IconUrl")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("StoreCategories");
+                    b.ToTable("StoreCategories", (string)null);
 
                     b.HasData(
                         new
@@ -486,31 +511,45 @@ namespace IOrder.infrastructure.Migrations
 
                             b1.Property<string>("City")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("City");
 
                             b1.Property<string>("Complement")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("Complement");
 
                             b1.Property<string>("Neighborhood")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("Neighborhood");
 
                             b1.Property<string>("Number")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("Number");
 
                             b1.Property<string>("State")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(50)
+                                .HasColumnType("varchar(50)")
+                                .HasColumnName("State");
 
                             b1.Property<string>("Street")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(150)
+                                .HasColumnType("varchar(150)")
+                                .HasColumnName("Street");
 
                             b1.Property<string>("ZipCode")
                                 .IsRequired()
-                                .HasColumnType("longtext");
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("ZipCode");
 
                             b1.HasKey("StoreId");
 

@@ -1,8 +1,8 @@
-﻿using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
+using IOrder.Application.UseCases.Store.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
-using IOrder.Domain.Pagination;
-using IOrder.Domain.SeedWork.Pagination;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +19,7 @@ public class StoreController : IOrderBaseController
     {
         var response = await useCase.Execute(storeRequest);
 
-        return Created(string.Empty, response);
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     [Authorize(Roles = "ShopKeeper")]
@@ -35,10 +35,10 @@ public class StoreController : IOrderBaseController
     }
 
     [HttpGet("paged")]
-    [ProducesResponseType(typeof(PagedList<StoreResponseDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPaged([FromServices] IGetAllStore useCase, [FromQuery] StoreSearchQuery query)
+    [ProducesResponseType(typeof(PagedResponse<StoreResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPaged([FromServices] IGetAllStoreUseCase useCase, [FromQuery] StoreSearchRequestDto request)
     {
-        var store = await useCase.Execute(query);
+        var store = await useCase.Execute(request);
 
         return Ok(store);
     }
@@ -105,3 +105,4 @@ public class StoreController : IOrderBaseController
 
 
 }
+

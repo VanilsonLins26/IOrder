@@ -1,4 +1,4 @@
-using IOrder.Application.Services.LoggedUser;
+using IOrder.Domain.Security.Services;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.Repositories.Store;

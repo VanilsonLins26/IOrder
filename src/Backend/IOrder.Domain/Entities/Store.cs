@@ -1,18 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Linq.Expressions;
+using System.Linq;
+
+using IOrder.Domain.SeedWork;
 
 namespace IOrder.Domain.Entities;
 
-public class Store : EntityBase
+public class Store : EntityBase, IAggregateRoot
 {
     public string? Name { get; set; }
     public Address? Address { get; set; }
     public string? About { get; set; }
     public string ImageUrl { get; set; }
-    public ICollection<Product> Products { get; set; } = [];
-    public ICollection<OpeningHour> OpeningHours { get; set; } = [];
+
+    private readonly List<OpeningHour> _openingHours = new();
+    public IReadOnlyCollection<OpeningHour> OpeningHours => _openingHours.AsReadOnly();
     public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
     public StoreCategory? Category { get; set; }
@@ -20,8 +24,8 @@ public class Store : EntityBase
     public bool IsOpen()
     {
         var brazilTime = DateTime.UtcNow.AddHours(-3);
-        var currentDay = (int)brazilTime.DayOfWeek;
-        var previousDay = currentDay == 0 ? 6 : currentDay - 1;
+        var currentDay = brazilTime.DayOfWeek;
+        var previousDay = currentDay == DayOfWeek.Sunday ? DayOfWeek.Saturday : currentDay - 1;
         var currentTime = TimeOnly.FromDateTime(brazilTime);
 
         var yesterdayHours = OpeningHours.FirstOrDefault(oh => oh.DayOfWeek == previousDay);
@@ -50,5 +54,25 @@ public class Store : EntityBase
 
         return false;
     }
-  
+
+    public static Expression<Func<Store, bool>> IsOpenExpression()
+    {
+        var brazilTime = DateTime.UtcNow.AddHours(-3);
+        var currentDay = brazilTime.DayOfWeek;
+        var previousDay = currentDay == DayOfWeek.Sunday ? DayOfWeek.Saturday : currentDay - 1;
+        var currentTime = TimeOnly.FromDateTime(brazilTime);
+
+        return s => s.OpeningHours.Any(oh =>
+            (oh.DayOfWeek == currentDay && oh.OpenHour <= oh.CloseHour && currentTime >= oh.OpenHour && currentTime <= oh.CloseHour)
+            ||
+            (oh.DayOfWeek == currentDay && oh.OpenHour > oh.CloseHour && currentTime >= oh.OpenHour)
+            ||
+            (oh.DayOfWeek == previousDay && oh.OpenHour > oh.CloseHour && currentTime <= oh.CloseHour)
+        );
+    }
+    public void UpdateOpeningHours(IEnumerable<OpeningHour> newHours)
+    {
+        _openingHours.Clear();
+        _openingHours.AddRange(newHours);
+    }
 }

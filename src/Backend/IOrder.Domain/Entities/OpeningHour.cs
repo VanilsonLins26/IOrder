@@ -1,14 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace IOrder.Domain.Entities;
 
-public class OpeningHour : EntityBase
+public record OpeningHour
 {
-    public Store? Store { get; set; }
-    public Guid StoreId { get; set; }
-    public int DayOfWeek { get; set; }
-    public TimeOnly OpenHour { get; set; }
-    public TimeOnly CloseHour { get; set; }
+    public DayOfWeek DayOfWeek { get; init; }
+    public TimeOnly OpenHour { get; init; }
+    public TimeOnly CloseHour { get; init; }
 }

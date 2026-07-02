@@ -1,7 +1,5 @@
 using IOrder.Domain.Entities.Enums;
-using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Store;
-using IOrder.Domain.SeedWork.Pagination;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -33,43 +31,34 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return store;
     }
 
-    public async Task<PagedList<Domain.Entities.Store>> GetAllPaged(StoreSearchQuery storeFilter)
+    public async Task<(IList<Domain.Entities.Store> Items, int TotalCount)> GetAllPaged(StoreSearchCriteria criteria)
     {
         var query = _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).AsNoTracking();
 
-        if (!string.IsNullOrWhiteSpace(storeFilter.Name))
-            query = query.Where(p => p.Name!.Contains(storeFilter.Name));
+        if (!string.IsNullOrWhiteSpace(criteria.Name))
+            query = query.Where(p => p.Name!.Contains(criteria.Name));
 
-        if (storeFilter.CategoryId.HasValue)
-            query = query.Where(p => p.CategoryId == storeFilter.CategoryId.Value);
+        if (criteria.CategoryId.HasValue)
+            query = query.Where(p => p.CategoryId == criteria.CategoryId.Value);
 
-        var brazilTime = DateTime.UtcNow.AddHours(-3);
-        var currentDay = (int)brazilTime.DayOfWeek;
-        var previousDay = currentDay == 0 ? 6 : currentDay - 1;
-        var currentTime = TimeOnly.FromDateTime(brazilTime);
+        var isOpenExpr = Domain.Entities.Store.IsOpenExpression();
 
-        var orderedQuery = query.OrderByDescending(s => s.OpeningHours.Any(oh =>
-            (oh.DayOfWeek == currentDay && oh.OpenHour <= oh.CloseHour && currentTime >= oh.OpenHour && currentTime <= oh.CloseHour)
-            ||
-            (oh.DayOfWeek == currentDay && oh.OpenHour > oh.CloseHour && currentTime >= oh.OpenHour)
-            ||
-            (oh.DayOfWeek == previousDay && oh.OpenHour > oh.CloseHour && currentTime <= oh.CloseHour)
-        ));
+        var orderedQuery = query.OrderByDescending(isOpenExpr);
 
-        var property = storeFilter.OrderBy?.ToLower().Trim();
+        var property = criteria.OrderBy?.ToLower().Trim();
 
         orderedQuery = property switch
         {
-            "name" => storeFilter.IsDescending
+            "name" => criteria.IsDescending
                 ? orderedQuery.ThenByDescending(p => p.Name)
                 : orderedQuery.ThenBy(p => p.Name),
 
-            _ => storeFilter.IsDescending
+            _ => criteria.IsDescending
                 ? orderedQuery.ThenByDescending(p => p.Id)
                 : orderedQuery.ThenBy(p => p.Id)
         };
 
-        return await orderedQuery.ToPagedListAsync(storeFilter.PageNumber, storeFilter.PageSize);
+        return await orderedQuery.ToPaginatedTupleAsync(criteria.PageNumber, criteria.PageSize);
     }
 
     public async Task<Domain.Entities.Store> GetByIdAsync(Guid id)
@@ -82,21 +71,7 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return await _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).FirstOrDefaultAsync(s => s.Id == id);
     }
 
-    public void ClearOpeningHours(Domain.Entities.Store store)
-    {
-        _dbContext.Set<Domain.Entities.OpeningHour>().RemoveRange(store.OpeningHours);
-        store.OpeningHours.Clear();
-    }
 
-    public void DeleteOpeningHour(Domain.Entities.OpeningHour openingHour)
-    {
-        _dbContext.Set<Domain.Entities.OpeningHour>().Remove(openingHour);
-    }
-
-    public void AddOpeningHour(Domain.Entities.OpeningHour openingHour)
-    {
-        _dbContext.Set<Domain.Entities.OpeningHour>().Add(openingHour);
-    }
 
     public async Task<bool> HasStore(string userId)
     {

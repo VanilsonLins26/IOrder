@@ -1,16 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿namespace IOrder.Domain.Entities;
 
-namespace IOrder.Domain.Entities;
-
-[Owned]
-public class Address
+public record Address
 {
-    public string ZipCode { get; set; } = string.Empty;     
-    public string Street { get; set; } = string.Empty;     
-    public string Number { get; set; } = string.Empty;      
-    public string Complement { get; set; } = string.Empty;   
-    public string Neighborhood { get; set; } = string.Empty; 
-    public string City { get; set; } = string.Empty;         
-    public string State { get; set; } = string.Empty;        
+    public string ZipCode { get; init; } = string.Empty;     
+    public string Street { get; init; } = string.Empty;     
+    public string Number { get; init; } = string.Empty;      
+    public string Complement { get; init; } = string.Empty;   
+    public string Neighborhood { get; init; } = string.Empty; 
+    public string City { get; init; } = string.Empty;         
+    public string State { get; init; } = string.Empty;        
 
 }

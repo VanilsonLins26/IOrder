@@ -1,5 +1,4 @@
-﻿using IOrder.Domain.Pagination;
-using IOrder.Domain.SeedWork.Pagination;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
