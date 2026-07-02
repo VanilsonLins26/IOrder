@@ -103,6 +103,28 @@ public class StoreController : IOrderBaseController
         return Ok(store);
     }
 
+    [Authorize(Roles = "ShopKeeper")]
+    [HttpPut("image")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> UpdateImage(
+    [FromServices] IUpdateStoreImageUseCase usecase,
+    IFormFile file) 
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new ResponseErrorDto("Nenhuma imagem foi enviada."));
+        }
+
+        using var stream = file.OpenReadStream();
+
+        var imageUrl = await usecase.Execute(stream, file.FileName);
+
+        return Ok(new { ImageUrl = imageUrl });
+    }
 
 }
 

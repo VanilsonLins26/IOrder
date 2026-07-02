@@ -1,11 +1,13 @@
-using IOrder.Domain.Security.Services;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Repositories;
 using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
+using IOrder.infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,21 +36,23 @@ public static class DependencyInjectionExtension
     {
         services.AddScoped<IProductWriteOnlyRepository, ProductRepository>();
         services.AddScoped<IProductReadOnlyRepository, ProductRepository>();
-        
+
         services.AddScoped<IStoreWriteOnlyRepository, StoreRepository>();
         services.AddScoped<IStoreReadOnlyRepository, StoreRepository>();
 
         services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryWriteOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
         services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryReadOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
-        
+
         services.AddScoped<IOrder.Domain.Repositories.StoreCategory.IStoreCategoryReadOnlyRepository, IOrder.infrastructure.Repositories.StoreCategory.StoreCategoryRepository>();
-        
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
     private static void AddServices(IServiceCollection services)
     {
         services.AddScoped<ILoggedUserService, LoggedUser.LoggedUserService>();
+        services.AddScoped<IStorageService, CloudinaryStorageService>();
+
     }
 
     private static void AddWorkers(IServiceCollection services)

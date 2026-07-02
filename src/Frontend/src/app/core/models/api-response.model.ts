@@ -4,16 +4,16 @@ export interface ResponseError {
   tokenIsExpired: boolean;
 }
 
-// PagedList<T> no backend herda de List<T>, então o JSON é um ARRAY
-// com propriedades extras de paginação — NÃO tem { items: [] }
-export type PagedList<T> = T[] & {
+// O backend retorna um JSON na forma de objeto { items: [...], totalCount: ... }
+export interface PagedList<T> {
   currentPage: number;
   totalPages:  number;
   pageSize:    number;
   totalCount:  number;
   hasPrevious: boolean;
   hasNext:     boolean;
-};
+  items:       T[];
+}
 
 export interface PaginationQuery {
   pageNumber?:   number;

@@ -48,7 +48,7 @@ export const AdminStore = signalStore(
                 patchState(store, {
                   myStore,
                   categories: categories.sort((a, b) => a.position - b.position),
-                  products: productsPage,
+                  products: productsPage.items,
                   loading: false,
                 });
               },

@@ -16,6 +16,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { StoreCardComponent } from '../../../../shared/components/store-card/store-card';
 import type { StoreCategoryResponse } from '../../../../core/models/store-category.model';
 import type { StoreResponse } from '../../../../core/models/store.model';
+import type { PagedList } from '../../../../core/models';
 
 @Component({
   selector: 'app-home-page',
@@ -41,13 +42,13 @@ export class HomePageComponent {
     stream: () => this.storeCategoryApi.getAll(),
   });
 
-  private readonly storesResource = rxResource<StoreResponse[], void>({
+  private readonly storesResource = rxResource<PagedList<StoreResponse>, void>({
     stream: () => this.storeApi.getPaged({ pageNumber: 1, pageSize: 12 }),
   });
 
   // ---- Derived signals ----
   readonly categories    = computed(() => this.categoriesResource.value() ?? []);
-  readonly stores        = computed(() => this.storesResource.value()    ?? []);
+  readonly stores        = computed(() => this.storesResource.value()?.items ?? []);
   readonly loadingCats   = computed(() => this.categoriesResource.isLoading());
   readonly loadingStores = computed(() => this.storesResource.isLoading());
 

@@ -41,7 +41,7 @@ export class StoreDetailComponent {
   });
 
   readonly store = computed(() => this.storeResource.value());
-  readonly products = computed(() => this.productsResource.value() ?? []);
+  readonly products = computed(() => this.productsResource.value()?.items ?? []);
   readonly categories = computed(() => this.categoriesResource.value() ?? []);
   readonly loadingStore = computed(() => this.storeResource.isLoading());
   readonly loadingProducts = computed(() => this.productsResource.isLoading());

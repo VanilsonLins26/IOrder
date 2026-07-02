@@ -25,7 +25,7 @@ export class StoreApiService {
     return this.http.get<StoreResponse>(`${this.baseUrl}/${id}`);
   }
 
-  getPaged(query: StoreSearchQuery): Observable<StoreResponse[]> {
+  getPaged(query: StoreSearchQuery): Observable<PagedList<StoreResponse>> {
     let params = new HttpParams();
     if (query.pageNumber)              params = params.set('PageNumber',   query.pageNumber);
     if (query.pageSize)                params = params.set('PageSize',     query.pageSize);

@@ -80,13 +80,10 @@ export const CatalogStore = signalStore(
         switchMap((query) => {
           return storeApi.getPaged(query).pipe(
             tap((response) => {
-              // response acts as PagedList, but we handle it as array in TS with extra fields if mapped
-              // Note: as defined in api-response.model.ts, PagedList<T> is T[] & pagination fields
-              const pagedResponse = response as any; 
               patchState(store, { 
-                stores: response, 
+                stores: response.items, 
                 status: 'loaded',
-                totalCount: pagedResponse.totalCount || response.length
+                totalCount: response.totalCount || response.items.length
               });
             }),
             catchError(() => {

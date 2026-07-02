@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { switchMap, take } from 'rxjs';
+import { catchError, switchMap, take, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -33,6 +33,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             }),
           ),
         ),
+        catchError((err) => {
+          // If silent token fetch fails (e.g., missing refresh token, expired session),
+          // proceed without a token so public endpoints don't break.
+          // Private endpoints will return 401, handled by errorInterceptor.
+          console.warn('AuthInterceptor: Failed to get token silently, proceeding without token.', err);
+          return next(req);
+        })
       );
     }),
   );

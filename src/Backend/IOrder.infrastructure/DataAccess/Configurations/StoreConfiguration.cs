@@ -32,6 +32,8 @@ public class StoreConfiguration : BaseEntityConfiguration<Store>
         builder.OwnsMany(s => s.OpeningHours, oh =>
         {
             oh.ToTable("OpeningHours"); 
+            oh.Property<Guid>("Id");
+            oh.HasKey("Id");
             oh.WithOwner().HasForeignKey("StoreId");
             oh.Property(x => x.DayOfWeek).IsRequired();
         });
