@@ -1,4 +1,4 @@
-﻿using IOrder.Communication.Response;
+using IOrder.Communication.Response;
 using IOrder.Exceptions;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;

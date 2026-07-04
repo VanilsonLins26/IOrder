@@ -23,7 +23,7 @@ public class StoreRequestBuilder
 
         var hours = store.OpeningHours.ToList();
         for (int i = 0; i < hours.Count; i++)
-            hours[i].DayOfWeek = i;
+            hours[i].DayOfWeek = (System.DayOfWeek)i;
         store.OpeningHours = hours;
 
         return store;

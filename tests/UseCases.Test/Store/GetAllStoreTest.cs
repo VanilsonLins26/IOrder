@@ -1,6 +1,7 @@
 using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
-using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
+using IOrder.Application.UseCases.Store.Queries;
 using IOrder.Domain.SeedWork.Pagination;
 using Shouldly;
 using System.Threading.Tasks;

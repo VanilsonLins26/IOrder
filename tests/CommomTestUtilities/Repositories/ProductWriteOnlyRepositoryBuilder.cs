@@ -31,7 +31,8 @@ public class ProductWriteOnlyRepositoryBuilder
 
     public void GetByIdTracking(Guid productId)
     {
-        var product = new Product { Id = productId, Price = 50000m };
+        var product = new Product { Id = productId };
+        product.UpdatePrice(50000m);
         _repository.Setup(repository => repository.GetByIdTracking(productId)).ReturnsAsync(product);
     }
 

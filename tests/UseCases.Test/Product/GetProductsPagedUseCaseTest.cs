@@ -1,5 +1,6 @@
-﻿using CommomTestUtilities.Repositories;
-using IOrder.Application.UseCases.Product;
+using CommomTestUtilities.Repositories;
+using IOrder.Application.UseCases.Product.Commands;
+using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Domain.SeedWork.Pagination;
 using Shouldly;
 using System;
@@ -13,7 +14,7 @@ public class GetProductsPagedUseCaseTest
     [Fact]
     public async Task Succes()
     {
-        var filter = new ProductSearchQuery { PageNumber = 1, PageSize = 10 };
+        var filter = new ProductSearchCriteria { PageNumber = 1, PageSize = 10 };
 
         var useCase = CreateUseCase(filter);
         
@@ -21,10 +22,10 @@ public class GetProductsPagedUseCaseTest
 
         result.ShouldNotBeNull();
         result.Count().ShouldBe(2);
-        result.First().Name.ShouldBe("Pão");
+        result.First().Name.ShouldBe("P�o");
 
     }
-    private static GetProductsPaged CreateUseCase(ProductSearchQuery filter)
+    private static GetProductsPaged CreateUseCase(ProductSearchCriteria filter)
     {
         var readRepository = new ProductReadOnlyRepositoryBuilder();
 

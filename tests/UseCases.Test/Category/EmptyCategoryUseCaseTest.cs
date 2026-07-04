@@ -1,7 +1,8 @@
 using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Services;
-using IOrder.Application.UseCases.Category;
+using IOrder.Application.UseCases.Category.Commands;
+using IOrder.Application.UseCases.Category.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;

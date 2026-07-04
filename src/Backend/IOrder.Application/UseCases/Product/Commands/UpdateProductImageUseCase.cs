@@ -1,9 +1,9 @@
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.Repositories.Store;
-using IOrder.Domain.Services.LoggedUser;
-using IOrder.Domain.Services.Storage;
-using IOrder.Exceptions.ExceptionsBase;
+using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
+using IOrder.Exceptions.ExceptionBase;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ public class UpdateProductImageUseCase : IUpdateProductImageUseCase
     private readonly IProductReadOnlyRepository _productReadOnlyRepository;
     private readonly IProductWriteOnlyRepository _productWriteOnlyRepository;
     private readonly IStoreReadOnlyRepository _storeReadOnlyRepository;
-    private readonly ILoggedUser _loggedUser;
+    private readonly ILoggedUserService _loggedUser;
     private readonly IStorageService _storageService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -23,7 +23,7 @@ public class UpdateProductImageUseCase : IUpdateProductImageUseCase
         IProductReadOnlyRepository productReadOnlyRepository,
         IProductWriteOnlyRepository productWriteOnlyRepository,
         IStoreReadOnlyRepository storeReadOnlyRepository,
-        ILoggedUser loggedUser,
+        ILoggedUserService loggedUser,
         IStorageService storageService,
         IUnitOfWork unitOfWork)
     {
@@ -37,18 +37,18 @@ public class UpdateProductImageUseCase : IUpdateProductImageUseCase
 
     public async Task<string> Execute(Guid productId, Stream fileStream, string fileName)
     {
-        var user = await _loggedUser.User();
-        var store = await _storeReadOnlyRepository.GetByUserIdAsync(user.Id);
+        var userId = _loggedUser.GetUserId();
+        var store = await _storeReadOnlyRepository.GetByUserIdAsync(userId);
         
         if (store == null)
-            throw new NotFoundException("Loja não encontrada para este usuário.");
+            throw new NotFoundException(["Loja não encontrada para este usuário."]);
 
-        var product = await _productReadOnlyRepository.GetById(productId);
+        var product = await _productReadOnlyRepository.GetByIdAsync(productId);
 
         // Segurança: O produto tem que existir E tem que pertencer à loja do usuário logado
         if (product == null || product.StoreId != store.Id)
         {
-            throw new NotFoundException("Produto não encontrado ou não pertence a sua loja.");
+            throw new NotFoundException(["Produto não encontrado ou não pertence a sua loja."]);
         }
 
         // Apaga a foto antiga se tiver

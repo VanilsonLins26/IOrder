@@ -1,5 +1,6 @@
 using IOrder.Communication.Response;
-using IOrder.Domain.Pagination;
+using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Repositories.Product;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

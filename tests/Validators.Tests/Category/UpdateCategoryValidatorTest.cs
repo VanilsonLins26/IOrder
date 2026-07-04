@@ -1,5 +1,5 @@
 using CommomTestUtilities.Requests.Category;
-using IOrder.Application.UseCases.Category;
+using IOrder.Application.UseCases.Category.Commands;
 using IOrder.Exceptions;
 using Shouldly;
 using Xunit;

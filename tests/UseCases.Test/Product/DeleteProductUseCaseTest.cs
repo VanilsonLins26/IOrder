@@ -1,6 +1,7 @@
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests;
-using IOrder.Application.UseCases.Product;
+using IOrder.Application.UseCases.Product.Commands;
+using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;

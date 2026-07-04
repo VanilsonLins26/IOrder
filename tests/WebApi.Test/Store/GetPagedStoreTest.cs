@@ -1,5 +1,6 @@
 using IOrder.Communication.Response;
-using IOrder.Domain.Pagination;
+using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Repositories.Product;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;

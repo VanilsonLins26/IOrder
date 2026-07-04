@@ -15,7 +15,7 @@ public class Store : EntityBase, IAggregateRoot
     public string? About { get; set; }
     public string ImageUrl { get; set; }
 
-    private readonly List<OpeningHour> _openingHours = new();
+    private readonly List<OpeningHour> _openingHours = [];
     public IReadOnlyCollection<OpeningHour> OpeningHours => _openingHours.AsReadOnly();
     public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
