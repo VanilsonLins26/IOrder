@@ -16,4 +16,8 @@ public interface IProductReadOnlyRepository
     Task<(IList<Entities.Product> Items, int TotalCount)> GetAllPagFiltroPrecoAsync(ProductSearchCriteria criteria);
 
     Task<bool> NameExists(string name);
+
+    Task<decimal?> GetProductPriceById(Guid productId);
+
+    Task<IDictionary<Guid, decimal>> GetProductPricesByIds(IEnumerable<Guid> productIds);
 }

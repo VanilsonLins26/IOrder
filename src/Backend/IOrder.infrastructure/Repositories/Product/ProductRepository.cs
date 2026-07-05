@@ -143,4 +143,17 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
             .Where(p => p.FinalTime < now && p.Product.CurrentPromotionalPrice != null)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<decimal?> GetProductPriceById(Guid productId)
+    {
+        return await _context.Products.Where(product => product.Id == productId).Select(product => product.Price).FirstOrDefaultAsync();
+    }
+
+    public async Task<IDictionary<Guid, decimal>> GetProductPricesByIds(IEnumerable<Guid> productIds)
+    {
+        return await _context.Products
+            .Where(p => productIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Price }) // O Pulo do Gato para o banco fazer SELECT Id, Price
+            .ToDictionaryAsync(p => p.Id, p => p.Price);
+    }
 }

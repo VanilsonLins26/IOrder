@@ -1,8 +1,5 @@
 ﻿using IOrder.Domain.Repositories.Cart;
 using Microsoft.Extensions.Caching.Distributed;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
 namespace IOrder.infrastructure.Repositories.Cart;
@@ -34,8 +31,15 @@ internal class CartRepository : ICartReadOnlyRepository, ICartWriteOnlyRepositor
         return JsonSerializer.Deserialize<Domain.Entities.Cart>(cartJson);
     }
 
-    public Task<Domain.Entities.Cart> SaveCartAsync(Domain.Entities.Cart cart)
+    public async Task<Domain.Entities.Cart> SaveCartAsync(Domain.Entities.Cart cart)
     {
-        throw new NotImplementedException();
+        var cartJson = JsonSerializer.Serialize(cart);
+
+        var options = new DistributedCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromDays(7));
+
+        await _redis.SetStringAsync($"cart:{cart.UserId}", cartJson, options);
+
+        return cart;
     }
 }

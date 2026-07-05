@@ -1,3 +1,15 @@
+# Plano de Atualização do README
+
+## Arquivos a modificar
+
+1. `README.md` (raiz) — Reescrever completo
+2. `src/Frontend/README.md` — Reescrever com conteúdo específico
+
+---
+
+## README.md Raiz — Conteúdo Final
+
+```markdown
 # 🛒 IOrder
 
 ![Build Status](https://img.shields.io/badge/build-Azure%20DevOps-blue?logo=azure-devops)
@@ -160,9 +172,9 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 ### 1. Suba os containers
 
 ```bash
-docker run -d --name mysql-iorder -p 2552:3306 ^
-  -e MYSQL_ROOT_PASSWORD=@Password123 ^
-  -e MYSQL_DATABASE=iorderdb ^
+docker run -d --name mysql-iorder -p 2552:3306 \
+  -e MYSQL_ROOT_PASSWORD=@Password123 \
+  -e MYSQL_DATABASE=iorderdb \
   mysql:8.0
 
 docker run -d --name redis-iorder -p 6379:6379 redis:7-alpine
@@ -281,3 +293,59 @@ IOrderNew/
 ## 📄 Licença
 
 Projeto pessoal para portfólio. Todos os direitos reservados.
+```
+
+---
+
+## src/Frontend/README.md — Conteúdo Final
+
+```markdown
+# IOrderApp — Frontend
+
+Frontend Angular do **IOrder**, plataforma de encomendas personalizadas.
+
+## Stack
+
+- Angular 20 (standalone components, signals)
+- Auth0 (@auth0/auth0-angular)
+- @ngrx/signals (state management)
+
+## Rotas
+
+### Públicas
+| Rota | Componente | Descrição |
+|---|---|---|
+| `/` | HomePage | Landing page com listagem de lojas |
+| `/stores` | StoresList | Catálogo de lojas |
+| `/stores/:id` | StoreDetail | Detalhes da loja e produtos |
+
+### Admin (requer autenticação + role ShopKeeper)
+| Rota | Componente | Descrição |
+|---|---|---|
+| `/admin/setup-store` | SetupStore | Criar loja (primeiro acesso) |
+| `/admin/dashboard` | Dashboard | Painel principal |
+| `/admin/products` | ProductManagement | CRUD de produtos |
+| `/admin/categories` | CategoryManagement | CRUD de categorias |
+| `/admin/store` | StoreSettings | Configurações da loja |
+
+## Desenvolvimento
+
+```bash
+npm install
+ng serve
+```
+
+Acesse `http://localhost:4200`. O proxy reverso redireciona chamadas `/api/*` para o backend em `https://localhost:7023` (configurado em `proxy.conf.json`).
+
+## Build
+
+```bash
+ng build
+```
+```
+
+---
+
+## Aprovação
+
+@vanlzz, este é o plano completo. Se estiver de acordo, confirme para que eu saia do modo de planejamento e faça as alterações nos dois arquivos.
