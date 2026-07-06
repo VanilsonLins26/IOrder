@@ -9,12 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Testcontainers.MySql;
+using Testcontainers.Redis;
 
 namespace WebApi.Test;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly MySqlContainer _mySqlContainer;
+    private readonly RedisContainer _redisContainer;
     public IEnumerable<IOrder.Domain.Entities.Product> ProductList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Category> CategoryList { get; private set; } = [];
 
@@ -22,6 +24,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         _mySqlContainer = new MySqlBuilder("mysql:8.0")
                               .WithDatabase("iorder")
+                              .Build();
+
+        _redisContainer = new RedisBuilder()
+                              .WithImage("redis:7.0")
                               .Build();
     }
 
@@ -51,12 +57,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(_mySqlContainer.GetConnectionString(), serverVersion));
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = _redisContainer.GetConnectionString();
+            });
         });
     }
     public async Task InitializeAsync()
     {
-
-        await _mySqlContainer.StartAsync();
+        await Task.WhenAll(_mySqlContainer.StartAsync(), _redisContainer.StartAsync());
 
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -95,6 +105,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     public async Task DisposeAsync()
     {
-        await _mySqlContainer.DisposeAsync();
+        await Task.WhenAll(_mySqlContainer.DisposeAsync().AsTask(), _redisContainer.DisposeAsync().AsTask());
     }
 }

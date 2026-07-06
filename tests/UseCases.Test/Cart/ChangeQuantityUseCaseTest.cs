@@ -20,7 +20,7 @@ public class ChangeQuantityUseCaseTest
     {
         var cart = CartBuilder.Build();
         var cartItem = CartItemBuilder.Build();
-        cart.Items.Add(cartItem); // Using Itens as defined in Cart.cs previously (Wait, did I change it to Items?)
+        cart.Items.Add(cartItem);
 
         var request = ChangeCartItemQuantityRequestBuilder.Build();
         request.CartItemId = cartItem.Id;
