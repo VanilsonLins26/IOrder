@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
@@ -7,14 +7,15 @@ import { CategoryApiService } from '../../../../core/services/api/category-api.s
 import { StoreInfoHeaderComponent } from '../../components/store-info-header/store-info-header';
 import { ProductGridComponent } from '../../components/product-grid/product-grid';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
-import { ToastService } from '../../../../core/services/toast.service';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { CartStore } from '../../../cart/store/cart.store';
 import type { StoreResponse } from '../../../../core/models/store.model';
 import type { ProductResponse } from '../../../../core/models/product.model';
 
 @Component({
   selector: 'app-store-detail',
   standalone: true,
-  imports: [CommonModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent],
+  imports: [CommonModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent, ModalComponent],
   templateUrl: './store-detail.component.html',
   styleUrl: './store-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +27,7 @@ export class StoreDetailComponent {
   private readonly storeApi = inject(StoreApiService);
   private readonly productApi = inject(ProductApiService);
   private readonly categoryApi = inject(CategoryApiService);
-  private readonly toast = inject(ToastService);
+  private readonly cartStore = inject(CartStore);
 
   readonly storeResource = rxResource({
     stream: () => this.storeApi.getById(this.id()),
@@ -65,7 +66,43 @@ export class StoreDetailComponent {
     return grouped;
   });
 
+  readonly showStoreDialog = signal(false);
+  private pendingProduct: ProductResponse | null = null;
+
   onAddToCart(product: ProductResponse) {
-    this.toast.success(`Adicionado: ${product.name}`);
+    const currentItems = this.cartStore.items();
+    const currentStoreId = this.id();
+
+    if (currentItems.length > 0 && currentItems[0].storeId && currentItems[0].storeId !== currentStoreId) {
+      this.pendingProduct = product;
+      this.showStoreDialog.set(true);
+      return;
+    }
+
+    this.addItemToCart(product);
+  }
+
+  onConfirmClearAndAdd() {
+    const product = this.pendingProduct;
+    this.pendingProduct = null;
+    this.showStoreDialog.set(false);
+
+    if (!product) return;
+
+    this.cartStore.clearCart();
+    this.addItemToCart(product);
+  }
+
+  onCancelStoreDialog() {
+    this.pendingProduct = null;
+    this.showStoreDialog.set(false);
+  }
+
+  private addItemToCart(product: ProductResponse) {
+    this.cartStore.addItem({
+      productId: product.id,
+      quantity: 1,
+      imageUrls: product.imageUrl ? [product.imageUrl] : [],
+    });
   }
 }

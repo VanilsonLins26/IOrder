@@ -4,6 +4,7 @@ using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IOrder.infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260706050001_ApplyProductName")]
+    partial class ApplyProductName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,95 +96,6 @@ namespace IOrder.infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("IOrder.Domain.Entities.Coupon", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<bool>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<int>("CurrentUsageCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("DiscountType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<decimal>("DiscountValue")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<decimal?>("MaxDiscountAmount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("MaxUsageCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<decimal?>("MinPurchaseAmount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Coupons", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("50000000-0000-0000-0000-000000000001"),
-                            Active = true,
-                            Code = "BEMVINDO10",
-                            CurrentUsageCount = 0,
-                            DiscountType = "Percentage",
-                            DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 6, 21, 13, 53, 944, DateTimeKind.Utc).AddTicks(1844),
-                            MaxDiscountAmount = 30m,
-                            MaxUsageCount = 100,
-                            MinPurchaseAmount = 50m
-                        },
-                        new
-                        {
-                            Id = new Guid("50000000-0000-0000-0000-000000000002"),
-                            Active = true,
-                            Code = "FRETE20",
-                            CurrentUsageCount = 0,
-                            DiscountType = "FixedAmount",
-                            DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 6, 21, 13, 53, 944, DateTimeKind.Utc).AddTicks(3115),
-                            MaxUsageCount = 50,
-                            MinPurchaseAmount = 80m
-                        },
-                        new
-                        {
-                            Id = new Guid("50000000-0000-0000-0000-000000000003"),
-                            Active = true,
-                            Code = "NIVER15",
-                            CurrentUsageCount = 0,
-                            DiscountType = "Percentage",
-                            DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 6, 21, 13, 53, 944, DateTimeKind.Utc).AddTicks(4176),
-                            MaxDiscountAmount = 50m,
-                            MaxUsageCount = 200
-                        });
-                });
             modelBuilder.Entity("IOrder.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")

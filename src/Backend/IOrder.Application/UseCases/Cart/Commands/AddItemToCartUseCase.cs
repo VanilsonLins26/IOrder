@@ -46,8 +46,29 @@ public class AddItemToCartUseCase : IAddItemToCartUseCase
         var product = await _productReadOnlyRepository.GetByIdAsync(request.ProductId) ?? throw new NotFoundException([ResourceMessagesException.PRODUCT_NOT_FOUND]);
         var cart = await _readOnlyRepositoy.GetCartAsync(userId) ?? new Domain.Entities.Cart { UserId = userId };
 
+        if (cart.Items.Count != 0)
+        {
+            var existingStoreId = cart.Items
+                .Select(i => i.StoreId)
+                .FirstOrDefault(sid => sid != Guid.Empty);
+
+            if (existingStoreId == Guid.Empty)
+            {
+                var existingProduct = await _productReadOnlyRepository.GetByIdAsync(cart.Items.First().ProductId);
+                existingStoreId = existingProduct?.StoreId ?? Guid.Empty;
+            }
+
+            if (existingStoreId != Guid.Empty && existingStoreId != product.StoreId)
+            {
+                throw new ErrorOnValidationException([ResourceMessagesException.CART_DIFFERENT_STORE]);
+            }
+        }
+
         var cartItem = request.Adapt<CartItem>();
         cartItem.UnitPrice = product.Price;
+        cartItem.ProductName = product.Name;
+        cartItem.ProductImageUrl = product.ImageUrl;
+        cartItem.StoreId = product.StoreId;
 
         cart.AddCartItem(cartItem);
 

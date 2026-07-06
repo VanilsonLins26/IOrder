@@ -1,0 +1,107 @@
+<nav class="navbar" role="navigation" aria-label="Navegação principal">
+  <div class="navbar__container">
+
+    <a routerLink="/" class="navbar__logo" aria-label="IOrder - Página inicial">
+      <span class="navbar__logo-icon" aria-hidden="true">🛒</span>
+      <span class="navbar__logo-text">IOrder</span>
+    </a>
+
+    <div class="navbar__links">
+      <a routerLink="/stores" routerLinkActive="navbar__link--active" class="navbar__link">
+        Lojas
+      </a>
+    </div>
+
+    <div class="navbar__actions">
+      <a
+        routerLink="/cart"
+        class="navbar__cart-btn"
+        aria-label="Abrir carrinho"
+      >
+        <span aria-hidden="true">🛒</span>
+        @if (cartStore.itemCount() > 0) {
+          <span class="navbar__cart-badge">{{ cartStore.itemCount() }}</span>
+        }
+      </a>
+
+      <button
+        class="navbar__icon-btn"
+        (click)="themeService.toggle()"
+        [attr.aria-label]="themeService.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      >
+        <span aria-hidden="true">{{ themeService.isDark() ? '☀️' : '🌙' }}</span>
+      </button>
+
+      @if (auth.isAuthenticated$ | async) {
+        @if (auth.user$ | async; as user) {
+          <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">
+            @if (user.picture) {
+              <img [src]="user.picture" [alt]="user.name || 'Avatar'"
+                   class="navbar__avatar" width="32" height="32" />
+            }
+            <span class="navbar__user-name">{{ user.name }}</span>
+            <span class="navbar__user-chevron" aria-hidden="true">▼</span>
+            
+            @if (dropdownOpen()) {
+              <div class="navbar__dropdown">
+                <div class="navbar__dropdown-header">
+                  <span class="navbar__dropdown-name">{{ user.name }}</span>
+                  <span class="navbar__dropdown-email">{{ user.email }}</span>
+                </div>
+                
+                <div class="navbar__dropdown-body">
+                  @if (hasRole(user, 'ShopKeeper')) {
+                    <a routerLink="/admin" class="navbar__dropdown-item" (click)="closeDropdown()">
+                      <span class="navbar__dropdown-icon" aria-hidden="true">🏪</span>
+                      Painel Lojista
+                    </a>
+                  } @else {
+                    <a routerLink="/become-partner" class="navbar__dropdown-item" (click)="closeDropdown()">
+                      <span class="navbar__dropdown-icon" aria-hidden="true">💼</span>
+                      Venda no IOrder
+                    </a>
+                  }
+                </div>
+                
+                <div class="navbar__dropdown-footer">
+                  <button class="navbar__dropdown-item navbar__dropdown-item--danger" (click)="logout()">
+                    <span class="navbar__dropdown-icon" aria-hidden="true">🚪</span>
+                    Sair da conta
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <button class="navbar__btn navbar__btn--primary" (click)="login()">Entrar</button>
+      }
+
+      <button
+        class="navbar__hamburger"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="mobileMenuOpen()"
+        aria-label="Menu de navegação"
+      >
+        <span class="navbar__hamburger-line"></span>
+        <span class="navbar__hamburger-line"></span>
+        <span class="navbar__hamburger-line"></span>
+      </button>
+    </div>
+  </div>
+
+  @if (mobileMenuOpen()) {
+    <div class="navbar__mobile-menu" role="menu">
+      <a routerLink="/stores" routerLinkActive="navbar__link--active"
+         class="navbar__mobile-link" (click)="closeMobileMenu()">
+        Lojas
+      </a>
+      <a routerLink="/cart" class="navbar__mobile-link" (click)="closeMobileMenu()">
+        Carrinho
+        @if (cartStore.itemCount() > 0) {
+          ({{ cartStore.itemCount() }})
+        }
+      </a>
+    </div>
+  }
+</nav>

@@ -30,3 +30,11 @@
     </div>
   }
 </div>
+
+<app-modal title="Carrinho com outra loja" [isOpen]="showStoreDialog()" (close)="onCancelStoreDialog()">
+  <p>Seu carrinho já contém itens de outra loja. Deseja limpar o carrinho e adicionar este produto?</p>
+  <div class="dialog-actions">
+    <button type="button" class="btn btn--outline" (click)="onCancelStoreDialog()">Cancelar</button>
+    <button type="button" class="btn btn--primary" (click)="onConfirmClearAndAdd()">Sim, limpar e adicionar</button>
+  </div>
+</app-modal>
