@@ -18,5 +18,20 @@ public class CouponReadOnlyRepositoryBuilder
         return this;
     }
 
+    public void CodeExistsAsync(bool exists)
+    {
+        _mock.Setup(r => r.CodeExistsAsync(It.IsAny<string>())).ReturnsAsync(exists);
+    }
+
+    public void GetActiveCouponsAsync(IList<IOrder.Domain.Entities.Coupon> coupons)
+    {
+        _mock.Setup(r => r.GetActiveCouponsAsync()).ReturnsAsync(coupons);
+    }
+
+    public void GetAllCouponsAsync(IList<IOrder.Domain.Entities.Coupon> coupons)
+    {
+        _mock.Setup(r => r.GetAllCouponsAsync()).ReturnsAsync(coupons);
+    }
+
     public ICouponReadOnlyRepository Build() => _mock.Object;
 }
