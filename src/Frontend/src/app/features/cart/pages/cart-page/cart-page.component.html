@@ -3,7 +3,10 @@
     <header class="cart-page__header">
       <h1 class="cart-page__title">Meu Carrinho</h1>
       @if (cartStore.items().length > 0) {
-        <button class="cart-page__clear-btn" (click)="clearCart()">
+        <button class="cart-page__clear-btn" (click)="clearCart()" [disabled]="cartStore.loading()">
+          @if (cartStore.loading()) {
+            <span class="spinner spinner--sm"></span>
+          }
           Limpar carrinho
         </button>
       }
@@ -51,13 +54,14 @@
                 <button
                   class="cart-item__qty-btn"
                   (click)="changeQuantity(item.id, item.quantity - 1)"
-                  [disabled]="item.quantity <= 1"
+                  [disabled]="item.quantity <= 1 || cartStore.loading()"
                   aria-label="Diminuir quantidade"
                 >−</button>
                 <span class="cart-item__qty-value">{{ item.quantity }}</span>
                 <button
                   class="cart-item__qty-btn"
                   (click)="changeQuantity(item.id, item.quantity + 1)"
+                  [disabled]="cartStore.loading()"
                   aria-label="Aumentar quantidade"
                 >+</button>
               </div>
@@ -70,6 +74,7 @@
               <button
                 class="cart-item__remove-btn"
                 (click)="removeItem(item.id)"
+                [disabled]="cartStore.loading()"
                 aria-label="Remover item"
               >✕</button>
             </div>
@@ -91,7 +96,12 @@
                 (ngModelChange)="couponInput.set($event)"
                 (keyup.enter)="applyCoupon()"
               />
-              <button class="cart-summary__coupon-btn" (click)="applyCoupon()">Aplicar</button>
+              <button class="cart-summary__coupon-btn" (click)="applyCoupon()" [disabled]="cartStore.loading()">
+                @if (cartStore.loading()) {
+                  <span class="spinner spinner--sm"></span>
+                }
+                Aplicar
+              </button>
             </div>
             @if (cartStore.couponCode()) {
               <span class="cart-summary__coupon-applied">
@@ -117,10 +127,12 @@
             <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
           </div>
 
-          <button class="cart-summary__checkout-btn" disabled>
-            Finalizar Pedido
-          </button>
-          <p class="cart-summary__info">Checkout disponível em breve</p>
+          <div class="cart-summary__checkout-wrapper">
+            <button class="cart-summary__checkout-btn" disabled>
+              Finalizar Pedido
+            </button>
+            <span class="cart-summary__checkout-tooltip">Checkout disponível em breve</span>
+          </div>
         </aside>
       </div>
     }
