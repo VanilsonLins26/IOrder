@@ -70,6 +70,6 @@ public class CreateCategoryUseCaseTest
             readOnlyRepository.Build(),
             writeOnlyRepository.Build(),
             uow,
-            permissionService);
+            permissionService, new IOrder.Application.UseCases.Category.Commands.CreateCategoryValidator());
     }
 }

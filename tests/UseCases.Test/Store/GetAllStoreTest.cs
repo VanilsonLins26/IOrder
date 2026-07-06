@@ -2,7 +2,7 @@ using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
 using IOrder.Application.UseCases.Store.Commands;
 using IOrder.Application.UseCases.Store.Queries;
-using IOrder.Domain.SeedWork.Pagination;
+
 using Shouldly;
 using System.Threading.Tasks;
 using Xunit;
@@ -17,19 +17,19 @@ public class GetAllStoreTest
         var store = StoreBuilder.Build();
         var useCase = CreateUseCase(store);
 
-        var query = new StoreSearchQuery { PageNumber = 1, PageSize = 10 };
+        var query = new IOrder.Communication.Request.StoreSearchRequestDto { PageNumber = 1, PageSize = 10 };
         var result = await useCase.Execute(query);
 
         result.ShouldNotBeNull();
-        result.ShouldNotBeEmpty();
-        result.ShouldContain(s => s.Name == store.Name);
+        result.Items.ShouldNotBeEmpty();
+        result.Items.ShouldContain(s => s.Name == store.Name);
     }
 
-    private static GetAllStore CreateUseCase(IOrder.Domain.Entities.Store store)
+    private static GetAllStoreUseCase CreateUseCase(IOrder.Domain.Entities.Store store)
     {
         var readRepositoryBuilder = new StoreReadOnlyRepositoryBuilder();
         readRepositoryBuilder.GetAllPaged([store]);
 
-        return new GetAllStore(readRepositoryBuilder.Build());
+        return new GetAllStoreUseCase(readRepositoryBuilder.Build());
     }
 }

@@ -80,6 +80,6 @@ public class CreateStoreUseCaseTest
         if (userHasStore)
             readRepositoryBuilder.HasStore(userId);
 
-        return new CreateStoreUseCase(readRepositoryBuilder.Build(), writeRepository, unitOfWork, loggedUserService);
+        return new CreateStoreUseCase(readRepositoryBuilder.Build(), writeRepository, unitOfWork, loggedUserService, new IOrder.Application.UseCases.Store.Commands.CreateStoreValidator());
     }
 }

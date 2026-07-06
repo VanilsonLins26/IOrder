@@ -79,7 +79,7 @@ public class UpdateProductUseCaseTest
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
 
-        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build(), storePermissionService);
+        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build(), storePermissionService, new IOrder.Application.UseCases.Product.Commands.UpdateProductValidator());
 
     }
 }

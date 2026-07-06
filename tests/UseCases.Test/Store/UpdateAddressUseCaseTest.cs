@@ -51,6 +51,6 @@ public class UpdateAddressUseCaseTest
         if (store != null)
             writeRepositoryBuilder.GetByIdTracking(store);
 
-        return new UpdateAddressUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService);
+        return new UpdateAddressUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService, new IOrder.Application.UseCases.Store.Commands.AddressValidator());
     }
 }

@@ -40,7 +40,7 @@ public class GetByIdProductUseCaseTest
 
     }
 
-    private static GetProductById CreateUseCase(Guid productId)
+    private static GetProductByIdUseCase CreateUseCase(Guid productId)
     {
         var readRepository = new ProductReadOnlyRepositoryBuilder();
 
@@ -48,7 +48,7 @@ public class GetByIdProductUseCaseTest
 
 
 
-        return new GetProductById(readRepository.Build());
+        return new GetProductByIdUseCase(readRepository.Build());
 
     }
 }

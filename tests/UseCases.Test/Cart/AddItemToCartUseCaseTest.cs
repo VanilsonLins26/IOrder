@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using IOrder.Communication.Request;
+using IOrder.Application.UseCases.Cart.Commands;
 
 namespace UseCases.Test.Cart;
 
@@ -37,7 +38,7 @@ public class AddItemToCartUseCaseTest
         Func<Task> act = async () => await useCase.Execute(request);
 
         var exception = await act.ShouldThrowAsync<NotFoundException>();
-        exception.Message.ShouldBe(ResourceMessagesException.PRODUCT_NOT_FOUND);
+        exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.PRODUCT_NOT_FOUND);
     }
 
     private AddItemToCartUseCase CreateUseCase(IOrder.Domain.Entities.Cart cart, bool productExists, AddItemToCartRequestDto request)
@@ -49,14 +50,17 @@ public class AddItemToCartUseCaseTest
         var productReadOnlyBuilder = new ProductReadOnlyRepositoryBuilder();
         if (productExists)
         {
-            var product = new Product { Id = request.ProductId };
+            var product = new IOrder.Domain.Entities.Product { Id = request.ProductId };
             productReadOnlyBuilder.GetByIdAsync(product);
         }
 
+        var validator = new AddItemToCartValidator();
+
         return new AddItemToCartUseCase(
+            loggedUserService,
             readOnlyRepository,
             writeOnlyRepository,
-            loggedUserService,
+            validator,
             productReadOnlyBuilder.Build());
     }
 }

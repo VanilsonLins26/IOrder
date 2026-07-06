@@ -73,8 +73,9 @@ public class CreateProductUseCaseTest
         
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
+        var validator = new IOrder.Application.UseCases.Product.Commands.CreateProductValidator();
 
-        return new CreateProductUseCase(writeRepository, unitOfWork, readRepository.Build(), storePermissionService);
+        return new CreateProductUseCase(writeRepository, unitOfWork, readRepository.Build(), storePermissionService, validator);
 
     }
 }

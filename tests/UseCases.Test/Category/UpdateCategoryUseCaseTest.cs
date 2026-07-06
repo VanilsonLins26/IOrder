@@ -76,6 +76,6 @@ public class UpdateCategoryUseCaseTest
             readOnlyRepository.Build(),
             writeOnlyRepository.Build(),
             uow,
-            permissionService);
+            permissionService, new IOrder.Application.UseCases.Category.Commands.UpdateCategoryValidator());
     }
 }

@@ -5,6 +5,7 @@ using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Cart.Commands;
 using IOrder.Exceptions.ExceptionBase;
 using IOrder.Exceptions;
+using IOrder.Application.UseCases.Cart.Commands;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -45,10 +46,12 @@ public class ApplyCouponUseCaseTest
         var readOnlyRepository = new CartReadOnlyRepositoryBuilder().GetCartAsync(cart).Build();
         var writeOnlyRepository = new CartWriteOnlyRepositoryBuilder().Build();
         var loggedUserService = LoggedUserBuilder.Build(cart.UserId);
+        var validator = new ApplyCouponValidator();
 
         return new ApplyCouponUseCase(
+            loggedUserService,
             readOnlyRepository,
             writeOnlyRepository,
-            loggedUserService);
+            validator);
     }
 }

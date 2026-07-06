@@ -52,7 +52,7 @@ public class ProductReadOnlyRepositoryBuilder
        
         var products = new List<Product> { product1, product2 };
 
-        _repository.Setup(repository => repository.GetAllPagFiltroPrecoAsync(filter)).ReturnsAsync((products, 2));
+        _repository.Setup(repository => repository.GetAllPagFiltroPrecoAsync(It.IsAny<ProductSearchCriteria>())).ReturnsAsync((products, 2));
     }
 
     public void GetProductPricesByIds(Dictionary<Guid, decimal> prices)

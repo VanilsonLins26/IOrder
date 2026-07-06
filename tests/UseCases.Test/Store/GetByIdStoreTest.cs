@@ -37,13 +37,13 @@ public class GetByIdStoreTest
         exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.STORE_NOT_FOUND);
     }
 
-    private static GetByIdStore CreateUseCase(IOrder.Domain.Entities.Store? store = null)
+    private static GetByIdStoreUseCase CreateUseCase(IOrder.Domain.Entities.Store? store = null)
     {
         var readRepositoryBuilder = new StoreReadOnlyRepositoryBuilder();
 
         if (store != null)
             readRepositoryBuilder.GetByIdAsync(store);
 
-        return new GetByIdStore(readRepositoryBuilder.Build());
+        return new GetByIdStoreUseCase(readRepositoryBuilder.Build());
     }
 }

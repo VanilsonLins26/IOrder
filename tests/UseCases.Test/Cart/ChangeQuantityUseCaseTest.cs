@@ -6,6 +6,7 @@ using IOrder.Application.UseCases.Cart.Commands;
 using IOrder.Domain.Entities;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using IOrder.Application.UseCases.Cart.Commands;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ public class ChangeQuantityUseCaseTest
         Func<Task> act = async () => await useCase.Execute(request);
 
         var exception = await act.ShouldThrowAsync<NotFoundException>();
-        exception.Message.ShouldBe(ResourceMessagesException.CART_ITEM_NOT_FOUND);
+        exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.CART_ITEM_NOT_FOUND);
     }
 
     private ChangeQuantityUseCase CreateUseCase(IOrder.Domain.Entities.Cart cart)
@@ -51,10 +52,12 @@ public class ChangeQuantityUseCaseTest
         var readOnlyRepository = new CartReadOnlyRepositoryBuilder().GetCartAsync(cart).Build();
         var writeOnlyRepository = new CartWriteOnlyRepositoryBuilder().Build();
         var loggedUserService = LoggedUserBuilder.Build(cart.UserId);
+        var validator = new ChangeQuantityValidator();
 
         return new ChangeQuantityUseCase(
+            loggedUserService,
             readOnlyRepository,
             writeOnlyRepository,
-            loggedUserService);
+            validator);
     }
 }

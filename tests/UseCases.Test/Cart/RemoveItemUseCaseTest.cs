@@ -38,7 +38,7 @@ public class RemoveItemUseCaseTest
         Func<Task> act = async () => await useCase.Execute(Guid.NewGuid());
 
         var exception = await act.ShouldThrowAsync<NotFoundException>();
-        exception.Message.ShouldBe(ResourceMessagesException.CART_ITEM_NOT_FOUND);
+        exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.CART_ITEM_NOT_FOUND);
     }
 
     private RemoveItemUseCase CreateUseCase(IOrder.Domain.Entities.Cart cart)
@@ -48,8 +48,8 @@ public class RemoveItemUseCaseTest
         var loggedUserService = LoggedUserBuilder.Build(cart.UserId);
 
         return new RemoveItemUseCase(
+            loggedUserService,
             readOnlyRepository,
-            writeOnlyRepository,
-            loggedUserService);
+            writeOnlyRepository);
     }
 }

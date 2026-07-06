@@ -70,6 +70,6 @@ public class UpdateStoreUseCaseTest
         if (string.IsNullOrEmpty(storeNameExists) == false)
             readRepositoryBuilder.NameExists(storeNameExists);
 
-        return new UpdateStoreUseCase(readRepositoryBuilder.Build(), writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService);
+        return new UpdateStoreUseCase(readRepositoryBuilder.Build(), writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService, new IOrder.Application.UseCases.Store.Commands.UpdateStoreValidator());
     }
 }

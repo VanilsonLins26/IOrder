@@ -65,6 +65,6 @@ public class UpdateOpeningHourUseCaseTest
         if (store != null)
             writeRepositoryBuilder.GetByIdTracking(store);
 
-        return new UpdateOpeningHourUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService);
+        return new UpdateOpeningHourUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService, new IOrder.Application.UseCases.Store.Commands.UpdateOpeningHourValidator());
     }
 }

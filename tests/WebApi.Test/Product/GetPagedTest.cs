@@ -29,12 +29,12 @@ public class GetPagedTest : IOrderClassFixture
 
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
 
         var totalProducts = await _dbContext.Products.CountAsync();
         var expectedCount = Math.Min(totalProducts, 10);
         
-        responseData!.Count.ShouldBe(expectedCount);
+        responseData!.Items.Count.ShouldBe(expectedCount);
     }
 
     [Fact]
@@ -44,8 +44,8 @@ public class GetPagedTest : IOrderClassFixture
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
 
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
-        responseData!.Count.ShouldBe(2);
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
+        responseData!.Items.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -59,10 +59,10 @@ public class GetPagedTest : IOrderClassFixture
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
 
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
 
-        responseData!.Count.ShouldBe(1);
-        responseData[0].Name.ShouldBe(existingProduct.Name);
+        responseData!.Items.Count.ShouldBe(1);
+        responseData!.Items[0].Name.ShouldBe(existingProduct.Name);
     }
 
     [Fact]
@@ -76,10 +76,10 @@ public class GetPagedTest : IOrderClassFixture
 
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
        
         responseData.ShouldNotBeNull();
-        responseData[0].Name.ShouldBe(expectedFirstProduct.Name);
+        responseData!.Items[0].Name.ShouldBe(expectedFirstProduct.Name);
     }
 
     [Fact]
@@ -93,10 +93,10 @@ public class GetPagedTest : IOrderClassFixture
 
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
 
         responseData.ShouldNotBeNull();
-        responseData[0].Name.ShouldBe(expectedFirstProduct.Name);
+        responseData!.Items[0].Name.ShouldBe(expectedFirstProduct.Name);
     }
 
     [Fact]
@@ -106,13 +106,13 @@ public class GetPagedTest : IOrderClassFixture
             .First();
         var priceFilter = expectedProduct.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-        var pagedMethod = $"{method}/paged?price={priceFilter}&priceFilter=EqualTo";
+        var pagedMethod = $"{method}/paged?price={priceFilter}&priceFilter=Equal";
 
         var response = await DoGet(pagedMethod);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<ProductResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<ProductResponseDto>>();
 
-        responseData!.All(p => p.Price == expectedProduct.Price).ShouldBeTrue();
+        responseData!.Items.All(p => p.Price == expectedProduct.Price).ShouldBeTrue();
 
     }
 }

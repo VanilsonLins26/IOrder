@@ -1,7 +1,7 @@
-using CommomTestUtilities.Repositories;
+﻿using CommomTestUtilities.Repositories;
 using IOrder.Application.UseCases.Product.Commands;
 using IOrder.Application.UseCases.Product.Queries;
-using IOrder.Domain.SeedWork.Pagination;
+using IOrder.Domain.Repositories.Product;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -14,18 +14,18 @@ public class GetProductsPagedUseCaseTest
     [Fact]
     public async Task Succes()
     {
-        var filter = new ProductSearchCriteria { PageNumber = 1, PageSize = 10 };
+        var filterDto = new IOrder.Communication.Request.ProductSearchRequestDto { PageNumber = 1, PageSize = 10 }; var filterCriteria = new ProductSearchCriteria(1, 10, null, null, null, null, null, false);
 
-        var useCase = CreateUseCase(filter);
+        var useCase = CreateUseCase(filterCriteria);
         
-        var result = await useCase.Execute(filter);
+        var result = await useCase.Execute(filterDto);
 
         result.ShouldNotBeNull();
-        result.Count().ShouldBe(2);
-        result.First().Name.ShouldBe("P�o");
+        result.Items.Count.ShouldBe(2);
+        result.Items[0].Name.ShouldBe("Pão");
 
     }
-    private static GetProductsPaged CreateUseCase(ProductSearchCriteria filter)
+    private static GetProductsPagedUseCase CreateUseCase(ProductSearchCriteria filter)
     {
         var readRepository = new ProductReadOnlyRepositoryBuilder();
 
@@ -33,7 +33,7 @@ public class GetProductsPagedUseCaseTest
 
 
 
-        return new GetProductsPaged(readRepository.Build());
+        return new GetProductsPagedUseCase(readRepository.Build());
 
     }
 }
