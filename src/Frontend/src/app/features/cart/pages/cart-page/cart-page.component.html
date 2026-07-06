@@ -115,16 +115,16 @@
             <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
           </div>
 
-          @if (cartStore.couponCode()) {
+          @if (cartStore.couponCode() && cartStore.discountValue() != null) {
             <div class="cart-summary__line cart-summary__line--discount">
               <span>Desconto</span>
-              <span>—</span>
+              <span>-{{ cartStore.discountValue() | currency:'BRL' }}</span>
             </div>
           }
 
           <div class="cart-summary__line cart-summary__line--total">
             <span>Total</span>
-            <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
+            <span>{{ (cartStore.discountedTotal() ?? cartStore.cartTotal()) | currency:'BRL' }}</span>
           </div>
 
           <div class="cart-summary__checkout-wrapper">

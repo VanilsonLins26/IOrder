@@ -31,5 +31,7 @@ export interface CartResponseDto {
   userId: string;
   cartTotal: number;
   couponCode: string | null;
+  discountValue: number | null;
+  discountedTotal: number | null;
   items: CartItemResponseDto[];
 }

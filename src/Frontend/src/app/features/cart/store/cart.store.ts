@@ -12,6 +12,8 @@ type CartState = {
   items: CartItemResponseDto[];
   couponCode: string | null;
   cartTotal: number;
+  discountValue: number | null;
+  discountedTotal: number | null;
   loading: boolean;
   error: string | null;
 };
@@ -20,6 +22,8 @@ const initialState: CartState = {
   items: [],
   couponCode: null,
   cartTotal: 0,
+  discountValue: null,
+  discountedTotal: null,
   loading: false,
   error: null,
 };
@@ -42,6 +46,8 @@ export const CartStore = signalStore(
                 items: cart.items,
                 couponCode: cart.couponCode,
                 cartTotal: cart.cartTotal,
+                discountValue: cart.discountValue,
+                discountedTotal: cart.discountedTotal,
                 loading: false,
               }),
               error: (err: any) => {
@@ -72,6 +78,8 @@ export const CartStore = signalStore(
                   items: cart.items,
                   couponCode: cart.couponCode,
                   cartTotal: cart.cartTotal,
+                  discountValue: cart.discountValue,
+                  discountedTotal: cart.discountedTotal,
                   loading: false,
                 });
                 toast.success('Item adicionado ao carrinho!');
@@ -96,6 +104,8 @@ export const CartStore = signalStore(
                 items: cart.items,
                 couponCode: cart.couponCode,
                 cartTotal: cart.cartTotal,
+                discountValue: cart.discountValue,
+                discountedTotal: cart.discountedTotal,
                 loading: false,
               }),
               error: (err: any) => {
@@ -118,6 +128,8 @@ export const CartStore = signalStore(
                 patchState(store, {
                   couponCode: cart.couponCode,
                   cartTotal: cart.cartTotal,
+                  discountValue: cart.discountValue,
+                  discountedTotal: cart.discountedTotal,
                   loading: false,
                 });
                 toast.success('Cupom aplicado com sucesso!');
@@ -141,6 +153,9 @@ export const CartStore = signalStore(
               next: (cart) => patchState(store, {
                 items: cart.items,
                 cartTotal: cart.cartTotal,
+                couponCode: cart.couponCode,
+                discountValue: cart.discountValue,
+                discountedTotal: cart.discountedTotal,
                 loading: false,
               }),
               error: (err: any) => {
