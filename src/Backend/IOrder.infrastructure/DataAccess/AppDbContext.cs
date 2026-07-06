@@ -16,6 +16,7 @@ internal class AppDbContext  : DbContext
     public DbSet<Store> Stores { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<StoreCategory> StoreCategories { get; set; }
+    public DbSet<Coupon> Coupons { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
