@@ -35,6 +35,11 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetByIdAsync(productId)).ReturnsAsync(product);
     }
 
+    public void GetByIdAsync(Product product)
+    {
+        _repository.Setup(repository => repository.GetByIdAsync(product.Id)).ReturnsAsync(product);
+    }
+
     public void ExistsPromotionInDate(Guid ProductId, DateTime initialDate, DateTime finalDate)
     {
         _repository.Setup(repository => repository.ExistsPromotionInDate(ProductId, initialDate, finalDate)).ReturnsAsync(true);
@@ -50,5 +55,8 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetAllPagFiltroPrecoAsync(filter)).ReturnsAsync((products, 2));
     }
 
-
+    public void GetProductPricesByIds(Dictionary<Guid, decimal> prices)
+    {
+        _repository.Setup(repo => repo.GetProductPricesByIds(It.IsAny<List<Guid>>())).ReturnsAsync(prices);
+    }
 }
