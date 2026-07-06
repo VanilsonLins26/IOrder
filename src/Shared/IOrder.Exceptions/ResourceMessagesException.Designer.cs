@@ -79,6 +79,15 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O carrinho já contém itens de outra loja. Limpe o carrinho para adicionar produtos desta loja.
+        /// </summary>
+        public static string CART_DIFFERENT_STORE {
+            get {
+                return ResourceManager.GetString("CART_DIFFERENT_STORE", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a O id do item do carrinho esta vazio.
         /// </summary>
         public static string CART_ITEM_ID_EMPTY {

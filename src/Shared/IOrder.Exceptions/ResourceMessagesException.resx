@@ -261,6 +261,9 @@
   <data name="INVALID_CART" xml:space="preserve">
     <value>O carrinho esta vazio, tente adicionar os produtos novamente</value>
   </data>
+  <data name="CART_DIFFERENT_STORE" xml:space="preserve">
+    <value>O carrinho já contém itens de outra loja. Limpe o carrinho para adicionar produtos desta loja.</value>
+  </data>
   <data name="CART_ITEM_ID_EMPTY" xml:space="preserve">
     <value>O id do item do carrinho esta vazio</value>
   </data>

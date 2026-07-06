@@ -24,6 +24,7 @@ export interface CartItemResponseDto {
   customize: string;
   productName: string;
   productImageUrl: string;
+  storeId: string;
 }
 
 export interface CartResponseDto {
