@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace IOrder.infrastructure.Services;
 
-internal class CloudinaryStorageService : IStorageService
+public class CloudinaryStorageService : IStorageService
 {
     private readonly Cloudinary _cloudinary;
 
@@ -48,7 +48,7 @@ internal class CloudinaryStorageService : IStorageService
         }
     }
 
-    private string ExtractPublicId(string imageUrl)
+    internal string ExtractPublicId(string imageUrl)
     {
         int uploadIndex = imageUrl.IndexOf("upload/");
         if (uploadIndex == -1) return null;

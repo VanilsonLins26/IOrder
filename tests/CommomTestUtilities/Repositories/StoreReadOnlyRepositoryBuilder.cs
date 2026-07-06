@@ -30,6 +30,12 @@ public class StoreReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetByUserIdAsync(store.UserId)).ReturnsAsync(store);
         return this;
     }
+
+    public StoreReadOnlyRepositoryBuilder GetByUserIdAsyncReturnsNull()
+    {
+        _repository.Setup(repository => repository.GetByUserIdAsync(It.IsAny<string>())).ReturnsAsync((Store?)null);
+        return this;
+    }
     
     public StoreReadOnlyRepositoryBuilder GetByIdAsync(Store store)
     {

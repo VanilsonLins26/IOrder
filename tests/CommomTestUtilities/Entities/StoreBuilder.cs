@@ -5,9 +5,10 @@ namespace CommomTestUtilities.Entities;
 
 public class StoreBuilder
 {
-    public static Store Build(string userId = "test-user-id")
+    public static Store Build(string userId = "test-user-id", Guid? storeId = null)
     {
         return new Faker<Store>("pt_BR")
+            .RuleFor(s => s.Id, storeId ?? Guid.CreateVersion7())
             .RuleFor(s => s.Name, f => f.Company.CompanyName())
             .RuleFor(s => s.About, f => f.Lorem.Paragraph())
             .RuleFor(s => s.ImageUrl, f => f.Image.PicsumUrl())

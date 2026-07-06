@@ -21,6 +21,9 @@ public class StorePermissionServiceBuilder
         mock.Setup(s => s.ValidateStoreOwnerAsync(It.IsAny<Store>()))
             .Returns(Task.CompletedTask);
 
+        mock.Setup(s => s.ValidateStoreOwnerAsync(It.IsAny<Guid>()))
+            .Returns(Task.CompletedTask);
+
         mock.Setup(s => s.ValidateCategoryOwnershipAsync(It.IsAny<Category>()))
             .Returns(Task.CompletedTask);
 

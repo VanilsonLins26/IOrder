@@ -21,6 +21,12 @@ public class ProductWriteOnlyRepositoryBuilder
         return this;
     }
 
+    public ProductWriteOnlyRepositoryBuilder Update()
+    {
+        _repository.Setup(x => x.Update(It.IsAny<Product>()));
+        return this;
+    }
+
     public IProductWriteOnlyRepository Build() => _repository.Object;
 
     public ProductWriteOnlyRepositoryBuilder CreatePromotion()
