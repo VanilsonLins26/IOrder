@@ -13,6 +13,8 @@ public class CartItem
     private readonly List<string> _imageUrls = [];
     public IReadOnlyCollection<string> ImageUrls => _imageUrls.AsReadOnly();
     public string Customize { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public string ProductImageUrl { get; set; } = string.Empty;
 
 
     public void UpdateImageUrls(IEnumerable<string> imageUrls)

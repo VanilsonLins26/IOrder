@@ -2,7 +2,6 @@ using IOrder.Application.UseCases.Cart.Commands;
 using IOrder.Application.UseCases.Cart.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
-using IOrder.Communication.Response;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -77,14 +76,13 @@ public class CartController : IOrderBaseController
     }
 
     [HttpDelete("{cartItemId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CartResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(CartResponseDto), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> RemoveItemFromCart([FromServices] IRemoveItemUseCase useCase, Guid cartItemId)
     {
-        await useCase.Execute(cartItemId);
+        var response = await useCase.Execute(cartItemId);
 
-        return Ok();
+        return Ok(response);
 
     }
 

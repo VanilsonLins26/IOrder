@@ -48,6 +48,8 @@ public class AddItemToCartUseCase : IAddItemToCartUseCase
 
         var cartItem = request.Adapt<CartItem>();
         cartItem.UnitPrice = product.Price;
+        cartItem.ProductName = product.Name;
+        cartItem.ProductImageUrl = product.ImageUrl;
 
         cart.AddCartItem(cartItem);
 

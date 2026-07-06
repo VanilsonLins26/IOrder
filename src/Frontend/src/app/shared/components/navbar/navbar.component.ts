@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 import { ThemeService } from '../../../core/services/theme.service';
+import { CartStore } from '../../../features/cart/store/cart.store';
 
 @Component({
   selector: 'app-navbar',
@@ -25,6 +26,17 @@ import { ThemeService } from '../../../core/services/theme.service';
         </div>
 
         <div class="navbar__actions">
+          <a
+            routerLink="/cart"
+            class="navbar__cart-btn"
+            aria-label="Abrir carrinho"
+          >
+            🛒
+            @if (cartStore.itemCount() > 0) {
+              <span class="navbar__cart-badge">{{ cartStore.itemCount() }}</span>
+            }
+          </a>
+
           <button
             class="navbar__icon-btn"
             (click)="themeService.toggle()"
@@ -96,6 +108,12 @@ import { ThemeService } from '../../../core/services/theme.service';
           <a routerLink="/stores" routerLinkActive="navbar__link--active"
              class="navbar__mobile-link" (click)="closeMobileMenu()">
             Lojas
+          </a>
+          <a routerLink="/cart" class="navbar__mobile-link" (click)="closeMobileMenu()">
+            Carrinho
+            @if (cartStore.itemCount() > 0) {
+              ({{ cartStore.itemCount() }})
+            }
           </a>
         </div>
       }
@@ -187,7 +205,8 @@ import { ThemeService } from '../../../core/services/theme.service';
       gap: var(--space-2);
     }
 
-    .navbar__icon-btn {
+    .navbar__icon-btn,
+    .navbar__cart-btn {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -201,6 +220,30 @@ import { ThemeService } from '../../../core/services/theme.service';
         background: var(--color-neutral-100);
         :host-context([data-theme='dark']) & { background: var(--color-neutral-800); }
       }
+    }
+
+    .navbar__cart-btn {
+      position: relative;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .navbar__cart-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: var(--font-weight-bold);
+      color: white;
+      background: var(--color-error);
+      border-radius: var(--radius-full);
+      line-height: 1;
     }
 
     .navbar__user {
@@ -427,6 +470,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 export class NavbarComponent {
   protected readonly auth         = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly cartStore    = inject(CartStore);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly dropdownOpen = signal(false);
 

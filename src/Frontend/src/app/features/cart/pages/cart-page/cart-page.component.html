@@ -1,0 +1,128 @@
+<div class="cart-page">
+  <div class="cart-page__container">
+    <header class="cart-page__header">
+      <h1 class="cart-page__title">Meu Carrinho</h1>
+      @if (cartStore.items().length > 0) {
+        <button class="cart-page__clear-btn" (click)="clearCart()">
+          Limpar carrinho
+        </button>
+      }
+    </header>
+
+    @if (cartStore.loading() && cartStore.items().length === 0) {
+      <div class="cart-page__skeleton">
+        @for (i of [1,2,3]; track i) {
+          <div class="cart-skeleton-item">
+            <app-loading-skeleton height="100px" border-radius="var(--radius-xl)" />
+          </div>
+        }
+      </div>
+    } @else if (cartStore.items().length === 0) {
+      <app-empty-state
+        icon="🛒"
+        title="Seu carrinho está vazio"
+        description="Explore as lojas e adicione produtos ao carrinho para começar."
+        actionLabel="Explorar lojas"
+        (action)="goToStores()"
+      />
+    } @else {
+      <div class="cart-page__content">
+        <div class="cart-page__items">
+          @for (item of cartStore.items(); track trackByItemId($index, item)) {
+            <div class="cart-item">
+              <div class="cart-item__image">
+                @if (item.productImageUrl) {
+                  <img [src]="item.productImageUrl" alt="" class="cart-item__img" />
+                } @else if (item.imageUrls[0]) {
+                  <img [src]="item.imageUrls[0]" alt="" class="cart-item__img" />
+                } @else {
+                  <div class="cart-item__img-placeholder">📦</div>
+                }
+              </div>
+
+              <div class="cart-item__info">
+                <p class="cart-item__name">{{ item.productName || 'Produto' }}</p>
+                @if (item.customize) {
+                  <p class="cart-item__customize">{{ item.customize }}</p>
+                }
+              </div>
+
+              <div class="cart-item__quantity">
+                <button
+                  class="cart-item__qty-btn"
+                  (click)="changeQuantity(item.id, item.quantity - 1)"
+                  [disabled]="item.quantity <= 1"
+                  aria-label="Diminuir quantidade"
+                >−</button>
+                <span class="cart-item__qty-value">{{ item.quantity }}</span>
+                <button
+                  class="cart-item__qty-btn"
+                  (click)="changeQuantity(item.id, item.quantity + 1)"
+                  aria-label="Aumentar quantidade"
+                >+</button>
+              </div>
+
+              <div class="cart-item__prices">
+                <span class="cart-item__unit-price">{{ item.unitPrice | currency:'BRL' }}</span>
+                <span class="cart-item__total-price">{{ item.totalPrice | currency:'BRL' }}</span>
+              </div>
+
+              <button
+                class="cart-item__remove-btn"
+                (click)="removeItem(item.id)"
+                aria-label="Remover item"
+              >✕</button>
+            </div>
+          }
+        </div>
+
+        <aside class="cart-summary">
+          <h2 class="cart-summary__title">Resumo</h2>
+
+          <div class="cart-summary__coupon">
+            <label class="cart-summary__label" for="coupon-input">Cupom de desconto</label>
+            <div class="cart-summary__coupon-row">
+              <input
+                id="coupon-input"
+                type="text"
+                class="cart-summary__coupon-input"
+                placeholder="Digite o cupom"
+                [ngModel]="couponInput()"
+                (ngModelChange)="couponInput.set($event)"
+                (keyup.enter)="applyCoupon()"
+              />
+              <button class="cart-summary__coupon-btn" (click)="applyCoupon()">Aplicar</button>
+            </div>
+            @if (cartStore.couponCode()) {
+              <span class="cart-summary__coupon-applied">
+                Cupom: <strong>{{ cartStore.couponCode() }}</strong>
+              </span>
+            }
+          </div>
+
+          <div class="cart-summary__line">
+            <span>Subtotal</span>
+            <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
+          </div>
+
+          @if (cartStore.couponCode()) {
+            <div class="cart-summary__line cart-summary__line--discount">
+              <span>Desconto</span>
+              <span>—</span>
+            </div>
+          }
+
+          <div class="cart-summary__line cart-summary__line--total">
+            <span>Total</span>
+            <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
+          </div>
+
+          <button class="cart-summary__checkout-btn" disabled>
+            Finalizar Pedido
+          </button>
+          <p class="cart-summary__info">Checkout disponível em breve</p>
+        </aside>
+      </div>
+    }
+  </div>
+</div>

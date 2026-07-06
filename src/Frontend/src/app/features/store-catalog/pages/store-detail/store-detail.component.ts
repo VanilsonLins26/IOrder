@@ -7,7 +7,7 @@ import { CategoryApiService } from '../../../../core/services/api/category-api.s
 import { StoreInfoHeaderComponent } from '../../components/store-info-header/store-info-header';
 import { ProductGridComponent } from '../../components/product-grid/product-grid';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
-import { ToastService } from '../../../../core/services/toast.service';
+import { CartStore } from '../../../cart/store/cart.store';
 import type { StoreResponse } from '../../../../core/models/store.model';
 import type { ProductResponse } from '../../../../core/models/product.model';
 
@@ -26,7 +26,7 @@ export class StoreDetailComponent {
   private readonly storeApi = inject(StoreApiService);
   private readonly productApi = inject(ProductApiService);
   private readonly categoryApi = inject(CategoryApiService);
-  private readonly toast = inject(ToastService);
+  private readonly cartStore = inject(CartStore);
 
   readonly storeResource = rxResource({
     stream: () => this.storeApi.getById(this.id()),
@@ -66,6 +66,10 @@ export class StoreDetailComponent {
   });
 
   onAddToCart(product: ProductResponse) {
-    this.toast.success(`Adicionado: ${product.name}`);
+    this.cartStore.addItem({
+      productId: product.id,
+      quantity: 1,
+      imageUrls: product.imageUrl ? [product.imageUrl] : [],
+    });
   }
 }
