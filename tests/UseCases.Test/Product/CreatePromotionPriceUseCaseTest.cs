@@ -1,6 +1,7 @@
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Product;
-using IOrder.Application.UseCases.Product;
+using IOrder.Application.UseCases.Product.Commands;
+using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Communication.Request;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
@@ -105,7 +106,7 @@ public class CreatePromotionPriceUseCaseTest
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
 
-        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork, storePermissionService);
+        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork, storePermissionService, new IOrder.Application.UseCases.Product.Commands.CreatePromotionPriceValidator());
 
     }
 }

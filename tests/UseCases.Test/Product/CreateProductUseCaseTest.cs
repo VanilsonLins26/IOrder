@@ -1,6 +1,7 @@
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Product;
-using IOrder.Application.UseCases.Product;
+using IOrder.Application.UseCases.Product.Commands;
+using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;
@@ -72,8 +73,9 @@ public class CreateProductUseCaseTest
         
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
+        var validator = new IOrder.Application.UseCases.Product.Commands.CreateProductValidator();
 
-        return new CreateProductUseCase(writeRepository, unitOfWork, readRepository.Build(), storePermissionService);
+        return new CreateProductUseCase(writeRepository, unitOfWork, readRepository.Build(), storePermissionService, validator);
 
     }
 }

@@ -10,6 +10,8 @@ using IOrder.infrastructure.Repositories.Store;
 using IOrder.infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using IOrder.Domain.Repositories.Cart;
+using IOrder.infrastructure.Repositories.Cart;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IOrder.infrastructure;
@@ -22,6 +24,7 @@ public static class DependencyInjectionExtension
         AddRepositories(services);
         AddServices(services);
         AddWorkers(services);
+        AddRedisCache(services, configuration);
     }
 
     private static void AddDbContext(IServiceCollection services, IConfiguration configuration)
@@ -30,6 +33,15 @@ public static class DependencyInjectionExtension
         var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
         services.AddDbContext<AppDbContext>(config => config.UseMySql(connectionString, serverVersion));
+    }
+
+    private static void AddRedisCache(IServiceCollection services, IConfiguration configuration)
+    {
+        var redisConnectionString = configuration.GetConnectionString("RedisConnection");
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+        });
     }
 
     private static void AddRepositories(IServiceCollection services)
@@ -44,6 +56,9 @@ public static class DependencyInjectionExtension
         services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryReadOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
 
         services.AddScoped<IOrder.Domain.Repositories.StoreCategory.IStoreCategoryReadOnlyRepository, IOrder.infrastructure.Repositories.StoreCategory.StoreCategoryRepository>();
+
+        services.AddScoped<ICartWriteOnlyRepository, CartRepository>();
+        services.AddScoped<ICartReadOnlyRepository, CartRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }

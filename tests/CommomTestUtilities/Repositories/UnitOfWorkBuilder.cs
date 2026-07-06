@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Repositories;
+using IOrder.Domain.Repositories;
 using Moq;
 
 namespace CommomTestUtilities.Repositories;

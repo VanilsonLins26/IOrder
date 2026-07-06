@@ -2,7 +2,8 @@ using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Category;
 using CommomTestUtilities.Services;
-using IOrder.Application.UseCases.Category;
+using IOrder.Application.UseCases.Category.Commands;
+using IOrder.Application.UseCases.Category.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;
@@ -69,6 +70,6 @@ public class CreateCategoryUseCaseTest
             readOnlyRepository.Build(),
             writeOnlyRepository.Build(),
             uow,
-            permissionService);
+            permissionService, new IOrder.Application.UseCases.Category.Commands.CreateCategoryValidator());
     }
 }

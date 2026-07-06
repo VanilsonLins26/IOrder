@@ -1,5 +1,5 @@
-﻿using CommomTestUtilities.Requests.Product;
-using IOrder.Application.UseCases.Product;
+using CommomTestUtilities.Requests.Product;
+using IOrder.Application.UseCases.Product.Commands;
 using IOrder.Exceptions;
 using Shouldly;
 

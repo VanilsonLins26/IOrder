@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using IOrder.Communication.Request;
 using System;
 using System.Collections.Generic;

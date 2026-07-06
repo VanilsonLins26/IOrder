@@ -1,4 +1,4 @@
-﻿using IOrder.Communication.Response;
+using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using Mapster;
 using System;

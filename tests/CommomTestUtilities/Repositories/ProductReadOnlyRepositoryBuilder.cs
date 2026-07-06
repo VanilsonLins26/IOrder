@@ -1,7 +1,5 @@
 using IOrder.Domain.Entities;
-using IOrder.Domain.Pagination;
 using IOrder.Domain.Repositories.Product;
-using IOrder.Domain.SeedWork.Pagination;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,10 +28,21 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetAll()).Returns(products);
     }
 
+    public void GetByIdReturnsNull(Guid productId)
+    {
+        _repository.Setup(repository => repository.GetByIdAsync(productId)).ReturnsAsync((Product?)null);
+    }
+
     public void GetByIdAsync(Guid productId)
     {
-        var product = new Product { Id = productId, Price = 50000m};
+        var product = new Product { Id = productId };
+        product.UpdatePrice(50000m);
         _repository.Setup(repository => repository.GetByIdAsync(productId)).ReturnsAsync(product);
+    }
+
+    public void GetByIdAsync(Product product)
+    {
+        _repository.Setup(repository => repository.GetByIdAsync(product.Id)).ReturnsAsync(product);
     }
 
     public void ExistsPromotionInDate(Guid ProductId, DateTime initialDate, DateTime finalDate)
@@ -41,18 +50,18 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.ExistsPromotionInDate(ProductId, initialDate, finalDate)).ReturnsAsync(true);
     }
 
-    public void GetAllPagFiltroPrecoAsync(ProductSearchQuery filter)
+    public void GetAllPagFiltroPrecoAsync(ProductSearchCriteria filter)
     {
         var product1 = new Product { Id = Guid.NewGuid(), Name = "Pão" };
         var product2 = new Product { Id = Guid.NewGuid(), Name = "Queijo" };
        
-
         var products = new List<Product> { product1, product2 };
 
-        var pagedList = new PagedList<Product>(products, count: 2, pageNumber: 1, pageSize: 10);
-
-        _repository.Setup(repository => repository.GetAllPagFiltroPrecoAsync(filter)).ReturnsAsync(pagedList);
+        _repository.Setup(repository => repository.GetAllPagFiltroPrecoAsync(It.IsAny<ProductSearchCriteria>())).ReturnsAsync((products, 2));
     }
 
-
+    public void GetProductPricesByIds(Dictionary<Guid, decimal> prices)
+    {
+        _repository.Setup(repo => repo.GetProductPricesByIds(It.IsAny<List<Guid>>())).ReturnsAsync(prices);
+    }
 }

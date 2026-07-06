@@ -25,6 +25,13 @@ public class IOrderClassFixture : IClassFixture<CustomWebApplicationFactory>
         return await _httpCLient.PutAsJsonAsync(method, request);
     }
 
+    protected async Task<HttpResponseMessage> DoPatch(string method, object request, string token = "")
+    {
+        AuthorizeRequest(token);
+        // Note: PatchAsJsonAsync requires System.Net.Http.Json which is included
+        return await _httpCLient.PatchAsJsonAsync(method, request);
+    }
+
     protected async Task<HttpResponseMessage> DoGet(string method, string token = "")
     {
         AuthorizeRequest(token);

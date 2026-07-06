@@ -39,8 +39,7 @@ public class StoreReadOnlyRepositoryBuilder
 
     public StoreReadOnlyRepositoryBuilder GetAllPaged(IList<Store> stores)
     {
-        var pagedList = new IOrder.Domain.Pagination.PagedList<Store>([.. stores], stores.Count, 1, 10);
-        _repository.Setup(repository => repository.GetAllPaged(It.IsAny<IOrder.Domain.SeedWork.Pagination.StoreSearchQuery>())).ReturnsAsync(pagedList);
+        _repository.Setup(repository => repository.GetAllPaged(It.IsAny<StoreSearchCriteria>())).ReturnsAsync((stores, stores.Count));
         return this;
     }
 

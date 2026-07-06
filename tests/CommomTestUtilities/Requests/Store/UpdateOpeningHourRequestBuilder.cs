@@ -15,7 +15,7 @@ public class UpdateOpeningHourRequestBuilder
 
         var hours = request.OpeningHours.ToList();
         for (int i = 0; i < hours.Count; i++)
-            hours[i].DayOfWeek = i;
+            hours[i].DayOfWeek = (System.DayOfWeek)i;
         request.OpeningHours = hours;
 
         return request;

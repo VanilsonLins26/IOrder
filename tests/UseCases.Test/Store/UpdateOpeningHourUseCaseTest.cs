@@ -2,7 +2,8 @@ using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Store;
 using CommomTestUtilities.Services;
-using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
+using IOrder.Application.UseCases.Store.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;
@@ -64,6 +65,6 @@ public class UpdateOpeningHourUseCaseTest
         if (store != null)
             writeRepositoryBuilder.GetByIdTracking(store);
 
-        return new UpdateOpeningHourUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService);
+        return new UpdateOpeningHourUseCase(writeRepositoryBuilder.Build(), unitOfWork, loggedUserService, storePermissionService, new IOrder.Application.UseCases.Store.Commands.UpdateOpeningHourValidator());
     }
 }

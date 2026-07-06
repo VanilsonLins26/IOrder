@@ -1,6 +1,7 @@
 using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
-using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
+using IOrder.Application.UseCases.Store.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Shouldly;
@@ -36,13 +37,13 @@ public class GetByIdStoreTest
         exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.STORE_NOT_FOUND);
     }
 
-    private static GetByIdStore CreateUseCase(IOrder.Domain.Entities.Store? store = null)
+    private static GetByIdStoreUseCase CreateUseCase(IOrder.Domain.Entities.Store? store = null)
     {
         var readRepositoryBuilder = new StoreReadOnlyRepositoryBuilder();
 
         if (store != null)
             readRepositoryBuilder.GetByIdAsync(store);
 
-        return new GetByIdStore(readRepositoryBuilder.Build());
+        return new GetByIdStoreUseCase(readRepositoryBuilder.Build());
     }
 }

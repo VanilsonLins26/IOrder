@@ -1,6 +1,6 @@
 using System.Linq;
 using CommomTestUtilities.Requests.Store;
-using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
 using IOrder.Exceptions;
 using Shouldly;
 using Xunit;
@@ -37,10 +37,10 @@ public class UpdateOpeningHourValidatorTest
         var request = UpdateOpeningHourRequestBuilder.Build();
         
         var hour = OpeningHourRequestBuilder.Build();
-        hour.DayOfWeek = 1;
+        hour.DayOfWeek = System.DayOfWeek.Monday;
 
         var hour2 = OpeningHourRequestBuilder.Build();
-        hour2.DayOfWeek = 1;
+        hour2.DayOfWeek = System.DayOfWeek.Monday;
 
         request.OpeningHours = [hour, hour2];
 

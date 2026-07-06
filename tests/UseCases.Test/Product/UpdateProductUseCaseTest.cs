@@ -1,6 +1,7 @@
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Product;
-using IOrder.Application.UseCases.Product;
+using IOrder.Application.UseCases.Product.Commands;
+using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
@@ -78,7 +79,7 @@ public class UpdateProductUseCaseTest
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
 
-        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build(), storePermissionService);
+        return new UpdateProductUseCase(writeRepository.Build(), unitOfWork, readRepository.Build(), storePermissionService, new IOrder.Application.UseCases.Product.Commands.UpdateProductValidator());
 
     }
 }

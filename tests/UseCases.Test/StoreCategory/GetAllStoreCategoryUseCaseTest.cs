@@ -1,6 +1,6 @@
 using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
-using IOrder.Application.UseCases.StoreCategory;
+using IOrder.Application.UseCases.StoreCategory.Queries;
 using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;

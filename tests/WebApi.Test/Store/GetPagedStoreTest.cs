@@ -1,5 +1,6 @@
 using IOrder.Communication.Response;
-using IOrder.Domain.Pagination;
+using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Repositories.Product;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
@@ -22,8 +23,8 @@ public class GetPagedStoreTest : IOrderClassFixture
         var response = await DoGet(method);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var responseData = await response.Content.ReadFromJsonAsync<PagedList<StoreResponseDto>>();
+        var responseData = await response.Content.ReadFromJsonAsync<PagedResponse<StoreResponseDto>>();
         responseData.ShouldNotBeNull();
-        responseData!.ShouldNotBeEmpty();
+        responseData!.Items.ShouldNotBeEmpty();
     }
 }

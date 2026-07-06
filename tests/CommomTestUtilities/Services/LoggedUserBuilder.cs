@@ -1,4 +1,4 @@
-using IOrder.Application.Services.LoggedUser;
+using IOrder.Domain.Security.Services;
 using Moq;
 
 namespace CommomTestUtilities.Services;

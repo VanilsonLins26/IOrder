@@ -1,5 +1,5 @@
 using CommomTestUtilities.Requests.Store;
-using IOrder.Application.UseCases.Store;
+using IOrder.Application.UseCases.Store.Commands;
 using IOrder.Exceptions;
 using Shouldly;
 using Xunit;
@@ -36,7 +36,7 @@ public class OpeningHourValidatorTest
     {
         var validator = new OpeningHourValidator();
         var request = OpeningHourRequestBuilder.Build();
-        request.DayOfWeek = invalidDay;
+        request.DayOfWeek = (System.DayOfWeek)invalidDay;
         var result = validator.Validate(request);
         result.IsValid.ShouldBe(false);
         result.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(ResourceMessagesException.DAY_OF_WEEK_INVALID);

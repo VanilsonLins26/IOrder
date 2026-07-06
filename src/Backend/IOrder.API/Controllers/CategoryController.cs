@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 
 namespace IOrder.API.Controllers;
 
-[Route("[controller]")]
-[ApiController]
 [Authorize]
 public class CategoryController : IOrderBaseController
 {
