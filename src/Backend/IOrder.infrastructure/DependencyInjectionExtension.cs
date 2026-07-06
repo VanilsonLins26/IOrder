@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using IOrder.Domain.Repositories.Cart;
 using IOrder.infrastructure.Repositories.Cart;
+using IOrder.Domain.Repositories.Coupon;
+using IOrder.infrastructure.Repositories.Coupon;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IOrder.infrastructure;
@@ -59,6 +61,9 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<ICartWriteOnlyRepository, CartRepository>();
         services.AddScoped<ICartReadOnlyRepository, CartRepository>();
+
+        services.AddScoped<ICouponWriteOnlyRepository, CouponRepository>();
+        services.AddScoped<ICouponReadOnlyRepository, CouponRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }

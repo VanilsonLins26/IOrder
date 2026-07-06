@@ -264,4 +264,22 @@
   <data name="CART_ITEM_ID_EMPTY" xml:space="preserve">
     <value>O id do item do carrinho esta vazio</value>
   </data>
+  <data name="COUPON_NOT_FOUND" xml:space="preserve">
+    <value>Cupom não encontrado</value>
+  </data>
+  <data name="COUPON_EXPIRED" xml:space="preserve">
+    <value>Este cupom já expirou</value>
+  </data>
+  <data name="COUPON_USAGE_LIMIT" xml:space="preserve">
+    <value>Este cupom atingiu o limite de usos</value>
+  </data>
+  <data name="COUPON_CODE_EXISTS" xml:space="preserve">
+    <value>Já existe um cupom com este código</value>
+  </data>
+  <data name="COUPON_MIN_PURCHASE" xml:space="preserve">
+    <value>Valor mínimo da compra não atingido</value>
+  </data>
+  <data name="COUPON_INVALID" xml:space="preserve">
+    <value>Cupom inválido</value>
+  </data>
 </root>

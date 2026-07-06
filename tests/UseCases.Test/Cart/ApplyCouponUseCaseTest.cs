@@ -18,7 +18,9 @@ public class ApplyCouponUseCaseTest
     public async Task Success()
     {
         var request = ApplyCouponRequestBuilder.Build();
-        var useCase = CreateUseCase();
+        var coupon = CouponBuilder.Build(request.CouponCode);
+        coupon.MinPurchaseAmount = null;
+        var useCase = CreateUseCase(coupon);
 
         var response = await useCase.Execute(request);
 
@@ -39,19 +41,23 @@ public class ApplyCouponUseCaseTest
         exception.GetErrorMessages().ShouldHaveSingleItem();
     }
 
-    private ApplyCouponUseCase CreateUseCase()
+    private ApplyCouponUseCase CreateUseCase(IOrder.Domain.Entities.Coupon? coupon = null)
     {
         var cart = CartBuilder.Build();
-        cart.CouponCode = string.Empty; // Reset coupon code to ensure testing the new one
+        cart.CouponCode = string.Empty;
         var readOnlyRepository = new CartReadOnlyRepositoryBuilder().GetCartAsync(cart).Build();
         var writeOnlyRepository = new CartWriteOnlyRepositoryBuilder().Build();
         var loggedUserService = LoggedUserBuilder.Build(cart.UserId);
+        var couponReadOnlyRepository = new CouponReadOnlyRepositoryBuilder()
+            .GetByCodeAsync(coupon)
+            .Build();
         var validator = new ApplyCouponValidator();
 
         return new ApplyCouponUseCase(
             loggedUserService,
             readOnlyRepository,
             writeOnlyRepository,
+            couponReadOnlyRepository,
             validator);
     }
 }

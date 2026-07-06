@@ -500,5 +500,59 @@ namespace IOrder.Exceptions {
                 return ResourceManager.GetString("ZIP_CODE_INVALID", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Cupom não encontrado.
+        /// </summary>
+        public static string COUPON_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("COUPON_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Este cupom já expirou.
+        /// </summary>
+        public static string COUPON_EXPIRED {
+            get {
+                return ResourceManager.GetString("COUPON_EXPIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Este cupom atingiu o limite de usos.
+        /// </summary>
+        public static string COUPON_USAGE_LIMIT {
+            get {
+                return ResourceManager.GetString("COUPON_USAGE_LIMIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Já existe um cupom com este código.
+        /// </summary>
+        public static string COUPON_CODE_EXISTS {
+            get {
+                return ResourceManager.GetString("COUPON_CODE_EXISTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Valor mínimo da compra não atingido.
+        /// </summary>
+        public static string COUPON_MIN_PURCHASE {
+            get {
+                return ResourceManager.GetString("COUPON_MIN_PURCHASE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Cupom inválido.
+        /// </summary>
+        public static string COUPON_INVALID {
+            get {
+                return ResourceManager.GetString("COUPON_INVALID", resourceCulture);
+            }
+        }
     }
 }

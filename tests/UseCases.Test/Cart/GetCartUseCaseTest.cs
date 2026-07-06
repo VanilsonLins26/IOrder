@@ -56,10 +56,15 @@ public class GetCartUseCaseTest
             productReadOnlyBuilder.GetProductPricesByIds(prices);
         }
 
+        var couponReadOnlyRepository = new CouponReadOnlyRepositoryBuilder()
+            .GetByCodeAsync(null)
+            .Build();
+
         return new GetCartUseCase(
             loggedUserService,
             readOnlyRepository,
             productReadOnlyBuilder.Build(),
-            writeOnlyRepository);
+            writeOnlyRepository,
+            couponReadOnlyRepository);
     }
 }
