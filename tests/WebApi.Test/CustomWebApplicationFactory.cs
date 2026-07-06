@@ -1,5 +1,6 @@
 using CommomTestUtilities.Entities;
 using IOrder.Domain.Entities;
+using IOrder.Domain.Entities.Enums;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -19,6 +20,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     private readonly RedisContainer _redisContainer;
     public IEnumerable<IOrder.Domain.Entities.Product> ProductList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Category> CategoryList { get; private set; } = [];
+    public IEnumerable<IOrder.Domain.Entities.Coupon> CouponList { get; private set; } = [];
 
     public CustomWebApplicationFactory()
     {
@@ -71,6 +73,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+        await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
 
         var category = await dbContext.StoreCategories.FirstOrDefaultAsync();
@@ -100,6 +103,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         var category2 = CategoryBuilder.Build(store.Id);
         CategoryList = [category1, category2];
         await dbContext.Categories.AddRangeAsync(category1, category2);
+
+        var coupon = new IOrder.Domain.Entities.Coupon
+        {
+            Code = "TEST10",
+            DiscountType = CouponDiscountType.Percentage,
+            DiscountValue = 10m,
+            MaxDiscountAmount = 50m,
+            MinPurchaseAmount = 20m,
+            ExpiresAt = DateTime.UtcNow.AddMonths(1),
+            MaxUsageCount = 100,
+            CurrentUsageCount = 0
+        };
+        await dbContext.Coupons.AddAsync(coupon);
+        CouponList = [coupon];
+
         await dbContext.SaveChangesAsync();
     }
 

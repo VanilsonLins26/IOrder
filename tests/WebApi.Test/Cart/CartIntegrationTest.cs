@@ -93,14 +93,14 @@ public class CartIntegrationTest : IOrderClassFixture
         addRequest.ProductId = product.Id;
         await DoPatch("Cart/AddItem", addRequest, _token);
 
-        var request = ApplyCouponRequestBuilder.Build();
+        var request = new ApplyCouponRequestDto { CouponCode = "TEST10" };
 
         var response = await DoPatch("Cart/Coupon", request, _token);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cartResponse = await response.Content.ReadFromJsonAsync<CartResponseDto>();
         cartResponse.ShouldNotBeNull();
-        cartResponse.CouponCode.ShouldBe(request.CouponCode);
+        cartResponse.CouponCode.ShouldBe("TEST10");
     }
 
     [Fact]

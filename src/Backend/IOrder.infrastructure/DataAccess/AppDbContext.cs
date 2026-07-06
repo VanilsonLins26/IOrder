@@ -140,6 +140,48 @@ internal class AppDbContext  : DbContext
                 StoreId = storeCestasId, CategoryId = menuRomanticasId, Customizable = true
             }
         );
+
+        modelBuilder.Entity<Coupon>().HasData(
+            new
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000001"),
+                Code = "BEMVINDO10",
+                DiscountType = Domain.Entities.Enums.CouponDiscountType.Percentage,
+                DiscountValue = 10m,
+                MaxDiscountAmount = 30m,
+                MinPurchaseAmount = 50m,
+                ExpiresAt = DateTime.UtcNow.AddMonths(6),
+                MaxUsageCount = 100,
+                CurrentUsageCount = 0,
+                Active = true
+            },
+            new
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000002"),
+                Code = "FRETE20",
+                DiscountType = Domain.Entities.Enums.CouponDiscountType.FixedAmount,
+                DiscountValue = 20m,
+                MaxDiscountAmount = (decimal?)null,
+                MinPurchaseAmount = 80m,
+                ExpiresAt = DateTime.UtcNow.AddMonths(3),
+                MaxUsageCount = 50,
+                CurrentUsageCount = 0,
+                Active = true
+            },
+            new
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000003"),
+                Code = "NIVER15",
+                DiscountType = Domain.Entities.Enums.CouponDiscountType.Percentage,
+                DiscountValue = 15m,
+                MaxDiscountAmount = 50m,
+                MinPurchaseAmount = (decimal?)null,
+                ExpiresAt = DateTime.UtcNow.AddMonths(12),
+                MaxUsageCount = 200,
+                CurrentUsageCount = 0,
+                Active = true
+            }
+        );
     }
 
 
