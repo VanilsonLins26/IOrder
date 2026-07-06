@@ -10,7 +10,6 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using IOrder.Communication.Request;
-using IOrder.Application.UseCases.Cart.Commands;
 
 namespace UseCases.Test.Cart;
 
@@ -52,6 +51,10 @@ public class AddItemToCartUseCaseTest
         {
             var product = new IOrder.Domain.Entities.Product { Id = request.ProductId };
             productReadOnlyBuilder.GetByIdAsync(product);
+        }
+        else
+        {
+            productReadOnlyBuilder.GetByIdReturnsNull(request.ProductId);
         }
 
         var validator = new AddItemToCartValidator();

@@ -15,7 +15,7 @@ namespace WebApi.Test.Cart;
 public class CartIntegrationTest : IOrderClassFixture
 {
     private readonly CustomWebApplicationFactory _factory;
-    private readonly string _token = "test-token"; // Using TestAuthHandler which ignores token validation
+    private readonly string _token = Guid.NewGuid().ToString();
 
     public CartIntegrationTest(CustomWebApplicationFactory factory) : base(factory)
     {

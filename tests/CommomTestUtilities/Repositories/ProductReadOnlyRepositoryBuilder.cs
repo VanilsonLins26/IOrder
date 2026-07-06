@@ -28,6 +28,11 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.GetAll()).Returns(products);
     }
 
+    public void GetByIdReturnsNull(Guid productId)
+    {
+        _repository.Setup(repository => repository.GetByIdAsync(productId)).ReturnsAsync((Product?)null);
+    }
+
     public void GetByIdAsync(Guid productId)
     {
         var product = new Product { Id = productId };

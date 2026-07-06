@@ -5,7 +5,6 @@ using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Cart.Commands;
 using IOrder.Exceptions.ExceptionBase;
 using IOrder.Exceptions;
-using IOrder.Application.UseCases.Cart.Commands;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
@@ -43,6 +42,7 @@ public class ApplyCouponUseCaseTest
     private ApplyCouponUseCase CreateUseCase()
     {
         var cart = CartBuilder.Build();
+        cart.CouponCode = string.Empty; // Reset coupon code to ensure testing the new one
         var readOnlyRepository = new CartReadOnlyRepositoryBuilder().GetCartAsync(cart).Build();
         var writeOnlyRepository = new CartWriteOnlyRepositoryBuilder().Build();
         var loggedUserService = LoggedUserBuilder.Build(cart.UserId);

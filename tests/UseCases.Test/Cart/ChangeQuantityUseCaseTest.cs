@@ -6,7 +6,6 @@ using IOrder.Application.UseCases.Cart.Commands;
 using IOrder.Domain.Entities;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
-using IOrder.Application.UseCases.Cart.Commands;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
