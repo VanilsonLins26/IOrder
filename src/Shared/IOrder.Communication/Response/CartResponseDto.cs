@@ -9,5 +9,7 @@ public class CartResponseDto
     public string UserId { get; set; } = string.Empty;
     public decimal CartTotal { get; set; }
     public string? CouponCode { get; set; }
+    public decimal? DiscountValue { get; set; }
+    public decimal? DiscountedTotal { get; set; }
     public List<CartItemResponseDto> Items { get; set; } = [];
 }
