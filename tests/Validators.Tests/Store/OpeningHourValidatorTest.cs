@@ -36,7 +36,7 @@ public class OpeningHourValidatorTest
     {
         var validator = new OpeningHourValidator();
         var request = OpeningHourRequestBuilder.Build();
-        request.DayOfWeek = invalidDay;
+        request.DayOfWeek = (System.DayOfWeek)invalidDay;
         var result = validator.Validate(request);
         result.IsValid.ShouldBe(false);
         result.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(ResourceMessagesException.DAY_OF_WEEK_INVALID);
