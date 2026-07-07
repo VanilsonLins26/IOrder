@@ -30,7 +30,7 @@
             </span>
           </span>
           <span class="col--actions">
-            <a [routerLink]="['/orders', order.id]" class="action-btn">Ver</a>
+            <a [routerLink]="['/admin/orders', order.id]" class="action-btn">Ver</a>
             @for (action of getNextStatuses(order.status); track action.status) {
               <button class="action-btn action-btn--primary" (click)="updateStatus(order.id, action.status)">
                 {{ action.label }}

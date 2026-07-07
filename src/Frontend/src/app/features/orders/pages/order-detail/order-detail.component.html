@@ -18,6 +18,14 @@
       </span>
     </header>
 
+    @if (order.status === OrderStatusDto.Pending) {
+      <div class="order-detail__actions">
+        <button class="order-detail__cancel-btn" (click)="cancelOrder()" [disabled]="cancelling()">
+          {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
+        </button>
+      </div>
+    }
+
     <div class="order-detail__grid">
       <section class="order-detail__section">
         <h2 class="order-detail__section-title">Resumo</h2>
@@ -81,34 +89,53 @@
       </section>
     </div>
 
-    @if (order.messages.length > 0) {
-      <section class="order-detail__section">
-        <h2 class="order-detail__section-title">Mensagens</h2>
-        <div class="order-detail__messages">
-          @for (msg of order.messages; track msg.id) {
-            <div class="message">
-              <div class="message__header">
-                <span class="message__author">{{ msg.userRole === 'ShopKeeper' ? 'Lojista' : 'Você' }}</span>
-                <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
-                @if (msg.type === MessageTypeDto.Proposal) {
-                  <span class="message__tag message__tag--proposal">Proposta</span>
-                }
-              </div>
-              <p class="message__text">{{ msg.message }}</p>
-              @if (msg.type === MessageTypeDto.Proposal) {
-                <div class="message__proposal">
-                  @if (msg.proposedTotalAmount != null) {
-                    <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
-                  }
-                  @if (msg.proposedDeliveryDate != null) {
-                    <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span>
-                  }
-                </div>
+    <section class="order-detail__section">
+      <h2 class="order-detail__section-title">Mensagens</h2>
+
+      <div class="send-message">
+        <input
+          type="text"
+          class="send-message__input"
+          placeholder="Digite sua mensagem..."
+          [ngModel]="messageText()"
+          (ngModelChange)="messageText.set($event)"
+          (keyup.enter)="sendMessage()"
+          [disabled]="sendingMessage()"
+        />
+        <button
+          class="send-message__btn"
+          (click)="sendMessage()"
+          [disabled]="sendingMessage() || !messageText().trim()"
+        >
+          {{ sendingMessage() ? 'Enviando...' : 'Enviar' }}
+        </button>
+      </div>
+
+      @if (order.messages.length === 0) {
+        <p class="no-messages">Nenhuma mensagem ainda. Envie uma mensagem para o lojista!</p>
+      }
+      @for (msg of order.messages; track msg.id) {
+        <div class="message">
+          <div class="message__header">
+            <span class="message__author">{{ msg.userRole === 'ShopKeeper' ? 'Lojista' : 'Você' }}</span>
+            <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
+            @if (msg.type === MessageTypeDto.Proposal) {
+              <span class="message__tag message__tag--proposal">Proposta</span>
+            }
+          </div>
+          <p class="message__text">{{ msg.message }}</p>
+          @if (msg.type === MessageTypeDto.Proposal) {
+            <div class="message__proposal">
+              @if (msg.proposedTotalAmount != null) {
+                <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
+              }
+              @if (msg.proposedDeliveryDate != null) {
+                <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span>
               }
             </div>
           }
         </div>
-      </section>
-    }
+      }
+    </section>
   }
 </div>

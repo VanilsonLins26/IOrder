@@ -101,6 +101,13 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'orders/:id',
+            loadComponent: () =>
+              import('./features/admin/pages/store-order-detail/store-order-detail.component').then(
+                (m) => m.StoreOrderDetailComponent,
+              ),
+          },
+          {
             path: 'store',
             loadComponent: () =>
               import('./features/admin/pages/store-settings/store-settings.component').then(
