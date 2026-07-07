@@ -563,5 +563,59 @@ namespace IOrder.Exceptions {
                 return ResourceManager.GetString("COUPON_INVALID", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Pedido não encontrado.
+        /// </summary>
+        public static string ORDER_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ORDER_NOT_FOUND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Não é possível modificar um pedido com status atual.
+        /// </summary>
+        public static string ORDER_CANNOT_MODIFY {
+            get {
+                return ResourceManager.GetString("ORDER_CANNOT_MODIFY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Status inválido para esta operação.
+        /// </summary>
+        public static string ORDER_INVALID_STATUS {
+            get {
+                return ResourceManager.GetString("ORDER_INVALID_STATUS", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O carrinho está vazio. Adicione produtos antes de criar um pedido.
+        /// </summary>
+        public static string ORDER_EMPTY_CART {
+            get {
+                return ResourceManager.GetString("ORDER_EMPTY_CART", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A mensagem não pode estar vazia.
+        /// </summary>
+        public static string ORDER_MESSAGE_EMPTY {
+            get {
+                return ResourceManager.GetString("ORDER_MESSAGE_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A data de entrega deve ser futura.
+        /// </summary>
+        public static string ORDER_DELIVERY_DATE_IN_PAST {
+            get {
+                return ResourceManager.GetString("ORDER_DELIVERY_DATE_IN_PAST", resourceCulture);
+            }
+        }
     }
 }

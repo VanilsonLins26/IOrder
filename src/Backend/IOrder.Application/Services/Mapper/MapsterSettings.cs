@@ -16,5 +16,17 @@ public static class MapsterSettings
         TypeAdapterConfig<Store, StoreResponseDto>
             .NewConfig()
             .Map(dest => dest.IsOpen, src => src.IsOpen());
+
+        TypeAdapterConfig<Domain.Entities.Order, OrderResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Status, src => src.Status);
+
+        TypeAdapterConfig<OrderItem, OrderItemResponseDto>
+            .NewConfig()
+            .Map(dest => dest.TotalPrice, src => src.TotalPrice);
+
+        TypeAdapterConfig<OrderMessage, OrderMessageResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Type, src => src.Type);
     }
 }
