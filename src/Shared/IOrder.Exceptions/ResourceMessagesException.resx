@@ -285,4 +285,22 @@
   <data name="COUPON_INVALID" xml:space="preserve">
     <value>Cupom inválido</value>
   </data>
+  <data name="ORDER_NOT_FOUND" xml:space="preserve">
+    <value>Pedido não encontrado</value>
+  </data>
+  <data name="ORDER_CANNOT_MODIFY" xml:space="preserve">
+    <value>Não é possível modificar um pedido com status atual</value>
+  </data>
+  <data name="ORDER_INVALID_STATUS" xml:space="preserve">
+    <value>Status inválido para esta operação</value>
+  </data>
+  <data name="ORDER_EMPTY_CART" xml:space="preserve">
+    <value>O carrinho está vazio. Adicione produtos antes de criar um pedido.</value>
+  </data>
+  <data name="ORDER_MESSAGE_EMPTY" xml:space="preserve">
+    <value>A mensagem não pode estar vazia</value>
+  </data>
+  <data name="ORDER_DELIVERY_DATE_IN_PAST" xml:space="preserve">
+    <value>A data de entrega deve ser futura</value>
+  </data>
 </root>
