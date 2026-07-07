@@ -3,8 +3,10 @@ using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Order;
 using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Order.Commands;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Moq;
 using Shouldly;
 
 namespace UseCases.Test.Order;
@@ -65,11 +67,14 @@ public class SendOrderMessageUseCaseTest
         var uow = UnitOfWorkBuilder.Build();
         var validator = new SendOrderMessageValidator();
 
+        var publisher = new Mock<IOrderMessagePublisher>();
+
         return new SendOrderMessageUseCase(
             writeOnly,
             storeReadOnly.Build(),
             loggedUser,
             uow,
+            publisher.Object,
             validator);
     }
 }

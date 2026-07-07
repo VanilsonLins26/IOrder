@@ -3,6 +3,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 using IOrder.Application.Services.StorePermission;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
@@ -21,6 +22,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
     private readonly IStorePermissionService _storePermissionService;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IOrderMessagePublisher _messagePublisher;
     private readonly IValidator<Communication.Request.NegotiateOrderRequestDto> _validator;
 
     public NegotiateOrderUseCase(
@@ -28,12 +30,14 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         IStorePermissionService storePermissionService,
         ILoggedUserService loggedUserService,
         IUnitOfWork unitOfWork,
+        IOrderMessagePublisher messagePublisher,
         IValidator<Communication.Request.NegotiateOrderRequestDto> validator)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _storePermissionService = storePermissionService;
         _loggedUserService = loggedUserService;
         _unitOfWork = unitOfWork;
+        _messagePublisher = messagePublisher;
         _validator = validator;
     }
 
@@ -64,6 +68,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         await _unitOfWork.Commit();
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(id);
+        await _messagePublisher.PublishMessageAsync(id, response.Adapt<OrderResponseDto>());
         return response.Adapt<OrderResponseDto>();
     }
 

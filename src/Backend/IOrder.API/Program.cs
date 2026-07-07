@@ -1,6 +1,7 @@
 using IOrder.API.Filters;
 using IOrder.Application;
 using IOrder.infrastructure;
+using IOrder.infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using System.Diagnostics.CodeAnalysis;
@@ -16,11 +17,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.AllowCredentials()
+              .WithOrigins("http://localhost:4200", "https://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -89,6 +93,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<ChatHub>("/hubs/chat");
 app.MapControllers();
 
 app.Run();

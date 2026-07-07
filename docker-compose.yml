@@ -1,0 +1,30 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: iorder-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "@Password123"
+      MYSQL_DATABASE: iorderdb
+    ports:
+      - "2552:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7.0
+    container_name: iorder-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: iorder-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: iorder
+      RABBITMQ_DEFAULT_PASS: iorder123
+
+volumes:
+  mysql_data:

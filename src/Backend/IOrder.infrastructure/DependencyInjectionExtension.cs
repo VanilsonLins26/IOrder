@@ -8,6 +8,7 @@ using IOrder.infrastructure.Repositories;
 using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
 using IOrder.infrastructure.Services;
+using IOrder.infrastructure.Services.MessageBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using IOrder.Domain.Repositories.Cart;
@@ -77,12 +78,14 @@ public static class DependencyInjectionExtension
     {
         services.AddScoped<ILoggedUserService, LoggedUser.LoggedUserService>();
         services.AddScoped<IStorageService, CloudinaryStorageService>();
-
+        services.AddSingleton<RabbitMQConnectionFactory>();
+        services.AddScoped<IOrderMessagePublisher, RabbitMQMessagePublisher>();
     }
 
     private static void AddWorkers(IServiceCollection services)
     {
         services.AddHostedService<Workers.PromotionWorker>();
+        services.AddHostedService<Workers.ChatConsumer>();
     }
 
     public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
