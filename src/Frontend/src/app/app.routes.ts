@@ -48,6 +48,13 @@ export const routes: Routes = [
             (m) => m.MyOrdersComponent,
           ),
       },
+      {
+        path: 'orders/:id',
+        loadComponent: () =>
+          import('./features/orders/pages/order-detail/order-detail.component').then(
+            (m) => m.OrderDetailComponent,
+          ),
+      },
     ],
   },
 
@@ -86,13 +93,20 @@ export const routes: Routes = [
             (m) => m.CategoryManagementComponent,
           ),
       },
-      {
-        path: 'store',
-        loadComponent: () =>
-          import('./features/admin/pages/store-settings/store-settings.component').then(
-            (m) => m.StoreSettingsComponent,
-          ),
-      },
+          {
+            path: 'orders',
+            loadComponent: () =>
+              import('./features/admin/pages/store-orders/store-orders.component').then(
+                (m) => m.StoreOrdersComponent,
+              ),
+          },
+          {
+            path: 'store',
+            loadComponent: () =>
+              import('./features/admin/pages/store-settings/store-settings.component').then(
+                (m) => m.StoreSettingsComponent,
+              ),
+          },
         ],
       }
     ]

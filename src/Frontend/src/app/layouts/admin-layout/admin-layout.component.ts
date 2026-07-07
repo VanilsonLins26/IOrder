@@ -31,6 +31,10 @@ import { ThemeService } from '../../core/services/theme.service';
             <span class="admin-sidebar__icon">📊</span>
             @if (!sidebarCollapsed()) { <span>Dashboard</span> }
           </a>
+          <a routerLink="/admin/orders"     routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link">
+            <span class="admin-sidebar__icon">📋</span>
+            @if (!sidebarCollapsed()) { <span>Pedidos</span> }
+          </a>
           <a routerLink="/admin/products"   routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link">
             <span class="admin-sidebar__icon">📦</span>
             @if (!sidebarCollapsed()) { <span>Produtos</span> }

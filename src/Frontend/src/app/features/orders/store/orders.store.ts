@@ -9,20 +9,24 @@ import type { OrderResponseDto, PagedList } from '../../../core/models';
 
 type OrdersState = {
   orders: OrderResponseDto[];
+  currentOrder: OrderResponseDto | null;
   currentPage: number;
   totalPages: number;
   totalCount: number;
   pageSize: number;
   loading: boolean;
+  orderLoading: boolean;
 };
 
 const initialState: OrdersState = {
   orders: [],
+  currentOrder: null,
   currentPage: 1,
   totalPages: 0,
   totalCount: 0,
   pageSize: 10,
   loading: false,
+  orderLoading: false,
 };
 
 export const OrdersStore = signalStore(
@@ -76,6 +80,25 @@ export const OrdersStore = signalStore(
         ),
       ),
     ),
+
+    loadById: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { orderLoading: true })),
+        switchMap((id) =>
+          orderApi.getById(id).pipe(
+            tapResponse({
+              next: (order) => patchState(store, { currentOrder: order, orderLoading: false }),
+              error: () => {
+                patchState(store, { orderLoading: false });
+                toast.error('Erro ao carregar pedido.');
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    clearCurrentOrder: () => patchState(store, { currentOrder: null }),
 
     goToPage: (page: number) => {
       patchState(store, { currentPage: page });

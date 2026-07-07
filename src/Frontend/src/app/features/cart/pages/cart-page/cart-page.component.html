@@ -128,10 +128,16 @@
           </div>
 
           <div class="cart-summary__checkout-wrapper">
-            <button class="cart-summary__checkout-btn" disabled>
-              Finalizar Pedido
+            <button
+              class="cart-summary__checkout-btn"
+              [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0"
+              (click)="createOrder()"
+            >
+              @if (creatingOrder()) {
+                <span class="spinner spinner--sm"></span>
+              }
+              {{ creatingOrder() ? 'Criando pedido...' : 'Finalizar Pedido' }}
             </button>
-            <span class="cart-summary__checkout-tooltip">Checkout disponível em breve</span>
           </div>
         </aside>
       </div>
