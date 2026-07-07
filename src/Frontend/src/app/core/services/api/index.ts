@@ -3,3 +3,4 @@ export { StoreApiService }         from './store-api.service';
 export { CategoryApiService }      from './category-api.service';
 export { StoreCategoryApiService } from './store-category-api.service';
 export { CartApiService }          from './cart-api.service';
+export { OrderApiService }         from './order-api.service';
