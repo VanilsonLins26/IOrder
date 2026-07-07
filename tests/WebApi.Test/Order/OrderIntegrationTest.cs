@@ -55,7 +55,7 @@ public class OrderIntegrationTest : IOrderClassFixture
 
         var errorResponse = await response.Content.ReadFromJsonAsync<ResponseErrorDto>();
         errorResponse.ShouldNotBeNull();
-        errorResponse.Errors.ShouldContain(ResourceMessagesException.ORDER_EMPTY_CART);
+        errorResponse.Errors.ShouldContain(ResourceMessagesException.INVALID_CART);
     }
 
     [Fact]

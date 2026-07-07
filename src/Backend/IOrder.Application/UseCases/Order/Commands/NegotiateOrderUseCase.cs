@@ -56,10 +56,11 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
             ProposedDeliveryDate = request.ProposedDeliveryDate
         };
 
+        message.OrderId = order.Id;
         order.AddMessage(message);
+        _orderWriteOnlyRepository.AddOrderMessage(message);
         order.Negotiate(request.ProposedTotalAmount, request.ProposedDeliveryDate, request.ShopkeeperNotes);
 
-        _orderWriteOnlyRepository.Update(order);
         await _unitOfWork.Commit();
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(id);

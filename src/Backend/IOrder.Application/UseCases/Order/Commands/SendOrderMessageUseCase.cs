@@ -70,9 +70,10 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
             order.Negotiate(request.ProposedTotalAmount, request.ProposedDeliveryDate, request.Message);
         }
 
+        message.OrderId = order.Id;
         order.AddMessage(message);
+        _orderWriteOnlyRepository.AddOrderMessage(message);
 
-        _orderWriteOnlyRepository.Update(order);
         await _unitOfWork.Commit();
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(orderId);

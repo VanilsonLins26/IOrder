@@ -1,3 +1,4 @@
+using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories.Order;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -78,5 +79,10 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
             .Include(o => o.Items)
             .Include(o => o.Messages)
             .FirstOrDefaultAsync(o => o.Id == id);
+    }
+
+    public void AddOrderMessage(OrderMessage message)
+    {
+        _context.OrderMessages.Add(message);
     }
 }
