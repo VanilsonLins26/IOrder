@@ -50,6 +50,10 @@
                 </div>
                 
                 <div class="navbar__dropdown-body">
+                  <a routerLink="/orders" class="navbar__dropdown-item" (click)="closeDropdown()">
+                    <span class="navbar__dropdown-icon" aria-hidden="true">📦</span>
+                    Meus Pedidos
+                  </a>
                   @if (hasRole(user, 'ShopKeeper')) {
                     <a routerLink="/admin" class="navbar__dropdown-item" (click)="closeDropdown()">
                       <span class="navbar__dropdown-icon" aria-hidden="true">🏪</span>

@@ -1,0 +1,62 @@
+<div class="store-orders">
+  <header class="store-orders__header">
+    <h1 class="store-orders__title">Pedidos</h1>
+  </header>
+
+  @if (store.loading() && store.orders().length === 0) {
+    <p class="store-orders__empty">Carregando...</p>
+  } @else if (store.orders().length === 0) {
+    <p class="store-orders__empty">Nenhum pedido recebido ainda.</p>
+  } @else {
+    <div class="store-orders__table">
+      <div class="store-orders__table-header">
+        <span class="col--id">Pedido</span>
+        <span class="col--date">Data</span>
+        <span class="col--items">Itens</span>
+        <span class="col--total">Total</span>
+        <span class="col--status">Status</span>
+        <span class="col--actions">Ações</span>
+      </div>
+
+      @for (order of store.orders(); track trackByOrderId($index, order)) {
+        <div class="store-orders__row">
+          <span class="col--id">#{{ order.id | slice:0:8 }}</span>
+          <span class="col--date">{{ order.createdAt | date:"dd/MM/yyyy" }}</span>
+          <span class="col--items">{{ order.items.length }}</span>
+          <span class="col--total">{{ order.totalAmount | currency:'BRL' }}</span>
+          <span class="col--status">
+            <span class="status-badge {{ getStatusClass(order.status) }}">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </span>
+          <span class="col--actions">
+            <a [routerLink]="['/admin/orders', order.id]" class="action-btn">Ver</a>
+            @for (action of getNextStatuses(order.status); track action.status) {
+              <button class="action-btn action-btn--primary" (click)="updateStatus(order.id, action.status)">
+                {{ action.label }}
+              </button>
+            }
+          </span>
+        </div>
+      }
+    </div>
+
+    @if (store.totalPages() > 1) {
+      <div class="store-orders__pagination">
+        <button
+          class="pagination__btn"
+          [disabled]="store.currentPage() <= 1"
+          (click)="changePage(store.currentPage() - 1)"
+        >← Anterior</button>
+        <span class="pagination__info">
+          Página {{ store.currentPage() }} de {{ store.totalPages() }}
+        </span>
+        <button
+          class="pagination__btn"
+          [disabled]="store.currentPage() >= store.totalPages()"
+          (click)="changePage(store.currentPage() + 1)"
+        >Próxima →</button>
+      </div>
+    }
+  }
+</div>
