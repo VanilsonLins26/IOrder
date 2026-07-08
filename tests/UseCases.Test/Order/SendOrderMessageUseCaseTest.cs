@@ -68,6 +68,7 @@ public class SendOrderMessageUseCaseTest
         var validator = new SendOrderMessageValidator();
 
         var publisher = new Mock<IOrderMessagePublisher>();
+        var eventDispatcher = new Mock<IDomainEventDispatcher>();
 
         return new SendOrderMessageUseCase(
             writeOnly,
@@ -75,6 +76,7 @@ public class SendOrderMessageUseCaseTest
             loggedUser,
             uow,
             publisher.Object,
+            eventDispatcher.Object,
             validator);
     }
 }

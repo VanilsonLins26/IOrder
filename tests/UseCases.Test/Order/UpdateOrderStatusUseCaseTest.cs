@@ -4,9 +4,10 @@ using CommomTestUtilities.Requests.Order;
 using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Order.Commands;
 using IOrder.Communication.Enums;
-
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Moq;
 using Shouldly;
 
 namespace UseCases.Test.Order;
@@ -62,6 +63,8 @@ public class UpdateOrderStatusUseCaseTest
         var permissionService = StorePermissionServiceBuilder.Build(order?.StoreId ?? Guid.NewGuid());
         var validator = new UpdateOrderStatusValidator();
 
-        return new UpdateOrderStatusUseCase(writeOnly, permissionService, uow, validator);
+        var eventDispatcher = new Mock<IDomainEventDispatcher>();
+
+        return new UpdateOrderStatusUseCase(writeOnly, permissionService, uow, eventDispatcher.Object, validator);
     }
 }

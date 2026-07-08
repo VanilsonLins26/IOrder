@@ -23,6 +23,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
     private readonly ILoggedUserService _loggedUserService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderMessagePublisher _messagePublisher;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.NegotiateOrderRequestDto> _validator;
 
     public NegotiateOrderUseCase(
@@ -31,6 +32,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         ILoggedUserService loggedUserService,
         IUnitOfWork unitOfWork,
         IOrderMessagePublisher messagePublisher,
+        IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.NegotiateOrderRequestDto> validator)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
@@ -38,6 +40,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         _loggedUserService = loggedUserService;
         _unitOfWork = unitOfWork;
         _messagePublisher = messagePublisher;
+        _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
     }
 
@@ -66,6 +69,10 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         order.Negotiate(request.ProposedTotalAmount, request.ProposedDeliveryDate, request.ShopkeeperNotes);
 
         await _unitOfWork.Commit();
+
+        var events = order.DomainEvents.ToList();
+        order.ClearDomainEvents();
+        await _domainEventDispatcher.DispatchAsync(events);
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(id);
         await _messagePublisher.PublishMessageAsync(id, response.Adapt<OrderResponseDto>());

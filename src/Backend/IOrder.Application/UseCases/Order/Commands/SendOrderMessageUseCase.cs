@@ -23,6 +23,7 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
     private readonly ILoggedUserService _loggedUserService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderMessagePublisher _messagePublisher;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.SendOrderMessageRequestDto> _validator;
 
     public SendOrderMessageUseCase(
@@ -31,6 +32,7 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         ILoggedUserService loggedUserService,
         IUnitOfWork unitOfWork,
         IOrderMessagePublisher messagePublisher,
+        IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.SendOrderMessageRequestDto> validator)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
@@ -38,6 +40,7 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         _loggedUserService = loggedUserService;
         _unitOfWork = unitOfWork;
         _messagePublisher = messagePublisher;
+        _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
     }
 
@@ -79,6 +82,10 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         _orderWriteOnlyRepository.AddOrderMessage(message);
 
         await _unitOfWork.Commit();
+
+        var events = order.DomainEvents.ToList();
+        order.ClearDomainEvents();
+        await _domainEventDispatcher.DispatchAsync(events);
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(orderId);
         await _messagePublisher.PublishMessageAsync(orderId, response.Adapt<OrderResponseDto>());

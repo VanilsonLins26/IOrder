@@ -65,7 +65,8 @@ public class NegotiateOrderUseCaseTest
         var validator = new NegotiateOrderValidator();
 
         var publisher = new Mock<IOrderMessagePublisher>();
+        var eventDispatcher = new Mock<IDomainEventDispatcher>();
 
-        return new NegotiateOrderUseCase(writeOnly, permissionService, loggedUser, uow, publisher.Object, validator);
+        return new NegotiateOrderUseCase(writeOnly, permissionService, loggedUser, uow, publisher.Object, eventDispatcher.Object, validator);
     }
 }

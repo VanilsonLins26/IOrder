@@ -80,6 +80,8 @@ public static class DependencyInjectionExtension
         services.AddScoped<IStorageService, CloudinaryStorageService>();
         services.AddSingleton<RabbitMQConnectionFactory>();
         services.AddScoped<IOrderMessagePublisher, RabbitMQMessagePublisher>();
+        services.AddSingleton<KafkaProducerFactory>();
+        services.AddScoped<IDomainEventDispatcher, KafkaDomainEventDispatcher>();
     }
 
     private static void AddWorkers(IServiceCollection services)
