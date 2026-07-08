@@ -14,6 +14,7 @@ public class StoreConfiguration : BaseEntityConfiguration<Store>
         builder.Property(x => x.About).HasMaxLength(500);
         builder.Property(x => x.ImageUrl).HasMaxLength(255);
         builder.Property(x => x.UserId).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.OwnerEmail).HasMaxLength(200);
         builder.HasIndex(x => x.UserId);
         builder.HasOne(s => s.Category)
                .WithMany()
