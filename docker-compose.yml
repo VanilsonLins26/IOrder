@@ -43,6 +43,13 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: iorder-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: iorder-kafka-ui
