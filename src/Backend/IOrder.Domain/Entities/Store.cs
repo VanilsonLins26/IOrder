@@ -19,6 +19,7 @@ public class Store : EntityBase, IAggregateRoot
     public IReadOnlyCollection<OpeningHour> OpeningHours => _openingHours.AsReadOnly();
     public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
+    public string? OwnerEmail { get; set; }
     public StoreCategory? Category { get; set; }
 
     public bool IsOpen()
