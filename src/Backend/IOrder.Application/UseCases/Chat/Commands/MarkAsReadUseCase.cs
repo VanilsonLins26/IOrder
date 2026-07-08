@@ -1,8 +1,5 @@
 using IOrder.Domain.Repositories.Order;
-using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Security.Services;
-using IOrder.Exceptions;
-using IOrder.Exceptions.ExceptionBase;
 
 namespace IOrder.Application.UseCases.Chat.Commands;
 
