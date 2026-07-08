@@ -23,6 +23,7 @@ public class StoreBuilder
                 State = f.Address.StateAbbr()
             })
             .RuleFor(s => s.OpeningHours, f => [])
+            .RuleFor(s => s.OwnerEmail, f => f.Internet.Email())
             .Generate();
     }
 }
