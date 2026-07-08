@@ -2,6 +2,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Security.Services;
+using Mapster;
 
 namespace IOrder.Application.UseCases.Chat.Queries;
 
@@ -35,18 +36,7 @@ public class GetConversationsUseCase : IGetConversationsUseCase
         var summaries = await _chatRepository.GetConversationsAsync(userId, storeUserId, pageNumber, pageSize);
         var totalCount = await _chatRepository.GetConversationsCountAsync(userId, storeUserId);
 
-        var conversations = summaries.Select(s => new ConversationResponseDto
-        {
-            OrderId = s.OrderId,
-            StoreId = s.StoreId,
-            StoreName = s.StoreName,
-            StoreImageUrl = s.StoreImageUrl,
-            Status = s.Status,
-            LastMessage = s.LastMessage,
-            LastMessageAt = s.LastMessageAt,
-            LastMessageByRole = s.LastMessageByRole,
-            UnreadCount = s.UnreadCount
-        }).ToList();
+        var conversations = summaries.Adapt<List<ConversationResponseDto>>();
 
         return new PagedResponse<ConversationResponseDto>(conversations, totalCount, pageNumber, pageSize);
     }
