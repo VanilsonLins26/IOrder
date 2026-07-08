@@ -67,7 +67,10 @@ public class OrderConfiguration : BaseEntityConfiguration<Domain.Entities.Order>
                .HasForeignKey(x => x.OrderId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(x => x.LastMessageAt);
+
         builder.HasIndex(x => x.UserId);
         builder.HasIndex(x => x.StoreId);
+        builder.HasIndex(x => x.LastMessageAt);
     }
 }

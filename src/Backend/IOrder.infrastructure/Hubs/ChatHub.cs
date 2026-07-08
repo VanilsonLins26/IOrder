@@ -24,7 +24,27 @@ public class ChatHub : Hub
 
     public async Task MarkOrderRead(string orderId)
     {
-        var dedupKey = $"dedup:chat:{orderId}";
-        await _cache.RemoveAsync(dedupKey);
+        await Clients.Group(orderId).SendAsync("MessagesRead", orderId);
+    }
+
+    public async Task UserTyping(string orderId)
+    {
+        await Clients.OthersInGroup(orderId).SendAsync("UserTyping", orderId);
+    }
+
+    public async Task UserStoppedTyping(string orderId)
+    {
+        await Clients.OthersInGroup(orderId).SendAsync("UserStoppedTyping", orderId);
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        var userId = Context.UserIdentifier;
+        if (userId is not null)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user:{userId}");
+        }
+
+        await base.OnConnectedAsync();
     }
 }

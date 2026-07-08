@@ -12,4 +12,6 @@ public class OrderMessageResponseDto
     public MessageTypeDto Type { get; set; }
     public decimal? ProposedTotalAmount { get; set; }
     public DateTime? ProposedDeliveryDate { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public string? ReadByUserId { get; set; }
 }

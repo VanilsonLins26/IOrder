@@ -70,6 +70,7 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IOrderWriteOnlyRepository, OrderRepository>();
         services.AddScoped<IOrderReadOnlyRepository, OrderRepository>();
+        services.AddScoped<IChatReadOnlyRepository, OrderRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
@@ -88,6 +89,7 @@ public static class DependencyInjectionExtension
     {
         services.AddHostedService<Workers.PromotionWorker>();
         services.AddHostedService<Workers.ChatConsumer>();
+        services.AddHostedService<Workers.KafkaDomainEventConsumer>();
     }
 
     public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)

@@ -12,5 +12,7 @@ public class OrderMessage : EntityBase
     public MessageType Type { get; set; } = MessageType.Text;
     public decimal? ProposedTotalAmount { get; set; }
     public DateTime? ProposedDeliveryDate { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public string? ReadByUserId { get; set; }
     public Order Order { get; set; } = null!;
 }

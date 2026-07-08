@@ -8,6 +8,7 @@ public class Order : EntityBase, IAggregateRoot
 {
     public string UserId { get; set; } = string.Empty;
     public Guid StoreId { get; set; }
+    public Store? Store { get; set; }
     public OrderStatus Status { get; private set; } = OrderStatus.Pending;
     public decimal TotalAmount { get; set; }
     public decimal OriginalAmount { get; set; }
@@ -19,6 +20,7 @@ public class Order : EntityBase, IAggregateRoot
     public string? ShopkeeperNotes { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTime? LastMessageAt { get; private set; }
 
     private readonly List<OrderItem> _items = [];
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
@@ -40,6 +42,7 @@ public class Order : EntityBase, IAggregateRoot
     {
         _messages.Add(message);
         UpdatedAt = DateTime.UtcNow;
+        LastMessageAt = DateTime.UtcNow;
     }
 
     public void Negotiate(decimal? newTotalAmount, DateTime? newDeliveryDate, string? shopkeeperNotes)

@@ -41,5 +41,8 @@ public class OrderMessageConfiguration : BaseEntityConfiguration<OrderMessage>
                .HasColumnType("decimal(10,2)");
 
         builder.Property(x => x.ProposedDeliveryDate);
+
+        builder.Property(x => x.ReadByUserId)
+               .HasMaxLength(100);
     }
 }
