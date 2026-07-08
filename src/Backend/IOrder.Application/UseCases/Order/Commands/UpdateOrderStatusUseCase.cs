@@ -3,6 +3,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 using IOrder.Application.Services.StorePermission;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
@@ -15,17 +16,20 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IStorePermissionService _storePermissionService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.UpdateOrderStatusRequestDto> _validator;
 
     public UpdateOrderStatusUseCase(
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IStorePermissionService storePermissionService,
         IUnitOfWork unitOfWork,
+        IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.UpdateOrderStatusRequestDto> validator)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _storePermissionService = storePermissionService;
         _unitOfWork = unitOfWork;
+        _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
     }
 
@@ -75,6 +79,10 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
 
         _orderWriteOnlyRepository.Update(order);
         await _unitOfWork.Commit();
+
+        var events = order.DomainEvents.ToList();
+        order.ClearDomainEvents();
+        await _domainEventDispatcher.DispatchAsync(events);
 
         var response = await _orderWriteOnlyRepository.GetByIdTracking(id);
         return response.Adapt<OrderResponseDto>();

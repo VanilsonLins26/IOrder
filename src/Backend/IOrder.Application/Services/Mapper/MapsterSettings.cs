@@ -1,5 +1,6 @@
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
+using IOrder.Domain.Repositories.Order;
 using Mapster;
 
 namespace IOrder.Application.Services.Mapper;
@@ -28,5 +29,9 @@ public static class MapsterSettings
         TypeAdapterConfig<OrderMessage, OrderMessageResponseDto>
             .NewConfig()
             .Map(dest => dest.Type, src => src.Type);
+
+        TypeAdapterConfig<ConversationSummary, ConversationResponseDto>
+            .NewConfig()
+            .TwoWays();
     }
 }

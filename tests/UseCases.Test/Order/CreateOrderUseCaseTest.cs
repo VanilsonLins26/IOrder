@@ -5,8 +5,10 @@ using CommomTestUtilities.Requests.Order;
 using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Order.Commands;
 using IOrder.Domain.Entities;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Moq;
 using Shouldly;
 
 namespace UseCases.Test.Order;
@@ -83,6 +85,8 @@ public class CreateOrderUseCaseTest
         var uow = UnitOfWorkBuilder.Build();
         var validator = new CreateOrderValidator();
 
+        var eventDispatcher = new Mock<IDomainEventDispatcher>();
+
         return new CreateOrderUseCase(
             loggedUser,
             cartReadOnly.Build(),
@@ -91,6 +95,7 @@ public class CreateOrderUseCaseTest
             productReadOnly.Build(),
             couponReadOnly.Build(),
             uow,
+            eventDispatcher.Object,
             validator);
     }
 }

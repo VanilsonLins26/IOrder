@@ -8,6 +8,7 @@ using IOrder.infrastructure.Repositories;
 using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
 using IOrder.infrastructure.Services;
+using IOrder.infrastructure.Services.MessageBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using IOrder.Domain.Repositories.Cart;
@@ -69,6 +70,7 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IOrderWriteOnlyRepository, OrderRepository>();
         services.AddScoped<IOrderReadOnlyRepository, OrderRepository>();
+        services.AddScoped<IChatReadOnlyRepository, OrderRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
@@ -77,12 +79,17 @@ public static class DependencyInjectionExtension
     {
         services.AddScoped<ILoggedUserService, LoggedUser.LoggedUserService>();
         services.AddScoped<IStorageService, CloudinaryStorageService>();
-
+        services.AddSingleton<RabbitMQConnectionFactory>();
+        services.AddScoped<IOrderMessagePublisher, RabbitMQMessagePublisher>();
+        services.AddSingleton<KafkaProducerFactory>();
+        services.AddScoped<IDomainEventDispatcher, KafkaDomainEventDispatcher>();
     }
 
     private static void AddWorkers(IServiceCollection services)
     {
         services.AddHostedService<Workers.PromotionWorker>();
+        services.AddHostedService<Workers.ChatConsumer>();
+        services.AddHostedService<Workers.KafkaDomainEventConsumer>();
     }
 
     public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)

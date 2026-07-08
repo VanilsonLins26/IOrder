@@ -1,11 +1,13 @@
 using FluentValidation;
 using IOrder.Communication.Response;
+using IOrder.Domain.Events;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Cart;
 using IOrder.Domain.Repositories.Coupon;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -21,6 +23,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
     private readonly IProductReadOnlyRepository _productReadOnlyRepository;
     private readonly ICouponReadOnlyRepository _couponReadOnlyRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.CreateOrderRequestDto> _validator;
 
     public CreateOrderUseCase(
@@ -31,6 +34,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         IProductReadOnlyRepository productReadOnlyRepository,
         ICouponReadOnlyRepository couponReadOnlyRepository,
         IUnitOfWork unitOfWork,
+        IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.CreateOrderRequestDto> validator)
     {
         _loggedUserService = loggedUserService;
@@ -40,6 +44,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         _productReadOnlyRepository = productReadOnlyRepository;
         _couponReadOnlyRepository = couponReadOnlyRepository;
         _unitOfWork = unitOfWork;
+        _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
     }
 
@@ -105,8 +110,14 @@ public class CreateOrderUseCase : ICreateOrderUseCase
             order.AddItem(orderItem);
         }
 
+        order.AddDomainEvent(new OrderCreatedEvent(order.Id, userId, storeId, order.TotalAmount));
+
         await _orderWriteOnlyRepository.Create(order);
         await _unitOfWork.Commit();
+
+        var events = order.DomainEvents.ToList();
+        order.ClearDomainEvents();
+        await _domainEventDispatcher.DispatchAsync(events);
 
         await _cartWriteOnlyRepository.DeleteCartAsync(userId);
 

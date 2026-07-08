@@ -8,4 +8,5 @@ public interface IOrderWriteOnlyRepository
     Entities.Order Update(Entities.Order order);
     Task<Entities.Order?> GetByIdTracking(Guid id);
     void AddOrderMessage(OrderMessage message);
+    Task MarkMessagesAsReadAsync(Guid orderId, string readByUserId);
 }

@@ -4,6 +4,7 @@ using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -21,6 +22,8 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
     private readonly IStoreReadOnlyRepository _storeReadOnlyRepository;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IOrderMessagePublisher _messagePublisher;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.SendOrderMessageRequestDto> _validator;
 
     public SendOrderMessageUseCase(
@@ -28,12 +31,16 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         IStoreReadOnlyRepository storeReadOnlyRepository,
         ILoggedUserService loggedUserService,
         IUnitOfWork unitOfWork,
+        IOrderMessagePublisher messagePublisher,
+        IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.SendOrderMessageRequestDto> validator)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _storeReadOnlyRepository = storeReadOnlyRepository;
         _loggedUserService = loggedUserService;
         _unitOfWork = unitOfWork;
+        _messagePublisher = messagePublisher;
+        _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
     }
 
@@ -76,7 +83,12 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
 
         await _unitOfWork.Commit();
 
+        var events = order.DomainEvents.ToList();
+        order.ClearDomainEvents();
+        await _domainEventDispatcher.DispatchAsync(events);
+
         var response = await _orderWriteOnlyRepository.GetByIdTracking(orderId);
+        await _messagePublisher.PublishMessageAsync(orderId, response.Adapt<OrderResponseDto>());
         return response.Adapt<OrderResponseDto>();
     }
 
