@@ -82,9 +82,12 @@ public class CreateOrderUseCase : ICreateOrderUseCase
             }
         }
 
+        var customerEmail = _loggedUserService.GetUserEmail();
+
         var order = new Domain.Entities.Order
         {
             UserId = userId,
+            CustomerEmail = customerEmail,
             StoreId = storeId,
             TotalAmount = discountedTotal,
             OriginalAmount = cart.CartTotal,
