@@ -17,8 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Backend\IOrder.Application\IOrder.Application.csproj" />
+    <ProjectReference Include="..\..\src\Backend\IOrder.infrastructure\IOrder.infrastructure.csproj" />
     <ProjectReference Include="..\CommomTestUtilities\CommomTestUtilities.csproj" />
-   
   </ItemGroup>
 
   <ItemGroup>

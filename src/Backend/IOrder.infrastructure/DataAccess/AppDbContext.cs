@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("WebApi.Test")]
+[assembly: InternalsVisibleTo("UseCases.Test")]
 namespace IOrder.infrastructure.DataAccess;
 
 internal class AppDbContext  : DbContext

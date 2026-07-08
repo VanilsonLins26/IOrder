@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Confluent.Kafka;
 using IOrder.Domain.Repositories.Order;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace IOrder.infrastructure.Workers;
 
-[ExcludeFromCodeCoverage]
 public class KafkaDomainEventConsumer : BackgroundService
 {
     private readonly IConsumer<string, string> _consumer;
@@ -107,7 +105,7 @@ public class KafkaDomainEventConsumer : BackgroundService
         }
     }
 
-    private async Task HandleEventAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    internal async Task HandleEventAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
     {
         switch (envelope.EventType)
         {
@@ -224,14 +222,14 @@ public class KafkaDomainEventConsumer : BackgroundService
     }
 }
 
-internal class DomainEventEnvelope
+public class DomainEventEnvelope
 {
     public string? EventType { get; set; }
     public DomainEventData? Data { get; set; }
     public DateTime OccurredOn { get; set; }
 }
 
-internal class DomainEventData
+public class DomainEventData
 {
     public Guid? OrderId { get; set; }
     public string? UserId { get; set; }
