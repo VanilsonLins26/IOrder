@@ -133,6 +133,18 @@ public class KafkaDomainEventConsumer : BackgroundService
             case "NewOrderMessageEvent":
                 await HandleNewOrderMessageAsync(envelope, stoppingToken);
                 break;
+            case "CouponCreatedEvent":
+                await HandleCouponCreatedAsync(envelope, stoppingToken);
+                break;
+            case "PromotionActivatedEvent":
+                await HandlePromotionActivatedAsync(envelope, stoppingToken);
+                break;
+            case "PromotionDeactivatedEvent":
+                await HandlePromotionDeactivatedAsync(envelope, stoppingToken);
+                break;
+            case "CartAbandonedEvent":
+                await HandleCartAbandonedAsync(envelope, stoppingToken);
+                break;
             default:
                 _logger.LogWarning("Unknown event type: {EventType}", envelope.EventType);
                 break;
@@ -260,17 +272,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(_adminEmail, subject, body);
         }
 
-        if (_adminPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Nova loja cadastrada*
-                
-                Loja: {envelope.Data?.StoreName}
-                ID: {envelope.Data?.StoreId}
-                """;
-
-            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
-        }
     }
 
     private async Task HandlePriceChangedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -312,17 +313,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(store.OwnerEmail, subject, body);
         }
 
-        if (store?.OwnerPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Preco alterado: {product.Name}*
-                
-                Novo preco: R$ {envelope.Data?.NewPrice:F2}
-                Loja: {store.Name}
-                """;
-
-            await _evolutionApiService.SendTextAsync(store.OwnerPhone, whatsappMessage);
-        }
     }
 
     private async Task HandleNewOrderMessageAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -395,6 +385,102 @@ public class KafkaDomainEventConsumer : BackgroundService
         }, stoppingToken);
     }
 
+    private async Task HandleCouponCreatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[CouponCreated] Coupon {Code} — value: {Value}",
+            envelope.Data?.CouponCode, envelope.Data?.DiscountValue);
+
+        if (_adminEmail is not null)
+        {
+            var discountLabel = envelope.Data?.DiscountType == "Percentage"
+                ? $"{envelope.Data.DiscountValue}%"
+                : $"R$ {envelope.Data.DiscountValue:F2}";
+
+            var subject = "Novo cupom: " + (envelope.Data?.CouponCode ?? "");
+            var body = $"""
+                <h2>Novo cupom criado</h2>
+                <p>Codigo: <strong>{envelope.Data?.CouponCode}</strong></p>
+                <p>Desconto: <strong>{discountLabel}</strong></p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+    }
+
+    private async Task HandlePromotionActivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[PromotionActivated] Product {ProductName} — promotional price: {Price}",
+            envelope.Data?.ProductName, envelope.Data?.PromotionalPrice);
+
+        if (_adminEmail is not null)
+        {
+            var subject = "Promocao ativada: " + (envelope.Data?.ProductName ?? "");
+            var body = $"""
+                <h2>Promocao ativada</h2>
+                <p>Produto: <strong>{envelope.Data?.ProductName}</strong></p>
+                <p>Preco promocional: <strong>R$ {envelope.Data?.PromotionalPrice:F2}</strong></p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+    }
+
+    private async Task HandlePromotionDeactivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[PromotionDeactivated] Product {ProductName} — promotion ended",
+            envelope.Data?.ProductName);
+
+        if (_adminEmail is not null)
+        {
+            var subject = "Promocao encerrada: " + (envelope.Data?.ProductName ?? "");
+            var body = $"""
+                <h2>Promocao encerrada</h2>
+                <p>A promocao do produto <strong>{envelope.Data?.ProductName}</strong> foi encerrada.</p>
+                <p>O precp voltou ao valor original.</p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+    }
+
+    private async Task HandleCartAbandonedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        var userId = envelope.Data?.UserId;
+        var userPhone = envelope.Data?.UserPhone;
+
+        _logger.LogInformation(
+            "[CartAbandoned] User {UserId} abandoned cart",
+            userId);
+
+        if (string.IsNullOrEmpty(userPhone))
+        {
+            _logger.LogWarning("User {UserId} has no phone — cannot send cart abandoned notification", userId);
+            return;
+        }
+
+        var whatsappMessage = $"""
+            *🛒 Seu carrinho esta esperando!*
+            
+            Identificamos que voce adicionou produtos ao carrinho mas nao finalizou o pedido.
+            
+            Acesse o aplicativo agora para concluir sua compra.
+            """;
+
+        await _evolutionApiService.SendTextAsync(userPhone, whatsappMessage);
+    }
+
     public override void Dispose()
     {
         _consumer?.Dispose();
@@ -422,4 +508,11 @@ public class DomainEventData
     public decimal? NewPrice { get; set; }
     public string? SenderUserId { get; set; }
     public string? MessageText { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal? DiscountValue { get; set; }
+    public string? DiscountType { get; set; }
+    public string? ProductName { get; set; }
+    public decimal? PromotionalPrice { get; set; }
+    public string? UserEmail { get; set; }
+    public string? UserPhone { get; set; }
 }

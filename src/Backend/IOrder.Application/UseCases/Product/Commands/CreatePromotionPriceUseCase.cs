@@ -4,6 +4,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -36,6 +37,7 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
 
         var createdPromotionPrice = await _writeOnlyRepository.CreatePromotion(promotionPrice);
         await _uof.Commit();
+
         return createdPromotionPrice.Adapt<PromotionPriceResponseDto>();
     }
 

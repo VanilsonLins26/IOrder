@@ -35,9 +35,11 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Módulo de Chat em tempo real (SignalR + RabbitMQ)
 - ✅ RabbitMQ (fila de mensagens do chat com dedup via Redis)
 - ✅ Apache Kafka (domain events: order, store, price, message)
-- ✅ Notificação por Email (SmtpClient + MailHog) para novos pedidos, alterações de status, novas mensagens, preço alterado
-- ✅ Notificação por WhatsApp (Evolution API/Baileys) para pedidos, status, loja criada e preço alterado
+- ✅ Notificação por Email (SmtpClient + MailHog): eventos acionáveis (pedidos, status) + informativos (admin)
+- ✅ Notificação por WhatsApp (Evolution API/Baileys): apenas eventos acionáveis (pedidos, status, carrinho abandonado)
 - ✅ Notificação de novas mensagens no chat com dedup de 10min via Redis
+- ✅ Notificação de cupom criado, promoção ativada/desativada e carrinho abandonado
+- ✅ Worker de carrinhos abandonados (a cada 5min, verifica Redis, remove e notifica)
 - ⬜ Integração com Mercado Pago
 
 ### Frontend (Angular 20)
@@ -125,12 +127,16 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 O sistema dispara eventos de domínio nas seguintes entidades:
 
 | Evento | Disparado por | Destinatário | Canais |
-|---|---|---|---|
+|---|---|---|---|---|
 | `OrderCreatedEvent` | `Order.CreateOrder()` | Dono da loja | Email + WhatsApp |
 | `OrderStatusChangedEvent` | `Order.Accept()`, `Order.Cancel()`, etc. | Cliente | Email + WhatsApp |
-| `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email + WhatsApp |
-| `PriceChangedEvent` | `Product.UpdatePrice()` | Dono da loja | Email + WhatsApp |
-| `NewOrderMessageEvent` | `Order.AddMessage()` | Cliente ou lojista (quem não enviou) | Email (com dedup de 10min via Redis) |
+| `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email |
+| `PriceChangedEvent` | `Product.UpdatePrice()` | Dono da loja | Email |
+| `NewOrderMessageEvent` | `Order.AddMessage()` | Cliente ou lojista (quem não enviou) | Email (dedup 10min via Redis) |
+| `CouponCreatedEvent` | `CreateCouponUseCase` | Admin | Email |
+| `PromotionActivatedEvent` | `PromotionWorker` | Admin | Email |
+| `PromotionDeactivatedEvent` | `PromotionWorker` | Admin | Email |
+| `CartAbandonedEvent` | `AbandonedCartWorker` (a cada 5 min) | Cliente | WhatsApp |
 
 ### Fluxo
 ```
@@ -151,6 +157,13 @@ SendOrderMessageUseCase → RabbitMQ (order-messages queue)
                            ├── Redis dedup (30s)
                            └── SignalR → clientes conectados
 ```
+
+### Worker de Carrinhos Abandonados
+O `AbandonedCartWorker` executa a cada 5 minutos e:
+1. Escaneia chaves `cart:*` no Redis via `StackExchange.Redis`
+2. Verifica se `LastModifiedAt` > 30 minutos atrás
+3. Dispara `CartAbandonedEvent` via Kafka e remove o carrinho do Redis
+4. O consumidor envia email: "Você deixou itens no carrinho"
 
 O Redis é usado para:
 - **Dedup de chat**: 30s TTL para evitar mensagens duplicadas no SignalR

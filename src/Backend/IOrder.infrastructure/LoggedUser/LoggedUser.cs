@@ -27,6 +27,11 @@ internal class LoggedUserService : ILoggedUserService
         return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
     }
 
+    public string? GetUserPhone()
+    {
+        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+    }
+
     public bool IsShopkeeper()
     {
         return _accessor.HttpContext?.User?.IsInRole("Shopkeeper") ?? false;

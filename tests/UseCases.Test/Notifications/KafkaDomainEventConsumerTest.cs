@@ -79,7 +79,7 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
-    public async Task Success_StoreCreated_SendsEmailAndWhatsAppToAdmin()
+    public async Task Success_StoreCreated_SendsEmailToAdmin()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -103,8 +103,8 @@ public class KafkaDomainEventConsumerTest
             e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()),
             Times.Once);
         evolutionMock.Verify(
-            e => e.SendTextAsync("5585986749331", It.IsAny<string>()),
-            Times.Once);
+            e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
     }
 
     [Fact]
@@ -427,6 +427,165 @@ public class KafkaDomainEventConsumerTest
         emailMock.Verify(
             e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_CouponCreated_SendsEmailToAdmin()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "CouponCreatedEvent",
+            Data = new DomainEventData
+            {
+                CouponCode = "PROMO10",
+                DiscountValue = 10,
+                DiscountType = "Percentage"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: "admin@iorder.com", adminPhone: "5585986749331");
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Error_CouponCreated_AdminNotConfigured_DoesNotSend()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "CouponCreatedEvent",
+            Data = new DomainEventData { CouponCode = "TESTE", DiscountValue = 5, DiscountType = "FixedAmount" },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: null, adminPhone: null);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_PromotionActivated_SendsEmailToAdmin()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "PromotionActivatedEvent",
+            Data = new DomainEventData
+            {
+                ProductName = "Bolo de Cenoura",
+                PromotionalPrice = 25.00m
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: "admin@iorder.com", adminPhone: "5585986749331");
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_PromotionDeactivated_SendsEmailToAdmin()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "PromotionDeactivatedEvent",
+            Data = new DomainEventData
+            {
+                ProductName = "Bolo de Chocolate"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: "admin@iorder.com", adminPhone: "5585986749331");
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_PromotionDeactivated_NoAdminContact_SkipsNotifications()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "PromotionDeactivatedEvent",
+            Data = new DomainEventData
+            {
+                ProductName = "Bolo de Chocolate"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: null, adminPhone: null);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_CartAbandoned_SendsWhatsAppToCustomer()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "CartAbandonedEvent",
+            Data = new DomainEventData
+            {
+                UserId = "user-123",
+                UserPhone = "5585986749331"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Error_CartAbandoned_WithoutPhone_DoesNotSend()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "CartAbandonedEvent",
+            Data = new DomainEventData { UserId = "user-123" },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     private static KafkaDomainEventConsumer BuildConsumer(
