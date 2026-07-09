@@ -4,6 +4,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -18,14 +19,16 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
     private readonly IUnitOfWork _uof;
     private readonly IStorePermissionService _storePermissionService;
     private readonly IValidator<PromotionPriceResquestDto> _validator;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
 
-    public CreatePromotionPriceUseCase(IProductWriteOnlyRepository writeOnlyRepository, IProductReadOnlyRepository readOnlyRepository, IUnitOfWork uof, IStorePermissionService storePermissionService, IValidator<PromotionPriceResquestDto> validator)
+    public CreatePromotionPriceUseCase(IProductWriteOnlyRepository writeOnlyRepository, IProductReadOnlyRepository readOnlyRepository, IUnitOfWork uof, IStorePermissionService storePermissionService, IValidator<PromotionPriceResquestDto> validator, IDomainEventDispatcher domainEventDispatcher)
     {
         _writeOnlyRepository = writeOnlyRepository;
         _readOnlyRepository = readOnlyRepository;
         _uof = uof;
         _storePermissionService = storePermissionService;
         _validator = validator;
+        _domainEventDispatcher = domainEventDispatcher;
     }
 
     public async Task<PromotionPriceResponseDto> Execute(PromotionPriceResquestDto dto)
@@ -36,6 +39,15 @@ public class CreatePromotionPriceUseCase : ICreatePromotionPriceUseCase
 
         var createdPromotionPrice = await _writeOnlyRepository.CreatePromotion(promotionPrice);
         await _uof.Commit();
+
+        var product = await _readOnlyRepository.GetByIdAsync(dto.ProductId);
+        if (product is not null)
+        {
+            var promoEvent = new IOrder.Domain.Events.PromotionActivatedEvent(
+                createdPromotionPrice.Id, product.Id, product.Name, createdPromotionPrice.Price);
+            await _domainEventDispatcher.DispatchAsync([promoEvent]);
+        }
+
         return createdPromotionPrice.Adapt<PromotionPriceResponseDto>();
     }
 
