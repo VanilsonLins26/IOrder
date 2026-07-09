@@ -35,10 +35,10 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Módulo de Chat em tempo real (SignalR + RabbitMQ)
 - ✅ RabbitMQ (fila de mensagens do chat com dedup via Redis)
 - ✅ Apache Kafka (domain events: order, store, price, message)
-- ✅ Notificação por Email (SmtpClient + MailHog) para novos pedidos, alterações de status, novas mensagens, preço alterado
-- ✅ Notificação por WhatsApp (Evolution API/Baileys) para pedidos, status, loja criada e preço alterado
+- ✅ Notificação por Email (SmtpClient + MailHog): eventos acionáveis (pedidos, status) + informativos (admin)
+- ✅ Notificação por WhatsApp (Evolution API/Baileys): apenas eventos acionáveis (pedidos, status, carrinho abandonado)
 - ✅ Notificação de novas mensagens no chat com dedup de 10min via Redis
-- ✅ Notificação de cupom criado, promoção ativada e carrinho abandonado
+- ✅ Notificação de cupom criado, promoção ativada/desativada e carrinho abandonado
 - ✅ Worker de carrinhos abandonados (a cada 5min, verifica Redis, remove e notifica)
 - ⬜ Integração com Mercado Pago
 
@@ -130,12 +130,13 @@ O sistema dispara eventos de domínio nas seguintes entidades:
 |---|---|---|---|---|
 | `OrderCreatedEvent` | `Order.CreateOrder()` | Dono da loja | Email + WhatsApp |
 | `OrderStatusChangedEvent` | `Order.Accept()`, `Order.Cancel()`, etc. | Cliente | Email + WhatsApp |
-| `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email + WhatsApp |
-| `PriceChangedEvent` | `Product.UpdatePrice()` | Dono da loja | Email + WhatsApp |
+| `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email |
+| `PriceChangedEvent` | `Product.UpdatePrice()` | Dono da loja | Email |
 | `NewOrderMessageEvent` | `Order.AddMessage()` | Cliente ou lojista (quem não enviou) | Email (dedup 10min via Redis) |
-| `CouponCreatedEvent` | `CreateCouponUseCase` | Admin | Email + WhatsApp |
-| `PromotionActivatedEvent` | `CreatePromotionPriceUseCase` | Admin | Email + WhatsApp |
-| `CartAbandonedEvent` | `AbandonedCartWorker` (a cada 5 min) | Cliente | Email |
+| `CouponCreatedEvent` | `CreateCouponUseCase` | Admin | Email |
+| `PromotionActivatedEvent` | `PromotionWorker` | Admin | Email |
+| `PromotionDeactivatedEvent` | `PromotionWorker` | Admin | Email |
+| `CartAbandonedEvent` | `AbandonedCartWorker` (a cada 5 min) | Cliente | WhatsApp |
 
 ### Fluxo
 ```
