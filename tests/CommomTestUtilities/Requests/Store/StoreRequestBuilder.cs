@@ -19,6 +19,7 @@ public class StoreRequestBuilder
             .RuleFor(store => store.CategoryId, f => f.Random.Guid())
             .RuleFor(store => store.Address, f => AddressRequestBuilder.Build())
             .RuleFor(store => store.OpeningHours, f => OpeningHourRequestBuilder.BuildList(3))
+            .RuleFor(store => store.OwnerPhone, f => f.Phone.PhoneNumber("55###########"))
             .Generate();
 
         var hours = store.OpeningHours.ToList();
