@@ -20,7 +20,7 @@ export class ChatSignalRService {
   async start(): Promise<void> {
     if (this.hubConnection?.state === 'Connected') return;
 
-    const token = await this.auth.getAccessTokenSilently().toPromise();
+    const token = await this.auth.getAccessTokenSilently().toPromise() ?? '';
 
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.signalrUrl}`, {
