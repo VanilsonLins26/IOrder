@@ -147,12 +147,13 @@ public class KafkaDomainEventConsumer : BackgroundService
         }
         else
         {
-            var subject = "Novo pedido recebido!";
+            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
+            var subject = "Novo pedido #" + orderIdShort;
             var body = $"""
                 <h2>Novo pedido recebido!</h2>
-                <p>Olá!</p>
-                <p>Você recebeu um novo pedido no valor de <strong>R$ {envelope.Data.TotalAmount:F2}</strong>.</p>
-                <p>Acesse o painel da sua loja para visualizar os detalhes.</p>
+                <p>Pedido <strong>#{orderIdShort}</strong></p>
+                <p>Valor: <strong>R$ {envelope.Data.TotalAmount:F2}</strong></p>
+                <p>Acesse o painel da sua loja para confirmar ou negociar.</p>
                 <br/>
                 <p>Atenciosamente,<br/>Equipe IOrder</p>
                 """;
@@ -162,7 +163,14 @@ public class KafkaDomainEventConsumer : BackgroundService
 
         if (store?.OwnerPhone is not null)
         {
-            var whatsappMessage = $"Novo pedido recebido no valor de R$ {envelope.Data.TotalAmount:F2}. Acesse o painel da sua loja para visualizar os detalhes.";
+            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
+            var whatsappMessage = $"""
+                *Novo pedido #{orderIdShort}*
+                
+                Valor: R$ {envelope.Data.TotalAmount:F2}
+                
+                Acesse o painel da sua loja para confirmar ou negociar o pedido.
+                """;
 
             await _evolutionApiService.SendTextAsync(store.OwnerPhone, whatsappMessage);
         }
@@ -186,14 +194,15 @@ public class KafkaDomainEventConsumer : BackgroundService
         }
         else
         {
+            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
             var oldStatus = envelope.Data?.OldStatus ?? "Desconhecido";
             var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
-            var subject = "Status do pedido atualizado";
+            var subject = "Pedido #" + orderIdShort + " - " + newStatus;
             var body = $"""
                 <h2>Status do pedido atualizado</h2>
-                <p>Olá!</p>
-                <p>O status do seu pedido mudou de <strong>{oldStatus}</strong> para <strong>{newStatus}</strong>.</p>
-                <p>Acompanhe pelo aplicativo.</p>
+                <p>Pedido <strong>#{orderIdShort}</strong></p>
+                <p>Status: <strong>{oldStatus}</strong> > <strong>{newStatus}</strong></p>
+                <p>Acompanhe pelo aplicativo para mais detalhes.</p>
                 <br/>
                 <p>Atenciosamente,<br/>Equipe IOrder</p>
                 """;
@@ -203,9 +212,16 @@ public class KafkaDomainEventConsumer : BackgroundService
 
         if (order?.CustomerPhone is not null)
         {
+            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
             var oldStatus = envelope.Data?.OldStatus ?? "Desconhecido";
             var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
-            var whatsappMessage = $"Seu pedido mudou de {oldStatus} para {newStatus}. Acompanhe pelo aplicativo.";
+            var whatsappMessage = $"""
+                *Pedido #{orderIdShort} - {newStatus}*
+                
+                Status atualizado: {oldStatus} > {newStatus}
+                
+                Acompanhe pelo aplicativo para mais detalhes.
+                """;
 
             await _evolutionApiService.SendTextAsync(order.CustomerPhone, whatsappMessage);
         }
@@ -219,7 +235,7 @@ public class KafkaDomainEventConsumer : BackgroundService
 
         if (_adminEmail is not null)
         {
-            var subject = "Nova loja cadastrada";
+            var subject = "Nova loja: " + (envelope.Data?.StoreName ?? "");
             var body = $"""
                 <h2>Nova loja cadastrada!</h2>
                 <p>Uma nova loja foi cadastrada na plataforma:</p>
@@ -236,7 +252,12 @@ public class KafkaDomainEventConsumer : BackgroundService
 
         if (_adminPhone is not null)
         {
-            var whatsappMessage = $"Nova loja cadastrada: {envelope.Data?.StoreName} (ID: {envelope.Data?.StoreId})";
+            var whatsappMessage = $"""
+                *Nova loja cadastrada*
+                
+                Loja: {envelope.Data?.StoreName}
+                ID: {envelope.Data?.StoreId}
+                """;
 
             await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
         }
