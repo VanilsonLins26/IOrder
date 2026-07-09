@@ -1,13 +1,18 @@
 using CommomTestUtilities.Entities;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.SeedWork;
 using IOrder.Domain.Services;
 using IOrder.infrastructure.DataAccess;
+using IOrder.infrastructure.Services.MessageBus;
+using IOrder.infrastructure.Workers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -48,7 +53,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             if (descriptor != null)
                 services.Remove(descriptor);
 
-
+            RemoveHostedServices(services);
+            RemoveExternalDependencies(services);
 
             services.AddAuthentication("Test")
                     .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
@@ -69,6 +75,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                 options.Configuration = _redisContainer.GetConnectionString();
             });
 
+            var redisMuxDesc = services.SingleOrDefault(d => d.ServiceType == typeof(StackExchange.Redis.IConnectionMultiplexer));
+            if (redisMuxDesc is not null)
+                services.Remove(redisMuxDesc);
+
             var emailDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
             if (emailDesc is not null)
                 services.Remove(emailDesc);
@@ -82,6 +92,68 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             EvolutionMock.Setup(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()))
                          .Returns(Task.CompletedTask);
             services.AddSingleton<IEvolutionApiService>(EvolutionMock.Object);
+
+            AddStubServices(services);
+        });
+    }
+
+    private static void RemoveHostedServices(IServiceCollection services)
+    {
+        var workerTypes = new[]
+        {
+            typeof(IOrder.infrastructure.Workers.ChatConsumer),
+            typeof(IOrder.infrastructure.Workers.KafkaDomainEventConsumer),
+            typeof(IOrder.infrastructure.Workers.AbandonedCartWorker)
+        };
+
+        var toRemove = services
+            .Where(d => d.ImplementationType is not null && workerTypes.Contains(d.ImplementationType))
+            .ToList();
+
+        foreach (var descriptor in toRemove)
+            services.Remove(descriptor);
+    }
+
+    private static void RemoveExternalDependencies(IServiceCollection services)
+    {
+        var typesToRemove = new[]
+        {
+            typeof(RabbitMQConnectionFactory),
+            typeof(KafkaProducerFactory),
+            typeof(RabbitMQMessagePublisher),
+            typeof(KafkaDomainEventDispatcher),
+        };
+
+        var toRemove = services
+            .Where(d => typesToRemove.Contains(d.ServiceType) ||
+                        (d.ImplementationType is not null && typesToRemove.Contains(d.ImplementationType)))
+            .ToList();
+
+        foreach (var descriptor in toRemove)
+            services.Remove(descriptor);
+    }
+
+    private static void AddStubServices(IServiceCollection services)
+    {
+        var publisherMock = new Mock<IOrderMessagePublisher>();
+        publisherMock.Setup(p => p.PublishMessageAsync(It.IsAny<Guid>(), It.IsAny<object>()))
+            .Returns(Task.CompletedTask);
+        services.AddScoped<IOrderMessagePublisher>(_ => publisherMock.Object);
+
+        var dispatcherMock = new Mock<IDomainEventDispatcher>();
+        dispatcherMock.Setup(d => d.DispatchAsync(It.IsAny<IEnumerable<IDomainEvent>>()))
+            .Returns(Task.CompletedTask);
+        services.AddScoped<IDomainEventDispatcher>(_ => dispatcherMock.Object);
+
+        services.AddSingleton<KafkaDomainEventConsumer>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var logger = sp.GetRequiredService<ILogger<KafkaDomainEventConsumer>>();
+            var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+            var email = sp.GetRequiredService<IEmailService>();
+            var evolution = sp.GetRequiredService<IEvolutionApiService>();
+            var cache = sp.GetRequiredService<IDistributedCache>();
+            return new KafkaDomainEventConsumer(config, logger, scopeFactory, email, evolution, cache);
         });
     }
     public async Task InitializeAsync()
