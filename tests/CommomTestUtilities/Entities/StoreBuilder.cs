@@ -24,6 +24,7 @@ public class StoreBuilder
             })
             .RuleFor(s => s.OpeningHours, f => [])
             .RuleFor(s => s.OwnerEmail, f => f.Internet.Email())
+            .RuleFor(s => s.OwnerPhone, f => f.Phone.PhoneNumber("55###########"))
             .Generate();
     }
 }

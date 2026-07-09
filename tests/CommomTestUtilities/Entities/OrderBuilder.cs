@@ -16,6 +16,7 @@ public class OrderBuilder
             .RuleFor(o => o.OriginalAmount, (f, o) => o.TotalAmount)
             .RuleFor(o => o.CustomerNotes, f => f.Lorem.Sentence())
             .RuleFor(o => o.CustomerEmail, f => f.Internet.Email())
+            .RuleFor(o => o.CustomerPhone, f => f.Phone.PhoneNumber("55###########"))
             .RuleFor(o => o.CreatedAt, DateTime.UtcNow)
             .Generate();
 
