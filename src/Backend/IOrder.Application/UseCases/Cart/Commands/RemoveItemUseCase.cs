@@ -37,6 +37,7 @@ public class RemoveItemUseCase : IRemoveItemUseCase
         }
 
         cart.UserEmail ??= _loggedUserService.GetUserEmail();
+        cart.UserPhone ??= _loggedUserService.GetUserPhone();
 
         await _writeOnlyRepository.SaveCartAsync(cart);
 

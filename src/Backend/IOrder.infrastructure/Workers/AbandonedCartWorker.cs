@@ -54,14 +54,14 @@ public class AbandonedCartWorker : BackgroundService
                             "Cart abandoned by user {UserId} (last modified: {LastModifiedAt})",
                             cart.UserId, cart.LastModifiedAt);
 
-                        var userEmail = cart.UserEmail;
-                        if (string.IsNullOrEmpty(userEmail))
+                        var userPhone = cart.UserPhone;
+                        if (string.IsNullOrEmpty(userPhone))
                         {
-                            _logger.LogWarning("User {UserId} has no email — skipping abandoned cart event", cart.UserId);
+                            _logger.LogWarning("User {UserId} has no phone — skipping abandoned cart event", cart.UserId);
                             continue;
                         }
 
-                        await dispatcher.DispatchAsync([new CartAbandonedEvent(cart.UserId, userEmail)]);
+                        await dispatcher.DispatchAsync([new CartAbandonedEvent(cart.UserId, userPhone)]);
 
                         await redisDb.KeyDeleteAsync(key);
                     }

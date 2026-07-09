@@ -6,13 +6,13 @@ namespace IOrder.Domain.Events;
 public class CartAbandonedEvent : IDomainEvent
 {
     public string UserId { get; }
-    public string UserEmail { get; }
+    public string? UserPhone { get; }
     public DateTime OccurredOn { get; }
 
-    public CartAbandonedEvent(string userId, string userEmail)
+    public CartAbandonedEvent(string userId, string? userPhone)
     {
         UserId = userId;
-        UserEmail = userEmail;
+        UserPhone = userPhone;
         OccurredOn = DateTime.UtcNow;
     }
 }

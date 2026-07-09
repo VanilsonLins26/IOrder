@@ -43,6 +43,7 @@ public class ChangeQuantityUseCase : IChangeQuantityUseCase
             throw new NotFoundException([ResourceMessagesException.CART_ITEM_NOT_FOUND]);
 
         cart.UserEmail ??= _loggedUserService.GetUserEmail();
+        cart.UserPhone ??= _loggedUserService.GetUserPhone();
 
         await _writeOnlyRepository.SaveCartAsync(cart);
 

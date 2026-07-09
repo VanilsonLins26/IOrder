@@ -272,17 +272,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(_adminEmail, subject, body);
         }
 
-        if (_adminPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Nova loja cadastrada*
-                
-                Loja: {envelope.Data?.StoreName}
-                ID: {envelope.Data?.StoreId}
-                """;
-
-            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
-        }
     }
 
     private async Task HandlePriceChangedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -324,17 +313,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(store.OwnerEmail, subject, body);
         }
 
-        if (store?.OwnerPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Preco alterado: {product.Name}*
-                
-                Novo preco: R$ {envelope.Data?.NewPrice:F2}
-                Loja: {store.Name}
-                """;
-
-            await _evolutionApiService.SendTextAsync(store.OwnerPhone, whatsappMessage);
-        }
     }
 
     private async Task HandleNewOrderMessageAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -431,20 +409,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(_adminEmail, subject, body);
         }
 
-        if (_adminPhone is not null)
-        {
-            var discountLabel = envelope.Data?.DiscountType == "Percentage"
-                ? $"{envelope.Data.DiscountValue}%"
-                : $"R$ {envelope.Data.DiscountValue:F2}";
-
-            var whatsappMessage = $"""
-                *Novo cupom: {envelope.Data?.CouponCode}*
-                
-                Desconto: {discountLabel}
-                """;
-
-            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
-        }
     }
 
     private async Task HandlePromotionActivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -467,16 +431,6 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(_adminEmail, subject, body);
         }
 
-        if (_adminPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Promocao: {envelope.Data?.ProductName}*
-                
-                Preco promocional: R$ {envelope.Data?.PromotionalPrice:F2}
-                """;
-
-            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
-        }
     }
 
     private async Task HandlePromotionDeactivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
@@ -499,43 +453,32 @@ public class KafkaDomainEventConsumer : BackgroundService
             await _emailService.SendAsync(_adminEmail, subject, body);
         }
 
-        if (_adminPhone is not null)
-        {
-            var whatsappMessage = $"""
-                *Promocao encerrada: {envelope.Data?.ProductName}*
-                
-                A promocao foi encerrada e o precp voltou ao valor original.
-                """;
-
-            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
-        }
     }
 
     private async Task HandleCartAbandonedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
     {
         var userId = envelope.Data?.UserId;
-        var userEmail = envelope.Data?.UserEmail;
+        var userPhone = envelope.Data?.UserPhone;
 
         _logger.LogInformation(
             "[CartAbandoned] User {UserId} abandoned cart",
             userId);
 
-        if (userEmail is null)
+        if (string.IsNullOrEmpty(userPhone))
         {
-            _logger.LogWarning("User {UserId} has no email — cannot send cart abandoned notification", userId);
+            _logger.LogWarning("User {UserId} has no phone — cannot send cart abandoned notification", userId);
             return;
         }
 
-        var subject = "Seu carrinho esta esperando!";
-        var body = $"""
-            <h2>Voce deixou itens no carrinho</h2>
-            <p>Identificamos que voce adicionou produtos ao carrinho mas nao finalizou o pedido.</p>
-            <p>Acesse o aplicativo para concluir sua compra.</p>
-            <br/>
-            <p>Atenciosamente,<br/>Equipe IOrder</p>
+        var whatsappMessage = $"""
+            *🛒 Seu carrinho esta esperando!*
+            
+            Identificamos que voce adicionou produtos ao carrinho mas nao finalizou o pedido.
+            
+            Acesse o aplicativo agora para concluir sua compra.
             """;
 
-        await _emailService.SendAsync(userEmail, subject, body);
+        await _evolutionApiService.SendTextAsync(userPhone, whatsappMessage);
     }
 
     public override void Dispose()
@@ -571,4 +514,5 @@ public class DomainEventData
     public string? ProductName { get; set; }
     public decimal? PromotionalPrice { get; set; }
     public string? UserEmail { get; set; }
+    public string? UserPhone { get; set; }
 }

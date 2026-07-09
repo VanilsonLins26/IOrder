@@ -8,6 +8,7 @@ public interface ILoggedUserService
 {
     string GetUserId();
     string GetUserEmail();
+    string? GetUserPhone();
     bool IsShopkeeper();
     bool IsClient();
 }

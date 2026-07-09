@@ -42,6 +42,7 @@ public class ApplyCouponUseCase : IApplyCouponUseCase
         await ValidateCoupon(request.CouponCode, cart.CartTotal);
 
         cart.UserEmail ??= _loggedUserService.GetUserEmail();
+        cart.UserPhone ??= _loggedUserService.GetUserPhone();
         cart.CouponCode = request.CouponCode;
 
         await _writeOnlyRepository.SaveCartAsync(cart);

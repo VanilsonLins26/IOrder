@@ -79,7 +79,7 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
-    public async Task Success_StoreCreated_SendsEmailAndWhatsAppToAdmin()
+    public async Task Success_StoreCreated_SendsEmailToAdmin()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -103,8 +103,8 @@ public class KafkaDomainEventConsumerTest
             e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()),
             Times.Once);
         evolutionMock.Verify(
-            e => e.SendTextAsync("5585986749331", It.IsAny<string>()),
-            Times.Once);
+            e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
     }
 
     [Fact]
@@ -430,7 +430,7 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
-    public async Task Success_CouponCreated_SendsEmailAndWhatsAppToAdmin()
+    public async Task Success_CouponCreated_SendsEmailToAdmin()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -451,7 +451,7 @@ public class KafkaDomainEventConsumerTest
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
 
         emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -475,7 +475,7 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
-    public async Task Success_PromotionActivated_SendsEmailAndWhatsAppToAdmin()
+    public async Task Success_PromotionActivated_SendsEmailToAdmin()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -495,11 +495,11 @@ public class KafkaDomainEventConsumerTest
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
 
         emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task Success_PromotionDeactivated_SendsEmailAndWhatsAppToAdmin()
+    public async Task Success_PromotionDeactivated_SendsEmailToAdmin()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -518,7 +518,7 @@ public class KafkaDomainEventConsumerTest
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
 
         emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -545,7 +545,7 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
-    public async Task Success_CartAbandoned_SendsEmailToCustomer()
+    public async Task Success_CartAbandoned_SendsWhatsAppToCustomer()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -553,7 +553,7 @@ public class KafkaDomainEventConsumerTest
             Data = new DomainEventData
             {
                 UserId = "user-123",
-                UserEmail = "cliente@email.com"
+                UserPhone = "5585986749331"
             },
             OccurredOn = DateTime.UtcNow
         };
@@ -564,12 +564,12 @@ public class KafkaDomainEventConsumerTest
 
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
 
-        emailMock.Verify(e => e.SendAsync("cliente@email.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
-    public async Task Error_CartAbandoned_WithoutEmail_DoesNotSend()
+    public async Task Error_CartAbandoned_WithoutPhone_DoesNotSend()
     {
         var envelope = new DomainEventEnvelope
         {
@@ -585,6 +585,7 @@ public class KafkaDomainEventConsumerTest
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
 
         emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     private static KafkaDomainEventConsumer BuildConsumer(
