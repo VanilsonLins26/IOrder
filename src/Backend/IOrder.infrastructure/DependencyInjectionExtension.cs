@@ -9,6 +9,7 @@ using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
 using IOrder.infrastructure.Services;
 using IOrder.infrastructure.Services.Email;
+using IOrder.infrastructure.Services.Evolution;
 using IOrder.infrastructure.Services.MessageBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -85,6 +86,7 @@ public static class DependencyInjectionExtension
         services.AddSingleton<KafkaProducerFactory>();
         services.AddScoped<IDomainEventDispatcher, KafkaDomainEventDispatcher>();
         services.AddSingleton<IEmailService, SmtpEmailService>();
+        services.AddSingleton<IEvolutionApiService, EvolutionApiService>();
     }
 
     private static void AddWorkers(IServiceCollection services)
