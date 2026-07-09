@@ -263,12 +263,179 @@ public class KafkaDomainEventConsumerTest
             Times.Never);
     }
 
+    [Fact]
+    public async Task Success_NewOrderMessage_SentByCustomer_SendsEmailToStoreOwner()
+    {
+        var store = StoreBuilder.Build(userId: "store-owner-id");
+        var order = OrderBuilder.Build(storeId: store.Id, userId: "customer-id");
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "NewOrderMessageEvent",
+            Data = new DomainEventData
+            {
+                OrderId = order.Id,
+                SenderUserId = order.UserId,
+                MessageText = "Olá, gostaria de saber o status"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var cacheMock = new Mock<IDistributedCache>();
+        cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((byte[]?)null);
+
+        var orderRepo = new OrderReadOnlyRepositoryBuilder().GetByIdAsync(order).Build();
+        var storeRepo = new StoreReadOnlyRepositoryBuilder().GetByIdAsync(store).Build();
+        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository, IStoreReadOnlyRepository>(orderRepo, storeRepo);
+        var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory, cacheMock: cacheMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(
+            e => e.SendAsync(store.OwnerEmail!, It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once);
+        evolutionMock.Verify(
+            e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_NewOrderMessage_SentByStoreOwner_SendsEmailToCustomer()
+    {
+        var store = StoreBuilder.Build(userId: "store-owner-id");
+        var order = OrderBuilder.Build(storeId: store.Id, userId: "customer-id");
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "NewOrderMessageEvent",
+            Data = new DomainEventData
+            {
+                OrderId = order.Id,
+                SenderUserId = store.UserId,
+                MessageText = "Confirmado!"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var cacheMock = new Mock<IDistributedCache>();
+        cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((byte[]?)null);
+
+        var orderRepo = new OrderReadOnlyRepositoryBuilder().GetByIdAsync(order).Build();
+        var storeRepo = new StoreReadOnlyRepositoryBuilder().GetByIdAsync(store).Build();
+        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository, IStoreReadOnlyRepository>(orderRepo, storeRepo);
+        var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory, cacheMock: cacheMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(
+            e => e.SendAsync(order.CustomerEmail!, It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once);
+        evolutionMock.Verify(
+            e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Success_NewOrderMessage_Dedup_SkipsDuplicateWithinTTL()
+    {
+        var store = StoreBuilder.Build(userId: "store-owner-id");
+        var order = OrderBuilder.Build(storeId: store.Id, userId: "customer-id");
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "NewOrderMessageEvent",
+            Data = new DomainEventData
+            {
+                OrderId = order.Id,
+                SenderUserId = order.UserId,
+                MessageText = "Mensagem duplicada"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var cacheMock = new Mock<IDistributedCache>();
+        cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new byte[] { (byte)'1' });
+
+        var scopeFactory = Mock.Of<IServiceScopeFactory>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory, cacheMock: cacheMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(
+            e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Error_NewOrderMessage_NullOrderId_DoesNotSendEmail()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "NewOrderMessageEvent",
+            Data = new DomainEventData { SenderUserId = "user-id" },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(
+            e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Error_NewOrderMessage_RecipientWithoutEmail_DoesNotSendEmail()
+    {
+        var store = StoreBuilder.Build(userId: "store-owner-id");
+        store.OwnerEmail = null;
+        var order = OrderBuilder.Build(storeId: store.Id, userId: "customer-id");
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "NewOrderMessageEvent",
+            Data = new DomainEventData
+            {
+                OrderId = order.Id,
+                SenderUserId = order.UserId,
+                MessageText = "Olá"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var cacheMock = new Mock<IDistributedCache>();
+        cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((byte[]?)null);
+
+        var orderRepo = new OrderReadOnlyRepositoryBuilder().GetByIdAsync(order).Build();
+        var storeRepo = new StoreReadOnlyRepositoryBuilder().GetByIdAsync(store).Build();
+        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository, IStoreReadOnlyRepository>(orderRepo, storeRepo);
+        var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory, cacheMock: cacheMock);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(
+            e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
     private static KafkaDomainEventConsumer BuildConsumer(
         Mock<IEmailService>? emailMock = null,
         Mock<IEvolutionApiService>? evolutionMock = null,
         IServiceScopeFactory? scopeFactory = null,
         string? adminEmail = "admin@test.com",
-        string? adminPhone = "5585000000000")
+        string? adminPhone = "5585000000000",
+        Mock<IDistributedCache>? cacheMock = null)
     {
         var configMock = new Mock<IConfiguration>();
         configMock.Setup(c => c["Smtp:AdminEmail"]).Returns(adminEmail);
@@ -278,9 +445,30 @@ public class KafkaDomainEventConsumerTest
         var email = emailMock?.Object ?? Mock.Of<IEmailService>();
         var evolution = evolutionMock?.Object ?? Mock.Of<IEvolutionApiService>();
         var scope = scopeFactory ?? Mock.Of<IServiceScopeFactory>();
-        var cache = Mock.Of<IDistributedCache>();
+        var cache = cacheMock?.Object ?? Mock.Of<IDistributedCache>();
 
         return new KafkaDomainEventConsumer(configMock.Object, logger, scope, email, evolution, cache);
+    }
+
+    private static IServiceScopeFactory CreateScopeFactory<T1, T2>(T1 service1, T2 service2)
+        where T1 : class
+        where T2 : class
+    {
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(T1)))
+            .Returns(service1);
+        serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(T2)))
+            .Returns(service2);
+
+        var scopeMock = new Mock<IServiceScope>();
+        scopeMock.Setup(s => s.ServiceProvider).Returns(serviceProviderMock.Object);
+
+        var factoryMock = new Mock<IServiceScopeFactory>();
+        factoryMock.Setup(f => f.CreateScope()).Returns(scopeMock.Object);
+
+        return factoryMock.Object;
     }
 
     private static IServiceScopeFactory CreateScopeFactory<T>(T service) where T : class
