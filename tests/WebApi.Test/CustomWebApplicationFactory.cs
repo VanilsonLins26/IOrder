@@ -23,6 +23,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     public IEnumerable<IOrder.Domain.Entities.Product> ProductList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Category> CategoryList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Coupon> CouponList { get; private set; } = [];
+    public Mock<IEmailService> EmailMock { get; } = new();
+    public Mock<IEvolutionApiService> EvolutionMock { get; } = new();
 
     public CustomWebApplicationFactory()
     {
@@ -70,18 +72,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             var emailDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
             if (emailDesc is not null)
                 services.Remove(emailDesc);
-            var emailMock = new Mock<IEmailService>();
-            emailMock.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            EmailMock.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                      .Returns(Task.CompletedTask);
-            services.AddSingleton<IEmailService>(emailMock.Object);
+            services.AddSingleton<IEmailService>(EmailMock.Object);
 
             var evolutionDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IEvolutionApiService));
             if (evolutionDesc is not null)
                 services.Remove(evolutionDesc);
-            var evolutionMock = new Mock<IEvolutionApiService>();
-            evolutionMock.Setup(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()))
+            EvolutionMock.Setup(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()))
                          .Returns(Task.CompletedTask);
-            services.AddSingleton<IEvolutionApiService>(evolutionMock.Object);
+            services.AddSingleton<IEvolutionApiService>(EvolutionMock.Object);
         });
     }
     public async Task InitializeAsync()

@@ -30,6 +30,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         var claims = new[] 
         { 
             new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Email, userId + "@iorder.com"),
             new Claim(ClaimTypes.Role, "ShopKeeper")
         };
         
