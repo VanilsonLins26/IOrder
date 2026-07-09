@@ -499,6 +499,52 @@ public class KafkaDomainEventConsumerTest
     }
 
     [Fact]
+    public async Task Success_PromotionDeactivated_SendsEmailAndWhatsAppToAdmin()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "PromotionDeactivatedEvent",
+            Data = new DomainEventData
+            {
+                ProductName = "Bolo de Chocolate"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: "admin@iorder.com", adminPhone: "5585986749331");
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync("admin@iorder.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        evolutionMock.Verify(e => e.SendTextAsync("5585986749331", It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Success_PromotionDeactivated_NoAdminContact_SkipsNotifications()
+    {
+        var envelope = new DomainEventEnvelope
+        {
+            EventType = "PromotionDeactivatedEvent",
+            Data = new DomainEventData
+            {
+                ProductName = "Bolo de Chocolate"
+            },
+            OccurredOn = DateTime.UtcNow
+        };
+
+        var emailMock = new Mock<IEmailService>();
+        var evolutionMock = new Mock<IEvolutionApiService>();
+        var consumer = BuildConsumer(emailMock, evolutionMock, adminEmail: null, adminPhone: null);
+
+        await consumer.HandleEventAsync(envelope, CancellationToken.None);
+
+        emailMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        evolutionMock.Verify(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Success_CartAbandoned_SendsEmailToCustomer()
     {
         var envelope = new DomainEventEnvelope

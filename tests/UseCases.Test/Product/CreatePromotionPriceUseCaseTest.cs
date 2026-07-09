@@ -3,10 +3,8 @@ using CommomTestUtilities.Requests.Product;
 using IOrder.Application.UseCases.Product.Commands;
 using IOrder.Application.UseCases.Product.Queries;
 using IOrder.Communication.Request;
-using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
-using Moq;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -108,9 +106,7 @@ public class CreatePromotionPriceUseCaseTest
 
         var storePermissionService = CommomTestUtilities.Services.StorePermissionServiceBuilder.Build();
 
-        var eventDispatcher = new Mock<IDomainEventDispatcher>();
-
-        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork, storePermissionService, new IOrder.Application.UseCases.Product.Commands.CreatePromotionPriceValidator(), eventDispatcher.Object);
+        return new CreatePromotionPriceUseCase(writeRepository, readRepository.Build(), unitOfWork, storePermissionService, new IOrder.Application.UseCases.Product.Commands.CreatePromotionPriceValidator());
 
     }
 }

@@ -139,6 +139,9 @@ public class KafkaDomainEventConsumer : BackgroundService
             case "PromotionActivatedEvent":
                 await HandlePromotionActivatedAsync(envelope, stoppingToken);
                 break;
+            case "PromotionDeactivatedEvent":
+                await HandlePromotionDeactivatedAsync(envelope, stoppingToken);
+                break;
             case "CartAbandonedEvent":
                 await HandleCartAbandonedAsync(envelope, stoppingToken);
                 break;
@@ -470,6 +473,38 @@ public class KafkaDomainEventConsumer : BackgroundService
                 *Promocao: {envelope.Data?.ProductName}*
                 
                 Preco promocional: R$ {envelope.Data?.PromotionalPrice:F2}
+                """;
+
+            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
+        }
+    }
+
+    private async Task HandlePromotionDeactivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[PromotionDeactivated] Product {ProductName} — promotion ended",
+            envelope.Data?.ProductName);
+
+        if (_adminEmail is not null)
+        {
+            var subject = "Promocao encerrada: " + (envelope.Data?.ProductName ?? "");
+            var body = $"""
+                <h2>Promocao encerrada</h2>
+                <p>A promocao do produto <strong>{envelope.Data?.ProductName}</strong> foi encerrada.</p>
+                <p>O precp voltou ao valor original.</p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+        if (_adminPhone is not null)
+        {
+            var whatsappMessage = $"""
+                *Promocao encerrada: {envelope.Data?.ProductName}*
+                
+                A promocao foi encerrada e o precp voltou ao valor original.
                 """;
 
             await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
