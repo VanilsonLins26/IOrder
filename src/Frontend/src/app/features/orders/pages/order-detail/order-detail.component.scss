@@ -280,10 +280,27 @@
   font-size: var(--font-size-sm);
 }
 
+.typing-indicator {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  padding: var(--space-2) var(--space-3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .message {
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: var(--color-neutral-50);
+
+  &--own {
+    background: var(--color-primary-50);
+  }
 
   &__header {
     display: flex;
@@ -319,6 +336,14 @@
     font-size: var(--font-size-sm);
     color: var(--text-primary);
     white-space: pre-wrap;
+  }
+
+  &__read {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-primary-600);
+    margin-top: var(--space-1);
+    text-align: right;
   }
 
   &__proposal {

@@ -102,7 +102,7 @@
           class="send-message__input"
           placeholder="Digite sua mensagem..."
           [ngModel]="messageText()"
-          (ngModelChange)="messageText.set($event)"
+          (ngModelChange)="messageText.set($event); onMessageInput()"
           (keyup.enter)="sendMessage()"
           [disabled]="sendingMessage()"
         />
@@ -112,19 +112,26 @@
         </button>
       </div>
 
+      @if (typingUser()) {
+        <p class="typing-indicator">{{ typingUser() }} está digitando...</p>
+      }
+
       @if (o.messages.length === 0) {
         <p class="no-messages">Nenhuma mensagem ainda.</p>
       }
       @for (msg of o.messages; track msg.id) {
-        <div class="message">
+        <div class="message" [class.message--own]="msg.userRole === 'ShopKeeper'">
           <div class="message__header">
-            <span class="message__author">{{ msg.userRole === 'ShopKeeper' ? 'Lojista' : 'Cliente' }}</span>
+            <span class="message__author">{{ msg.userRole === 'ShopKeeper' ? 'Você' : 'Cliente' }}</span>
             <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
             @if (msg.type === MessageTypeDto.Proposal) {
               <span class="message__tag message__tag--proposal">Proposta</span>
             }
           </div>
           <p class="message__text">{{ msg.message }}</p>
+          @if (msg.readAt) {
+            <span class="message__read">✓✓ Visualizada pelo cliente</span>
+          }
           @if (msg.proposedTotalAmount != null || msg.proposedDeliveryDate != null) {
             <div class="message__proposal">
               @if (msg.proposedTotalAmount != null) { <span>Valor: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span> }
