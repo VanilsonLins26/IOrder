@@ -8,6 +8,7 @@ public class Order : EntityBase, IAggregateRoot
 {
     public string UserId { get; set; } = string.Empty;
     public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
     public Guid StoreId { get; set; }
     public Store? Store { get; set; }
     public OrderStatus Status { get; private set; } = OrderStatus.Pending;

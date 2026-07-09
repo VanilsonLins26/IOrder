@@ -20,6 +20,7 @@ public class Store : EntityBase, IAggregateRoot
     public Guid CategoryId { get; set; }
     public String UserId { get; set; } = string.Empty;
     public string? OwnerEmail { get; set; }
+    public string? OwnerPhone { get; set; }
     public StoreCategory? Category { get; set; }
 
     public bool IsOpen()
