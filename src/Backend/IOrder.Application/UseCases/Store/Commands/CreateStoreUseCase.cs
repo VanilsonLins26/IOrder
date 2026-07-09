@@ -39,6 +39,7 @@ public class CreateStoreUseCase : ICreateStoreUseCase
         var store = request.Adapt<Domain.Entities.Store>();
         store.UserId = userId;
         store.OwnerEmail = _loggedUserService.GetUserEmail();
+        store.OwnerPhone = request.OwnerPhone;
         store.AddDomainEvent(new IOrder.Domain.Events.StoreCreatedEvent(store.Id, store.Name));
 
         var createdStore = await _writeOnlyRepository.Create(store);
