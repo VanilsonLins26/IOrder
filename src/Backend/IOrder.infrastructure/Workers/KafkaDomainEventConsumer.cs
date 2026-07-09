@@ -3,6 +3,7 @@ using Confluent.Kafka;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Services;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +19,7 @@ public class KafkaDomainEventConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEmailService _emailService;
     private readonly IEvolutionApiService _evolutionApiService;
+    private readonly IDistributedCache _cache;
     private readonly string? _adminEmail;
     private readonly string? _adminPhone;
 
@@ -26,13 +28,15 @@ public class KafkaDomainEventConsumer : BackgroundService
         ILogger<KafkaDomainEventConsumer> logger,
         IServiceScopeFactory scopeFactory,
         IEmailService emailService,
-        IEvolutionApiService evolutionApiService)
+        IEvolutionApiService evolutionApiService,
+        IDistributedCache cache)
     {
         _topic = configuration["Kafka:Topic"] ?? "domain.events";
         _logger = logger;
         _scopeFactory = scopeFactory;
         _emailService = emailService;
         _evolutionApiService = evolutionApiService;
+        _cache = cache;
         _adminEmail = configuration["Smtp:AdminEmail"];
         _adminPhone = configuration["EvolutionApi:AdminNumber"];
 
@@ -125,6 +129,9 @@ public class KafkaDomainEventConsumer : BackgroundService
                 break;
             case "PriceChangedEvent":
                 await HandlePriceChangedAsync(envelope, stoppingToken);
+                break;
+            case "NewOrderMessageEvent":
+                await HandleNewOrderMessageAsync(envelope, stoppingToken);
                 break;
             default:
                 _logger.LogWarning("Unknown event type: {EventType}", envelope.EventType);
@@ -318,6 +325,76 @@ public class KafkaDomainEventConsumer : BackgroundService
         }
     }
 
+    private async Task HandleNewOrderMessageAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        var orderId = envelope.Data?.OrderId;
+        var senderUserId = envelope.Data?.SenderUserId;
+
+        _logger.LogInformation(
+            "[NewOrderMessage] New message in order {OrderId} from user {SenderUserId}",
+            orderId, senderUserId);
+
+        if (orderId is null || senderUserId is null) return;
+
+        var dedupKey = $"notif:dedup:newmessage:{orderId}";
+        var alreadyNotified = await _cache.GetStringAsync(dedupKey, stoppingToken);
+        if (alreadyNotified is not null)
+        {
+            _logger.LogInformation("Skipping notification for order {OrderId} (already notified within TTL)", orderId);
+            return;
+        }
+
+        using var scope = _scopeFactory.CreateScope();
+        var orderRepository = scope.ServiceProvider.GetRequiredService<IOrderReadOnlyRepository>();
+        var storeRepository = scope.ServiceProvider.GetRequiredService<IStoreReadOnlyRepository>();
+
+        var order = await orderRepository.GetByIdAsync(orderId.Value);
+        if (order is null)
+        {
+            _logger.LogWarning("Order {OrderId} not found", orderId);
+            return;
+        }
+
+        var orderIdShort = orderId?.ToString("N")[..8].ToUpper();
+        var subject = "Novas mensagens no pedido #" + orderIdShort;
+        var body = $"""
+            <h2>Você tem novas mensagens!</h2>
+            <p>O pedido <strong>#{orderIdShort}</strong> recebeu novas mensagens.</p>
+            <p>Acesse o aplicativo para visualizar e responder.</p>
+            <br/>
+            <p>Atenciosamente,<br/>Equipe IOrder</p>
+            """;
+
+        if (senderUserId == order.UserId)
+        {
+            var store = await storeRepository.GetByIdAsync(order.StoreId);
+            if (store?.OwnerEmail is not null)
+            {
+                await _emailService.SendAsync(store.OwnerEmail, subject, body);
+            }
+            else
+            {
+                _logger.LogWarning("Store {StoreId} has no owner email", order.StoreId);
+            }
+        }
+        else
+        {
+            if (order.CustomerEmail is not null)
+            {
+                await _emailService.SendAsync(order.CustomerEmail, subject, body);
+            }
+            else
+            {
+                _logger.LogWarning("Order {OrderId} has no customer email", orderId);
+            }
+        }
+
+        await _cache.SetStringAsync(dedupKey, "1", new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+        }, stoppingToken);
+    }
+
     public override void Dispose()
     {
         _consumer?.Dispose();
@@ -343,4 +420,6 @@ public class DomainEventData
     public string? StoreName { get; set; }
     public Guid? ProductId { get; set; }
     public decimal? NewPrice { get; set; }
+    public string? SenderUserId { get; set; }
+    public string? MessageText { get; set; }
 }

@@ -4,6 +4,7 @@ using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Services;
 using IOrder.infrastructure.Workers;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -277,8 +278,9 @@ public class KafkaDomainEventConsumerTest
         var email = emailMock?.Object ?? Mock.Of<IEmailService>();
         var evolution = evolutionMock?.Object ?? Mock.Of<IEvolutionApiService>();
         var scope = scopeFactory ?? Mock.Of<IServiceScopeFactory>();
+        var cache = Mock.Of<IDistributedCache>();
 
-        return new KafkaDomainEventConsumer(configMock.Object, logger, scope, email, evolution);
+        return new KafkaDomainEventConsumer(configMock.Object, logger, scope, email, evolution, cache);
     }
 
     private static IServiceScopeFactory CreateScopeFactory<T>(T service) where T : class
