@@ -123,6 +123,9 @@ public class KafkaDomainEventConsumer : BackgroundService
             case "StoreCreatedEvent":
                 await HandleStoreCreatedAsync(envelope, stoppingToken);
                 break;
+            case "PriceChangedEvent":
+                await HandlePriceChangedAsync(envelope, stoppingToken);
+                break;
             default:
                 _logger.LogWarning("Unknown event type: {EventType}", envelope.EventType);
                 break;
@@ -263,6 +266,58 @@ public class KafkaDomainEventConsumer : BackgroundService
         }
     }
 
+    private async Task HandlePriceChangedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        var productId = envelope.Data?.ProductId;
+
+        _logger.LogInformation(
+            "[PriceChanged] Product {ProductId} — new price: {NewPrice}",
+            productId, envelope.Data?.NewPrice);
+
+        if (productId is null) return;
+
+        using var scope = _scopeFactory.CreateScope();
+        var productRepository = scope.ServiceProvider.GetRequiredService<IOrder.Domain.Repositories.Product.IProductReadOnlyRepository>();
+        var storeRepository = scope.ServiceProvider.GetRequiredService<IStoreReadOnlyRepository>();
+
+        var product = await productRepository.GetByIdAsync(productId.Value);
+
+        if (product is null)
+        {
+            _logger.LogWarning("Product {ProductId} not found", productId);
+            return;
+        }
+
+        var store = await storeRepository.GetByIdAsync(product.StoreId);
+
+        if (store?.OwnerEmail is not null)
+        {
+            var subject = "Preco alterado: " + product.Name;
+            var body = $"""
+                <h2>Preco do produto alterado</h2>
+                <p>Produto: <strong>{product.Name}</strong></p>
+                <p>Novo preco: <strong>R$ {envelope.Data?.NewPrice:F2}</strong></p>
+                <p>Loja: {store.Name}</p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(store.OwnerEmail, subject, body);
+        }
+
+        if (store?.OwnerPhone is not null)
+        {
+            var whatsappMessage = $"""
+                *Preco alterado: {product.Name}*
+                
+                Novo preco: R$ {envelope.Data?.NewPrice:F2}
+                Loja: {store.Name}
+                """;
+
+            await _evolutionApiService.SendTextAsync(store.OwnerPhone, whatsappMessage);
+        }
+    }
+
     public override void Dispose()
     {
         _consumer?.Dispose();
@@ -286,4 +341,6 @@ public class DomainEventData
     public string? OldStatus { get; set; }
     public string? NewStatus { get; set; }
     public string? StoreName { get; set; }
+    public Guid? ProductId { get; set; }
+    public decimal? NewPrice { get; set; }
 }
