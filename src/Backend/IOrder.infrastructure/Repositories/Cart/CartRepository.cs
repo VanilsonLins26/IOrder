@@ -33,6 +33,8 @@ internal class CartRepository : ICartReadOnlyRepository, ICartWriteOnlyRepositor
 
     public async Task<Domain.Entities.Cart> SaveCartAsync(Domain.Entities.Cart cart)
     {
+        cart.LastModifiedAt = DateTime.UtcNow;
+
         var cartJson = JsonSerializer.Serialize(cart);
 
         var options = new DistributedCacheEntryOptions()

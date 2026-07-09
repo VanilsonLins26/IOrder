@@ -70,6 +70,7 @@ public class AddItemToCartUseCase : IAddItemToCartUseCase
         cartItem.ProductImageUrl = product.ImageUrl;
         cartItem.StoreId = product.StoreId;
 
+        cart.UserEmail ??= _loggedUserService.GetUserEmail();
         cart.AddCartItem(cartItem);
 
         await _writeOnlyRepository.SaveCartAsync(cart);

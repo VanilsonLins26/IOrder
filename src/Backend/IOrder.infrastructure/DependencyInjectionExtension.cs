@@ -20,6 +20,7 @@ using IOrder.infrastructure.Repositories.Coupon;
 using IOrder.Domain.Repositories.Order;
 using IOrder.infrastructure.Repositories.Order;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace IOrder.infrastructure;
 
@@ -49,6 +50,8 @@ public static class DependencyInjectionExtension
         {
             options.Configuration = redisConnectionString;
         });
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisConnectionString));
     }
 
     private static void AddRepositories(IServiceCollection services)
@@ -94,6 +97,7 @@ public static class DependencyInjectionExtension
         services.AddHostedService<Workers.PromotionWorker>();
         services.AddHostedService<Workers.ChatConsumer>();
         services.AddHostedService<Workers.KafkaDomainEventConsumer>();
+        services.AddHostedService<Workers.AbandonedCartWorker>();
     }
 
     public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)

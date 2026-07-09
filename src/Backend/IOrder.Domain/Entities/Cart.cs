@@ -10,6 +10,8 @@ namespace IOrder.Domain.Entities;
 public class Cart : IAggregateRoot
 {
     public string UserId { get; set; } = string.Empty;
+    public string? UserEmail { get; set; }
+    public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
     public string CouponCode { get; set; } = string.Empty;
     public decimal CartTotal => Items.Sum(item => item.TotalPrice);
     public List<CartItem> Items { get; set; } = [];

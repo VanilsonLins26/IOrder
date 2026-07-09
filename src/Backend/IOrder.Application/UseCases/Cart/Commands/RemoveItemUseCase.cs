@@ -36,6 +36,8 @@ public class RemoveItemUseCase : IRemoveItemUseCase
             throw new NotFoundException([ResourceMessagesException.CART_ITEM_NOT_FOUND]);
         }
 
+        cart.UserEmail ??= _loggedUserService.GetUserEmail();
+
         await _writeOnlyRepository.SaveCartAsync(cart);
 
         return cart.Adapt<CartResponseDto>();
