@@ -1,8 +1,10 @@
 using CommomTestUtilities.Repositories;
 using CommomTestUtilities.Requests.Coupon;
 using IOrder.Application.UseCases.Coupon.Commands;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Moq;
 using Shouldly;
 using Xunit;
 
@@ -56,11 +58,13 @@ public class CreateCouponUseCaseTest
         var writeOnlyRepository = new CouponWriteOnlyRepositoryBuilder().Create().Build();
         var unitOfWork = UnitOfWorkBuilder.Build();
         var validator = new CreateCouponValidator();
+        var eventDispatcher = new Mock<IDomainEventDispatcher>();
 
         return new CreateCouponUseCase(
             readOnlyRepository.Build(),
             writeOnlyRepository,
             unitOfWork,
-            validator);
+            validator,
+            eventDispatcher.Object);
     }
 }

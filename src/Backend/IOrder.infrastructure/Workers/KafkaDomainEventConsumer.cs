@@ -133,6 +133,15 @@ public class KafkaDomainEventConsumer : BackgroundService
             case "NewOrderMessageEvent":
                 await HandleNewOrderMessageAsync(envelope, stoppingToken);
                 break;
+            case "CouponCreatedEvent":
+                await HandleCouponCreatedAsync(envelope, stoppingToken);
+                break;
+            case "PromotionActivatedEvent":
+                await HandlePromotionActivatedAsync(envelope, stoppingToken);
+                break;
+            case "CartAbandonedEvent":
+                await HandleCartAbandonedAsync(envelope, stoppingToken);
+                break;
             default:
                 _logger.LogWarning("Unknown event type: {EventType}", envelope.EventType);
                 break;
@@ -395,6 +404,105 @@ public class KafkaDomainEventConsumer : BackgroundService
         }, stoppingToken);
     }
 
+    private async Task HandleCouponCreatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[CouponCreated] Coupon {Code} — value: {Value}",
+            envelope.Data?.CouponCode, envelope.Data?.DiscountValue);
+
+        if (_adminEmail is not null)
+        {
+            var discountLabel = envelope.Data?.DiscountType == "Percentage"
+                ? $"{envelope.Data.DiscountValue}%"
+                : $"R$ {envelope.Data.DiscountValue:F2}";
+
+            var subject = "Novo cupom: " + (envelope.Data?.CouponCode ?? "");
+            var body = $"""
+                <h2>Novo cupom criado</h2>
+                <p>Codigo: <strong>{envelope.Data?.CouponCode}</strong></p>
+                <p>Desconto: <strong>{discountLabel}</strong></p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+        if (_adminPhone is not null)
+        {
+            var discountLabel = envelope.Data?.DiscountType == "Percentage"
+                ? $"{envelope.Data.DiscountValue}%"
+                : $"R$ {envelope.Data.DiscountValue:F2}";
+
+            var whatsappMessage = $"""
+                *Novo cupom: {envelope.Data?.CouponCode}*
+                
+                Desconto: {discountLabel}
+                """;
+
+            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
+        }
+    }
+
+    private async Task HandlePromotionActivatedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        _logger.LogInformation(
+            "[PromotionActivated] Product {ProductName} — promotional price: {Price}",
+            envelope.Data?.ProductName, envelope.Data?.PromotionalPrice);
+
+        if (_adminEmail is not null)
+        {
+            var subject = "Promocao ativada: " + (envelope.Data?.ProductName ?? "");
+            var body = $"""
+                <h2>Promocao ativada</h2>
+                <p>Produto: <strong>{envelope.Data?.ProductName}</strong></p>
+                <p>Preco promocional: <strong>R$ {envelope.Data?.PromotionalPrice:F2}</strong></p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe IOrder</p>
+                """;
+
+            await _emailService.SendAsync(_adminEmail, subject, body);
+        }
+
+        if (_adminPhone is not null)
+        {
+            var whatsappMessage = $"""
+                *Promocao: {envelope.Data?.ProductName}*
+                
+                Preco promocional: R$ {envelope.Data?.PromotionalPrice:F2}
+                """;
+
+            await _evolutionApiService.SendTextAsync(_adminPhone, whatsappMessage);
+        }
+    }
+
+    private async Task HandleCartAbandonedAsync(DomainEventEnvelope envelope, CancellationToken stoppingToken)
+    {
+        var userId = envelope.Data?.UserId;
+        var userEmail = envelope.Data?.UserEmail;
+
+        _logger.LogInformation(
+            "[CartAbandoned] User {UserId} abandoned cart",
+            userId);
+
+        if (userEmail is null)
+        {
+            _logger.LogWarning("User {UserId} has no email — cannot send cart abandoned notification", userId);
+            return;
+        }
+
+        var subject = "Seu carrinho esta esperando!";
+        var body = $"""
+            <h2>Voce deixou itens no carrinho</h2>
+            <p>Identificamos que voce adicionou produtos ao carrinho mas nao finalizou o pedido.</p>
+            <p>Acesse o aplicativo para concluir sua compra.</p>
+            <br/>
+            <p>Atenciosamente,<br/>Equipe IOrder</p>
+            """;
+
+        await _emailService.SendAsync(userEmail, subject, body);
+    }
+
     public override void Dispose()
     {
         _consumer?.Dispose();
@@ -422,4 +530,10 @@ public class DomainEventData
     public decimal? NewPrice { get; set; }
     public string? SenderUserId { get; set; }
     public string? MessageText { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal? DiscountValue { get; set; }
+    public string? DiscountType { get; set; }
+    public string? ProductName { get; set; }
+    public decimal? PromotionalPrice { get; set; }
+    public string? UserEmail { get; set; }
 }
