@@ -3,6 +3,7 @@ using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Product;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -17,14 +18,16 @@ public class UpdateProductUseCase : IUpdateProductUseCase
     private readonly IUnitOfWork _uof;
     private readonly IStorePermissionService _storePermissionService;
     private readonly IValidator<UpdateProductRequestDto> _validator;
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
 
-    public UpdateProductUseCase(IProductWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, IProductReadOnlyRepository readOnlyRepository, IStorePermissionService storePermissionService, IValidator<UpdateProductRequestDto> validator)
+    public UpdateProductUseCase(IProductWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, IProductReadOnlyRepository readOnlyRepository, IStorePermissionService storePermissionService, IValidator<UpdateProductRequestDto> validator, IDomainEventDispatcher domainEventDispatcher)
     {
         _writeOnlyRepository = writeOnlyRepository;
         _uof = uof;
         _readOnlyRepository = readOnlyRepository;
         _storePermissionService = storePermissionService;
         _validator = validator;
+        _domainEventDispatcher = domainEventDispatcher;
     }
 
     public async Task<ProductResponseDto> Execute(Guid id, UpdateProductRequestDto dto)
@@ -39,6 +42,9 @@ public class UpdateProductUseCase : IUpdateProductUseCase
         product.UpdatePrice(dto.Price.GetValueOrDefault());
 
         await _uof.Commit();
+
+        await _domainEventDispatcher.DispatchAsync(product.DomainEvents);
+        product.ClearDomainEvents();
 
         return product.Adapt<ProductResponseDto>();
 

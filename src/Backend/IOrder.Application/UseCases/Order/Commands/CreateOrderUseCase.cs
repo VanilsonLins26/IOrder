@@ -88,6 +88,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         {
             UserId = userId,
             CustomerEmail = customerEmail,
+            CustomerPhone = request.CustomerPhone,
             StoreId = storeId,
             TotalAmount = discountedTotal,
             OriginalAmount = cart.CartTotal,

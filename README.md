@@ -31,13 +31,14 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Upload de imagens para Cloudinary
 - ✅ Redis Cache para carrinho de compras
 - ✅ Seed Data populado (lojas, categorias, produtos)
-- ✅ Testes de unidade + integração com TestContainers
-- 🔄 Carrinho de Compras (use cases e controllers em finalização)
-- ⬜ Módulo de Chat via SignalR
+- ✅ Carrinho de Compras (Redis-based)
+- ✅ Módulo de Chat em tempo real (SignalR + RabbitMQ)
+- ✅ RabbitMQ (fila de mensagens do chat com dedup via Redis)
+- ✅ Apache Kafka (domain events: order, store, price, message)
+- ✅ Notificação por Email (SmtpClient + MailHog) para novos pedidos, alterações de status, novas mensagens, preço alterado
+- ✅ Notificação por WhatsApp (Evolution API/Baileys) para pedidos, status, loja criada e preço alterado
+- ✅ Notificação de novas mensagens no chat com dedup de 10min via Redis
 - ⬜ Integração com Mercado Pago
-- ⬜ Integração com EvolutionAPI (WhatsApp)
-- ⬜ RabbitMQ (fila de comandos)
-- ⬜ Apache Kafka (log de eventos — opcional)
 
 ### Frontend (Angular 20)
 
@@ -118,6 +119,45 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 
 ---
 
+## 📬 Sistema de Notificações
+
+### Eventos de Domínio
+O sistema dispara eventos de domínio nas seguintes entidades:
+
+| Evento | Disparado por | Destinatário | Canais |
+|---|---|---|---|
+| `OrderCreatedEvent` | `Order.CreateOrder()` | Dono da loja | Email + WhatsApp |
+| `OrderStatusChangedEvent` | `Order.Accept()`, `Order.Cancel()`, etc. | Cliente | Email + WhatsApp |
+| `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email + WhatsApp |
+| `PriceChangedEvent` | `Product.UpdatePrice()` | Dono da loja | Email + WhatsApp |
+| `NewOrderMessageEvent` | `Order.AddMessage()` | Cliente ou lojista (quem não enviou) | Email (com dedup de 10min via Redis) |
+
+### Fluxo
+```
+Use Case → AddDomainEvent() → IDomainEventDispatcher.DispatchAsync()
+                                     ↓
+                           Kafka (domain.events topic)
+                                     ↓
+                         KafkaDomainEventConsumer
+                           ├── IEmailService (SmtpClient → MailHog)
+                           └── IEvolutionApiService (Evolution API → WhatsApp)
+```
+
+### Chat em Tempo Real
+```
+SendOrderMessageUseCase → RabbitMQ (order-messages queue)
+                               ↓
+                         ChatConsumer
+                           ├── Redis dedup (30s)
+                           └── SignalR → clientes conectados
+```
+
+O Redis é usado para:
+- **Dedup de chat**: 30s TTL para evitar mensagens duplicadas no SignalR
+- **Dedup de notificação de mensagens**: 10min TTL para evitar notificações repetidas de email
+
+---
+
 ## 🛠️ Tecnologias
 
 | Categoria | Tecnologia | Versão | Status |
@@ -139,12 +179,12 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 | **Mocking** | Moq | — | ✅ |
 | **Integration Tests** | TestContainers.MySql | — | ✅ |
 | **CI/CD** | Azure Pipelines | — | ✅ |
-| **Real-time** | SignalR | — | 🚧 |
-| **Messaging** | RabbitMQ | — | 🚧 |
-| **Event Log** | Apache Kafka | — | 📝 |
-| **Chat DB** | MongoDB | — | 🚧 |
+| **Real-time** | SignalR | — | ✅ |
+| **Messaging** | RabbitMQ | — | ✅ |
+| **Event Log** | Apache Kafka | 2.15.0 | ✅ |
+| **Email** | MailHog (SMTP) | — | ✅ |
+| **WhatsApp** | EvolutionAPI (Baileys) | — | ✅ |
 | **Payments** | Mercado Pago | — | 🚧 |
-| **WhatsApp** | EvolutionAPI | — | 🚧 |
 
 ---
 

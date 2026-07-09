@@ -1,12 +1,14 @@
 using CommomTestUtilities.Entities;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Services;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Testcontainers.MySql;
@@ -21,6 +23,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     public IEnumerable<IOrder.Domain.Entities.Product> ProductList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Category> CategoryList { get; private set; } = [];
     public IEnumerable<IOrder.Domain.Entities.Coupon> CouponList { get; private set; } = [];
+    public Mock<IEmailService> EmailMock { get; } = new();
+    public Mock<IEvolutionApiService> EvolutionMock { get; } = new();
 
     public CustomWebApplicationFactory()
     {
@@ -64,6 +68,20 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             {
                 options.Configuration = _redisContainer.GetConnectionString();
             });
+
+            var emailDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
+            if (emailDesc is not null)
+                services.Remove(emailDesc);
+            EmailMock.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                     .Returns(Task.CompletedTask);
+            services.AddSingleton<IEmailService>(EmailMock.Object);
+
+            var evolutionDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IEvolutionApiService));
+            if (evolutionDesc is not null)
+                services.Remove(evolutionDesc);
+            EvolutionMock.Setup(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()))
+                         .Returns(Task.CompletedTask);
+            services.AddSingleton<IEvolutionApiService>(EvolutionMock.Object);
         });
     }
     public async Task InitializeAsync()

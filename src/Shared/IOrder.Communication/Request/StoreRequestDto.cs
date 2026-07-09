@@ -12,4 +12,5 @@ public class StoreRequestDto
     public string ImageUrl { get; set; } = string.Empty;
     public ICollection<OpeningHourRequestDto> OpeningHours { get; set; } = [];
     public Guid CategoryId { get; set; }
+    public string? OwnerPhone { get; set; }
 }
