@@ -17,6 +17,9 @@ public class OrderConfiguration : BaseEntityConfiguration<Domain.Entities.Order>
                .HasMaxLength(100)
                .IsRequired();
 
+        builder.Property(x => x.CustomerEmail)
+               .HasMaxLength(200);
+
         builder.Property(x => x.StoreId)
                .IsRequired();
 
