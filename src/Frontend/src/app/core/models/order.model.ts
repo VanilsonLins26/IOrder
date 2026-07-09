@@ -44,8 +44,10 @@ export interface OrderMessageResponseDto {
   message: string;
   sentAt: string;
   type: MessageTypeDto;
-  proposedTotalAmount?: number | null;
-  proposedDeliveryDate?: string | null;
+  proposedTotalAmount: number | null;
+  proposedDeliveryDate: string | null;
+  readAt: string | null;
+  readByUserId: string | null;
 }
 
 export interface OrderItemResponseDto {
