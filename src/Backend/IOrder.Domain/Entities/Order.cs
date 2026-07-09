@@ -45,6 +45,7 @@ public class Order : EntityBase, IAggregateRoot
         _messages.Add(message);
         UpdatedAt = DateTime.UtcNow;
         LastMessageAt = DateTime.UtcNow;
+        AddDomainEvent(new NewOrderMessageEvent(Id, message.UserId, message.Message));
     }
 
     public void Negotiate(decimal? newTotalAmount, DateTime? newDeliveryDate, string? shopkeeperNotes)
