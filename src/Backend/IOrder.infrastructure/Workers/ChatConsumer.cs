@@ -45,12 +45,12 @@ public class ChatConsumer : BackgroundService
 
                 if (envelope is not null)
                 {
-                    var dedupKey = $"dedup:chat:{envelope.OrderId}";
+                    var dedupKey = $"dedup:chat:{envelope.OrderId}:{envelope.Timestamp:O}";
                     var isDuplicate = await _cache.GetStringAsync(dedupKey, stoppingToken) is not null;
 
                     if (isDuplicate)
                     {
-                        _logger.LogInformation("Skipping duplicate for order {OrderId}", envelope.OrderId);
+                        _logger.LogInformation("Skipping duplicate for order {OrderId} at {Timestamp}", envelope.OrderId, envelope.Timestamp);
                         await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
                         return;
                     }
