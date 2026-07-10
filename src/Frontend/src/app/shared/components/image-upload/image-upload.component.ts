@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output, signal } from '@angu
   styleUrl: './image-upload.component.scss',
 })
 export class ImageUploadComponent {
-  readonly currentUrl = input<string | null>(null);
+  readonly currentUrl = input<string | null | undefined>(null);
   readonly loading = input(false);
 
   readonly fileSelected = output<File>();
