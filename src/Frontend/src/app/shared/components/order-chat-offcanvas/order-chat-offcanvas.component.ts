@@ -46,6 +46,13 @@ export class OrderChatOffcanvasComponent {
     this.closeOffcanvas.emit();
   }
 
+  isLastProposal(msg: OrderMessageResponseDto): boolean {
+    if (msg.type !== MessageTypeDto.Proposal) return false;
+    const proposals = this.messages().filter(m => m.type === MessageTypeDto.Proposal);
+    if (proposals.length === 0) return false;
+    return proposals[proposals.length - 1].id === msg.id;
+  }
+
   sendMessage() {
     const text = this.messageText().trim();
     if (!text) return;

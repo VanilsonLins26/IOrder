@@ -41,7 +41,8 @@ public class ChatConsumer : BackgroundService
             {
                 var body = ea.Body.ToArray();
                 var json = Encoding.UTF8.GetString(body);
-                var envelope = JsonSerializer.Deserialize<ChatMessageEnvelope>(json);
+                var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+                var envelope = JsonSerializer.Deserialize<ChatMessageEnvelope>(json, options);
 
                 if (envelope is not null)
                 {

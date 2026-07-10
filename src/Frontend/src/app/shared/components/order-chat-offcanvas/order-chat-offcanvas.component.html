@@ -38,8 +38,8 @@
                   <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</strong></span>
                 }
                 
-                <!-- Botões de Aceitar/Recusar só aparecem para o cliente na última mensagem e se o status for Negociando -->
-                @if (orderStatus() === OrderStatusDto.Negotiating && isLast && userRole() === 'Client') {
+                <!-- Botões de Aceitar/Recusar só aparecem para o cliente na última PROPOSTA e se o status for Negociando -->
+                @if (orderStatus() === OrderStatusDto.Negotiating && isLastProposal(msg) && userRole() === 'Client') {
                   <div class="proposal-actions">
                     <button class="action-btn action-btn--primary" (click)="acceptProposal()" [disabled]="updatingStatus()">
                       Aceitar
