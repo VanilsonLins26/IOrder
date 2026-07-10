@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, s
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '@auth0/auth0-angular';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
@@ -19,6 +20,7 @@ import type { OrderResponseDto } from '../../../../core/models';
 })
 export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
+  private readonly auth = inject(AuthService);
   private readonly orderApi = inject(OrderApiService);
   private readonly chatApi = inject(ChatApiService);
   private readonly chatSignalr = inject(ChatSignalRService);
@@ -37,8 +39,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   private typingTimeout: ReturnType<typeof setTimeout> | null = null;
   private lastTypingNotify = 0;
+  private currentUserId: string | null = null;
 
   ngOnInit() {
+    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.loadOrder();
     this.initChat();
   }
@@ -59,7 +63,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
     this.chatSignalr.onMessageReceived = (message) => {
       const current = this.order();
-      if (!current || message.userId === current.userId) return;
+      if (!current || message.userId === this.currentUserId) return;
       const alreadyExists = current.messages.some(m => m.id === message.id);
       if (alreadyExists) return;
       this.order.set({ ...current, messages: [...current.messages, message] });
