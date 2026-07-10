@@ -40,6 +40,10 @@ public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
         builder.Property(x => x.Customize)
                .HasMaxLength(500);
 
+        builder.Property(x => x.SelectedOptions)
+               .HasConversion(new SelectedOptionsListConverter())
+               .HasColumnType("json");
+
         builder.Property("_imageUrls")
                .HasConversion(new StringListConverter())
                .HasColumnType("json")
@@ -54,6 +58,16 @@ public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
             : base(
                 v => JsonSerializer.Serialize(v, JsonOptions),
                 v => JsonSerializer.Deserialize<List<string>>(v, JsonOptions) ?? new List<string>())
+        {
+        }
+    }
+
+    private class SelectedOptionsListConverter : ValueConverter<List<SelectedOption>, string>
+    {
+        public SelectedOptionsListConverter()
+            : base(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                v => JsonSerializer.Deserialize<List<SelectedOption>>(v, JsonOptions) ?? new List<SelectedOption>())
         {
         }
     }

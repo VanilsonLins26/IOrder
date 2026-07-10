@@ -11,6 +11,7 @@ public class OrderItem : EntityBase
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public string Customize { get; set; } = string.Empty;
+    public List<SelectedOption> SelectedOptions { get; set; } = [];
     [JsonInclude]
     private readonly List<string> _imageUrls = [];
     public IReadOnlyCollection<string> ImageUrls => _imageUrls.AsReadOnly();
