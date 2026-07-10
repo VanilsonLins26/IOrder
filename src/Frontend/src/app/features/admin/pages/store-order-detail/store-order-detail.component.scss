@@ -292,13 +292,34 @@
 }
 
 .message {
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  background: var(--color-neutral-50);
-  margin-bottom: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-3);
+  max-width: 80%;
+
+  &:not(.message--own) {
+    align-self: flex-start;
+
+    .message__bubble {
+      background: var(--color-neutral-100);
+      border-bottom-left-radius: var(--radius-sm);
+    }
+  }
 
   &--own {
-    background: var(--color-primary-50);
+    align-self: flex-end;
+
+    .message__bubble {
+      background: var(--color-primary-50);
+      border-bottom-right-radius: var(--radius-sm);
+    }
+  }
+
+  &__bubble {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+    position: relative;
   }
 
   &__header {
@@ -338,4 +359,10 @@
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
   }
+}
+
+.store-order-detail__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
