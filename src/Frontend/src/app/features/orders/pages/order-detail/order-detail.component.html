@@ -18,13 +18,13 @@
       </span>
     </header>
 
-    @if (order.status === OrderStatusDto.Pending) {
-      <div class="order-detail__actions">
+    <div class="order-detail__actions">
+      @if (order.status === OrderStatusDto.Pending) {
         <button class="order-detail__cancel-btn" (click)="cancelOrder()" [disabled]="cancelling()">
           {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
         </button>
-      </div>
-    }
+      }
+    </div>
 
     <div class="order-detail__grid">
       <section class="order-detail__section">
@@ -47,7 +47,7 @@
           @if (order.deliveryDate) {
             <div class="order-detail__row">
               <span>Entrega prevista</span>
-              <span>{{ order.deliveryDate | date:"dd/MM/yyyy" }}</span>
+              <span>{{ order.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span>
             </div>
           }
         </div>
@@ -67,9 +67,9 @@
             <div class="order-item">
               <div class="order-item__image">
                 @if (item.productImageUrl) {
-                  <img [src]="item.productImageUrl" alt="" class="order-item__img" />
+                  <img [src]="item.productImageUrl" alt="" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
                 } @else if (item.imageUrls[0]) {
-                  <img [src]="item.imageUrls[0]" alt="" class="order-item__img" />
+                  <img [src]="item.imageUrls[0]" alt="" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
                 } @else {
                   <div class="order-item__img-placeholder">📦</div>
                 }
@@ -94,7 +94,7 @@
                 @if (item.imageUrls?.length) {
                   <div class="order-item__customize-images">
                     @for (url of item.imageUrls; track url) {
-                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" />
+                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
                     }
                   </div>
                 }
@@ -108,68 +108,35 @@
       </section>
     </div>
 
-    <section class="order-detail__section">
-      <h2 class="order-detail__section-title">Mensagens</h2>
+    <div style="margin-top: 24px;">
+      <button class="action-btn action-btn--primary" style="width: 100%; display: block; padding: 12px; font-size: 1rem;" (click)="chatOpen.set(true)">
+        💬 Abrir Negociação / Chat
+      </button>
+    </div>
 
-      <div class="send-message">
-        <input
-          type="text"
-          class="send-message__input"
-          placeholder="Digite sua mensagem..."
-          [ngModel]="messageText()"
-          (ngModelChange)="messageText.set($event); onMessageInput()"
-          (keyup.enter)="sendMessage()"
-          [disabled]="sendingMessage()"
-        />
-        <button
-          class="send-message__btn"
-          (click)="sendMessage()"
-          [disabled]="sendingMessage() || !messageText().trim()"
-        >
-          {{ sendingMessage() ? 'Enviando...' : 'Enviar' }}
-        </button>
+    <app-order-chat-offcanvas
+      [isOpen]="chatOpen()"
+      [messages]="order.messages"
+      [orderStatus]="order.status"
+      userRole="Client"
+      [typingUser]="typingUser()"
+      [sendingMessage]="sendingMessage()"
+      [updatingStatus]="updatingStatus()"
+      (closeOffcanvas)="chatOpen.set(false)"
+      (onSendMessage)="sendMessage($event)"
+      (typingNotify)="chatSignalr.userTyping(id())"
+      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+      (onAcceptProposal)="acceptProposal()"
+      (onDeclineProposal)="declineProposal()"
+    ></app-order-chat-offcanvas>
+  }
+
+  @if (expandedImage()) {
+    <div class="image-modal" (click)="closeImage()">
+      <div class="image-modal__content" (click)="$event.stopPropagation()">
+        <button class="image-modal__close" (click)="closeImage()">&times;</button>
+        <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
       </div>
-
-      @if (typingUser()) {
-        <p class="typing-indicator">{{ typingUser() }} está digitando...</p>
-      }
-
-      @if (order.messages.length === 0) {
-        <p class="no-messages">Nenhuma mensagem ainda. Envie uma mensagem para o lojista!</p>
-      }
-      <div class="order-detail__messages">
-        @for (msg of order.messages; track msg.id) {
-          <div class="message" [class.message--own]="msg.userRole !== 'ShopKeeper'">
-            <div class="message__bubble">
-              <div class="message__header">
-                @if (msg.userRole !== 'ShopKeeper') {
-                  <span class="message__author">Você</span>
-                } @else {
-                  <span class="message__author">Lojista</span>
-                }
-                <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
-                @if (msg.type === MessageTypeDto.Proposal) {
-                  <span class="message__tag message__tag--proposal">Proposta</span>
-                }
-              </div>
-              <p class="message__text">{{ msg.message }}</p>
-              @if (msg.readAt) {
-                <span class="message__read">✓✓ Visualizada</span>
-              }
-              @if (msg.type === MessageTypeDto.Proposal) {
-                <div class="message__proposal">
-                  @if (msg.proposedTotalAmount != null) {
-                    <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
-                  }
-                  @if (msg.proposedDeliveryDate != null) {
-                    <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </section>
+    </div>
   }
 </div>

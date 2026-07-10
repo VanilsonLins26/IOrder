@@ -9,11 +9,12 @@ import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
+import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, OrderChatOffcanvasComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,16 +25,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly orderApi = inject(OrderApiService);
   private readonly chatApi = inject(ChatApiService);
-  private readonly chatSignalr = inject(ChatSignalRService);
+  protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
-  readonly messageText = signal('');
   readonly sendingMessage = signal(false);
   readonly cancelling = signal(false);
+  readonly updatingStatus = signal(false);
   readonly typingUser = signal<string | null>(null);
-  private typingTimeout: ReturnType<typeof setTimeout> | null = null;
-  private lastTypingNotify = 0;
+  readonly expandedImage = signal<string | null>(null);
+  readonly chatOpen = signal(false);
+
+
   private currentUserId: string | null = null;
 
   ngOnInit() {
@@ -44,7 +47,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.chatSignalr.leaveOrderGroup(this.id());
-    this.cleanupTyping();
   }
 
   private async initChat() {
@@ -69,24 +71,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     };
   }
 
-  onMessageInput() {
-    const now = Date.now();
-    if (now - this.lastTypingNotify > 3000) {
-      this.lastTypingNotify = now;
-      this.chatSignalr.userTyping(this.id());
-    }
-    if (this.typingTimeout) clearTimeout(this.typingTimeout);
-    this.typingTimeout = setTimeout(() => {
-      this.chatSignalr.userStoppedTyping(this.id());
-    }, 1500);
-  }
 
-  private cleanupTyping() {
-    if (this.typingTimeout) {
-      clearTimeout(this.typingTimeout);
-      this.typingTimeout = null;
-    }
-  }
 
   getStatusLabel(status: OrderStatusDto): string {
     const labels: Record<number, string> = {
@@ -121,14 +106,44 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  sendMessage() {
-    const text = this.messageText().trim();
+  acceptProposal() {
+    if (!confirm('Aceitar esta proposta de valor e entrega?')) return;
+    this.updatingStatus.set(true);
+    this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.AwaitingPayment }).subscribe({
+      next: () => {
+        this.updatingStatus.set(false);
+        this.toast.success('Proposta aceita! O pedido aguarda pagamento.');
+        this.store.loadById(this.id());
+      },
+      error: (err) => {
+        this.updatingStatus.set(false);
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao aceitar proposta.');
+      }
+    });
+  }
+
+  declineProposal() {
+    if (!confirm('Tem certeza que deseja recusar a proposta? O pedido será recusado.')) return;
+    this.updatingStatus.set(true);
+    this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Declined }).subscribe({
+      next: () => {
+        this.updatingStatus.set(false);
+        this.toast.success('Proposta recusada.');
+        this.store.loadById(this.id());
+      },
+      error: (err) => {
+        this.updatingStatus.set(false);
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao recusar proposta.');
+      }
+    });
+  }
+
+  sendMessage(text: string) {
     if (!text) return;
     this.sendingMessage.set(true);
     this.chatSignalr.userStoppedTyping(this.id());
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
-        this.messageText.set('');
         this.sendingMessage.set(false);
       },
       error: (err) => {
@@ -140,6 +155,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   goToOrders() {
     this.router.navigate(['/orders']);
+  }
+
+  openImage(url: string) {
+    this.expandedImage.set(url);
+  }
+
+  closeImage() {
+    this.expandedImage.set(null);
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;
