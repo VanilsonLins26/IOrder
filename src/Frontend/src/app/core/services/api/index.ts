@@ -6,3 +6,4 @@ export { CartApiService }          from './cart-api.service';
 export { OrderApiService }         from './order-api.service';
 export { ChatApiService }          from './chat-api.service';
 export { ProfileApiService }       from './profile-api.service';
+export { UploadApiService }        from './upload-api.service';

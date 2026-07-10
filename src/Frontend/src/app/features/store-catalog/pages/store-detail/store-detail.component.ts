@@ -5,6 +5,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { ProductApiService } from '../../../../core/services/api/product-api.service';
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
+import { UploadApiService } from '../../../../core/services/api/upload-api.service';
 import { StoreInfoHeaderComponent } from '../../components/store-info-header/store-info-header';
 import { ProductGridComponent } from '../../components/product-grid/product-grid';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
@@ -28,6 +29,7 @@ export class StoreDetailComponent {
   private readonly storeApi = inject(StoreApiService);
   private readonly productApi = inject(ProductApiService);
   private readonly categoryApi = inject(CategoryApiService);
+  private readonly uploadApi = inject(UploadApiService);
   private readonly cartStore = inject(CartStore);
 
   readonly storeResource = rxResource({
@@ -70,6 +72,8 @@ export class StoreDetailComponent {
   readonly showStoreDialog = signal(false);
   readonly showCustomizeDialog = signal(false);
   readonly customizeText = signal('');
+  readonly customizeImageUrls = signal<string[]>([]);
+  readonly uploadingCustomizeImage = signal(false);
   private pendingProduct: ProductResponse | null = null;
 
   onAddToCart(product: ProductResponse) {
@@ -97,7 +101,8 @@ export class StoreDetailComponent {
     this.pendingProduct = null;
     this.showCustomizeDialog.set(false);
     if (!product) return;
-    this.addItemToCart(product, this.customizeText());
+    this.addItemToCart(product, this.customizeText(), this.customizeImageUrls());
+    this.customizeImageUrls.set([]);
   }
 
   onSkipCustomize() {
@@ -106,6 +111,29 @@ export class StoreDetailComponent {
     this.showCustomizeDialog.set(false);
     if (!product) return;
     this.addItemToCart(product);
+    this.customizeImageUrls.set([]);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploadingCustomizeImage.set(true);
+    this.uploadApi.uploadImage(file).subscribe({
+      next: (res) => {
+        this.customizeImageUrls.update(urls => [...urls, res.imageUrl]);
+        this.uploadingCustomizeImage.set(false);
+        input.value = '';
+      },
+      error: () => {
+        this.uploadingCustomizeImage.set(false);
+        input.value = '';
+      },
+    });
+  }
+
+  removeCustomizeImage(index: number) {
+    this.customizeImageUrls.update(urls => urls.filter((_, i) => i !== index));
   }
 
   onConfirmClearAndAdd() {
@@ -119,6 +147,7 @@ export class StoreDetailComponent {
 
     if (product.customizable) {
       this.customizeText.set('');
+      this.customizeImageUrls.set([]);
       this.showCustomizeDialog.set(true);
       return;
     }
@@ -134,14 +163,18 @@ export class StoreDetailComponent {
   onCancelCustomize() {
     this.pendingProduct = null;
     this.showCustomizeDialog.set(false);
+    this.customizeImageUrls.set([]);
   }
 
-  private addItemToCart(product: ProductResponse, customize?: string) {
+  private addItemToCart(product: ProductResponse, customize?: string, imageUrls?: string[]) {
+    const urls = imageUrls?.length
+      ? imageUrls
+      : (product.imageUrl ? [product.imageUrl] : []);
     this.cartStore.addItem({
       productId: product.id,
       quantity: 1,
       customize,
-      imageUrls: product.imageUrl ? [product.imageUrl] : [],
+      imageUrls: urls,
     });
   }
 }
