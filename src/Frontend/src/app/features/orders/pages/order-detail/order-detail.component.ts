@@ -59,6 +59,12 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       this.store.appendMessage(message);
     };
 
+    this.chatSignalr.onMessagesRead = (orderId) => {
+      if (orderId === this.id() && this.currentUserId) {
+        this.store.markMessagesAsRead(this.currentUserId);
+      }
+    };
+
     this.chatSignalr.onUserTyping = (orderId) => {
       if (orderId !== this.id()) return;
       this.typingUser.set('Lojista');

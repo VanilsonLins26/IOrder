@@ -66,6 +66,21 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       this.order.set({ ...current, messages: [...current.messages, message] });
     };
 
+    this.chatSignalr.onMessagesRead = (orderId) => {
+      if (orderId === this.id()) {
+        const current = this.order();
+        if (!current) return;
+        const now = new Date().toISOString();
+        const updatedMessages = current.messages.map(m => {
+          if (m.userId === this.currentUserId && !m.readAt) {
+            return { ...m, readAt: now };
+          }
+          return m;
+        });
+        this.order.set({ ...current, messages: updatedMessages });
+      }
+    };
+
     this.chatSignalr.onUserTyping = (orderId) => {
       if (orderId !== this.id()) return;
       this.typingUser.set('Cliente');

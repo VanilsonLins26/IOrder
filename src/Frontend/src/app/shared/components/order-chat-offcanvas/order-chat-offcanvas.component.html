@@ -25,7 +25,7 @@
             
             <p class="message__text">{{ msg.message }}</p>
             
-            @if (msg.readAt) {
+            @if (msg.readAt && isOwnMessage(msg)) {
               <span class="message__read">✓✓ Visualizada</span>
             }
 
