@@ -40,6 +40,7 @@ export class ProductManagementComponent implements OnInit {
     price: [0, [Validators.required, Validators.min(0)]],
     imageUrl: [''],
     unitOfMeasure: [0, [Validators.required]],
+    customizable: [false],
     categoryId: [''] // Será usado para vincular pós-criação ou na edição
   });
 
@@ -64,6 +65,7 @@ export class ProductManagementComponent implements OnInit {
       price: 0,
       imageUrl: '',
       unitOfMeasure: 0,
+      customizable: false,
       categoryId: ''
     });
     this.isProductModalOpen.set(true);
@@ -77,6 +79,7 @@ export class ProductManagementComponent implements OnInit {
       price: product.price,
       imageUrl: product.imageUrl || '',
       unitOfMeasure: product.unitOfMeasure,
+      customizable: product.customizable,
       // Para o categoryId teríamos que descobrir em qual categoria o produto está.
       // O admin.store tem categories, com a lista de products.
       categoryId: this.findCategoryForProduct(product.id, product)
@@ -127,6 +130,7 @@ export class ProductManagementComponent implements OnInit {
       price: formVal.price,
       imageUrl: formVal.imageUrl,
       unitOfMeasure: Number(formVal.unitOfMeasure),
+      customizable: formVal.customizable,
     };
 
     const storeId = this.adminStore.myStore()?.id;
