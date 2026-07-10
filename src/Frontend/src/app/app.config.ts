@@ -6,7 +6,7 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
-import { provideAuth0 } from '@auth0/auth0-angular';
+import { provideAuth0, authHttpInterceptorFn } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
 import { errorInterceptor } from './core/http/error.interceptor';
@@ -17,7 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptors([errorInterceptor]),
+      withInterceptors([authHttpInterceptorFn, errorInterceptor]),
     ),
     provideAuth0({
       domain: environment.auth0.domain,
