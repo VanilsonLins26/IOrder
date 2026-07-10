@@ -21,6 +21,7 @@ internal class AppDbContext  : DbContext
     public DbSet<Domain.Entities.Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<OrderMessage> OrderMessages { get; set; }
+    public DbSet<UserProfile> UserProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
