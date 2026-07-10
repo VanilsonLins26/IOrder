@@ -132,6 +132,20 @@
   overflow: hidden;
 }
 
+.cart-item__customize-images {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.cart-item__customize-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
 .cart-item__quantity {
   display: flex;
   align-items: center;
