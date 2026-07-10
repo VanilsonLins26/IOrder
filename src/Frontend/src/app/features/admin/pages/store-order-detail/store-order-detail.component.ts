@@ -64,6 +64,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       const alreadyExists = current.messages.some(m => m.id === message.id);
       if (alreadyExists) return;
       this.order.set({ ...current, messages: [...current.messages, message] });
+      if (this.chatOpen()) {
+        this.chatApi.markAsRead(this.id()).subscribe();
+        this.chatSignalr.markOrderRead(this.id());
+      }
     };
 
     this.chatSignalr.onMessagesRead = (orderId) => {
