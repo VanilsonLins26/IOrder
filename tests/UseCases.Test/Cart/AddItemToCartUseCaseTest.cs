@@ -58,12 +58,14 @@ public class AddItemToCartUseCaseTest
         }
 
         var validator = new AddItemToCartValidator();
+        var customizationRepository = new CustomizationReadOnlyRepositoryBuilder().Build();
 
         return new AddItemToCartUseCase(
             loggedUserService,
             readOnlyRepository,
             writeOnlyRepository,
             validator,
-            productReadOnlyBuilder.Build());
+            productReadOnlyBuilder.Build(),
+            customizationRepository);
     }
 }
