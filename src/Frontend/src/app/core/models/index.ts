@@ -6,3 +6,4 @@ export * from './store-category.model';
 export * from './cart.model';
 export * from './order.model';
 export * from './chat.model';
+export * from './profile.model';

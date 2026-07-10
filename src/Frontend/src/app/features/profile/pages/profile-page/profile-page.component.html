@@ -1,0 +1,41 @@
+<div class="profile-page">
+  <h1 class="profile-page__title">Meu Perfil</h1>
+
+  @if (loading()) {
+    <p class="profile-page__loading">Carregando...</p>
+  } @else {
+    <div class="profile-page__card">
+      @if (user(); as u) {
+        <div class="profile-page__avatar-section">
+          @if (u.picture) {
+            <img [src]="u.picture" [alt]="u.name" class="profile-page__avatar" width="80" height="80" />
+          }
+          <div class="profile-page__user-info">
+            <span class="profile-page__user-name">{{ u.name }}</span>
+            <span class="profile-page__user-email">{{ u.email }}</span>
+          </div>
+        </div>
+      }
+
+      <div class="profile-page__field">
+        <label class="profile-page__label" for="phone">Telefone</label>
+        <input
+          id="phone"
+          type="tel"
+          class="profile-page__input"
+          placeholder="(XX) XXXXX-XXXX"
+          [(ngModel)]="phone"
+        />
+        <span class="profile-page__hint">Usado como contato nos pedidos.</span>
+      </div>
+
+      <button
+        class="profile-page__btn"
+        (click)="save()"
+        [disabled]="saving()"
+      >
+        {{ saving() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  }
+</div>

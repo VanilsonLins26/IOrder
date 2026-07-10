@@ -46,6 +46,10 @@
                     <span class="navbar__dropdown-icon" aria-hidden="true">📦</span>
                     Meus Pedidos
                   </a>
+                  <a routerLink="/profile" class="navbar__dropdown-item" (click)="closeDropdown()">
+                    <span class="navbar__dropdown-icon" aria-hidden="true">👤</span>
+                    Meu Perfil
+                  </a>
                   @if (hasRole(user, 'ShopKeeper')) {
                     <a routerLink="/admin" class="navbar__dropdown-item" (click)="closeDropdown()">
                       <span class="navbar__dropdown-icon" aria-hidden="true">🏪</span>
