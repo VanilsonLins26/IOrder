@@ -13,6 +13,7 @@ public class CartItemResponseDto
     public Guid ProductId { get; set; }
     public decimal TotalPrice { get { return (UnitPrice * Quantity); } }
     public List<string> ImageUrls { get; set; } = [];
+    public List<SelectedOptionResponseDto> SelectedOptions { get; set; } = [];
     public string Customize { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string ProductImageUrl { get; set; } = string.Empty;

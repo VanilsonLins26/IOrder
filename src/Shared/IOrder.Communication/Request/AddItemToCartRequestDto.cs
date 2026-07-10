@@ -8,4 +8,5 @@ public class AddItemToCartRequestDto
     public Guid ProductId { get; set; }
     public List<string> ImageUrls { get; set; } = [];
     public string Customize { get; set; } = string.Empty;
+    public List<Guid> SelectedOptionIds { get; set; } = [];
 }

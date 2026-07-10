@@ -21,6 +21,8 @@ using IOrder.Domain.Repositories.Order;
 using IOrder.infrastructure.Repositories.Order;
 using IOrder.Domain.Repositories.Profile;
 using IOrder.infrastructure.Repositories.Profile;
+using IOrder.Domain.Repositories.Customization;
+using IOrder.infrastructure.Repositories.Customization;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -81,6 +83,9 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IProfileReadOnlyRepository, ProfileRepository>();
         services.AddScoped<IProfileWriteOnlyRepository, ProfileRepository>();
+
+        services.AddScoped<ICustomizationReadOnlyRepository, CustomizationRepository>();
+        services.AddScoped<ICustomizationWriteOnlyRepository, CustomizationRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
