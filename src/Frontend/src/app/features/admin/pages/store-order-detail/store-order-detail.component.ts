@@ -60,7 +60,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
     this.chatSignalr.onMessageReceived = (message) => {
       const current = this.order();
-      if (!current || message.userId === this.currentUserId) return;
+      if (!current) return;
       const alreadyExists = current.messages.some(m => m.id === message.id);
       if (alreadyExists) return;
       this.order.set({ ...current, messages: [...current.messages, message] });
