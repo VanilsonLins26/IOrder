@@ -45,6 +45,19 @@
 
               <div class="cart-item__info">
                 <p class="cart-item__name">{{ item.productName || 'Produto' }}</p>
+                @if (item.selectedOptions?.length) {
+                  <div class="cart-item__selected-options">
+                    @for (opt of item.selectedOptions; track opt.optionId) {
+                      <span class="cart-item__option-tag">
+                        <span class="cart-item__option-group">{{ opt.groupName }}:</span>
+                        {{ opt.optionName }}
+                        @if (opt.priceModifier) {
+                          <span class="cart-item__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
                 @if (item.customize) {
                   <p class="cart-item__customize">{{ item.customize }}</p>
                 }

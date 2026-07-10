@@ -40,40 +40,97 @@
 </app-modal>
 
 <app-modal title="Personalizar Produto" [isOpen]="showCustomizeDialog()" (close)="onCancelCustomize()">
-  <p>Este produto pode ser personalizado. Descreva como você gostaria:</p>
-  <textarea
-    class="form-control"
-    rows="3"
-    placeholder="Ex: sem cebola, borda recheada, tamanho G..."
-    [ngModel]="customizeText()"
-    (ngModelChange)="customizeText.set($event)"
-  ></textarea>
-
-  <div class="customize-images">
-    <label class="upload-btn" [class.loading]="uploadingCustomizeImage()">
-      <input
-        type="file"
-        accept="image/*"
-        (change)="onFileSelected($event)"
-        [disabled]="uploadingCustomizeImage()"
-      />
-      @if (uploadingCustomizeImage()) {
-        <span>Enviando...</span>
-      } @else {
-        <span>+ Adicionar imagem</span>
-      }
-    </label>
-
-    @for (url of customizeImageUrls(); track url; let i = $index) {
-      <div class="preview-item">
-        <img [src]="url" alt="Imagem personalizada" />
-        <button type="button" class="remove-btn" (click)="removeCustomizeImage(i)">&times;</button>
+  @if (loadingCustomization()) {
+    <p>Carregando opções...</p>
+  } @else {
+    @for (group of customizationGroups(); track group.id) {
+      <div class="customization-group">
+        <h3 class="customization-group__title">
+          {{ group.name }}
+          @if (group.required) {
+            <span class="text-danger">*</span>
+          }
+        </h3>
+        @if (group.type === 'SingleChoice') {
+          <div class="customization-options">
+            @for (opt of group.options; track opt.id) {
+              <label class="customization-option" [class.selected]="selectedOptionIds().has(opt.id)">
+                <input
+                  type="radio"
+                  [name]="'group_' + group.id"
+                  [checked]="selectedOptionIds().has(opt.id)"
+                  (change)="toggleSingleOption(opt.id, group)"
+                />
+                <span class="customization-option__name">{{ opt.name }}</span>
+                @if (opt.priceModifier) {
+                  <span class="customization-option__price">
+                    {{ opt.priceModifier > 0 ? '+' : '' }}{{ opt.priceModifier | currency:'BRL' }}
+                  </span>
+                }
+              </label>
+            }
+          </div>
+        } @else {
+          <div class="customization-options">
+            @for (opt of group.options; track opt.id) {
+              <label class="customization-option" [class.selected]="selectedOptionIds().has(opt.id)">
+                <input
+                  type="checkbox"
+                  [checked]="selectedOptionIds().has(opt.id)"
+                  (change)="toggleOption(opt.id)"
+                />
+                <span class="customization-option__name">{{ opt.name }}</span>
+                @if (opt.priceModifier) {
+                  <span class="customization-option__price">
+                    {{ opt.priceModifier > 0 ? '+' : '' }}{{ opt.priceModifier | currency:'BRL' }}
+                  </span>
+                }
+              </label>
+            }
+          </div>
+        }
+        @if (group.minSelections > 0 || group.maxSelections < group.options.length) {
+          <p class="customization-group__hint">
+            Selecione {{ group.minSelections }}-{{ group.maxSelections }} opções
+          </p>
+        }
       </div>
     }
-  </div>
 
-  <div class="dialog-actions" style="margin-top: var(--space-4);">
-    <button type="button" class="btn btn--outline" (click)="onSkipCustomize()">Pular</button>
-    <button type="button" class="btn btn--primary" (click)="onConfirmCustomize()">Confirmar</button>
-  </div>
+    <textarea
+      class="form-control"
+      rows="3"
+      placeholder="Observações (ex: sem cebola, borda recheada...)"
+      [ngModel]="customizeText()"
+      (ngModelChange)="customizeText.set($event)"
+    ></textarea>
+
+    <div class="customize-images">
+      <label class="upload-btn" [class.loading]="uploadingCustomizeImage()">
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          [disabled]="uploadingCustomizeImage()"
+        />
+        @if (uploadingCustomizeImage()) {
+          <span>Enviando...</span>
+        } @else {
+          <span>+ Adicionar imagem</span>
+        }
+      </label>
+
+      @for (url of customizeImageUrls(); track url; let i = $index) {
+        <div class="preview-item">
+          <img [src]="url" alt="Imagem personalizada" />
+          <button type="button" class="remove-btn" (click)="removeCustomizeImage(i)">&times;</button>
+        </div>
+      }
+    </div>
+
+    <div class="dialog-actions" style="margin-top: var(--space-4);">
+      <button type="button" class="btn btn--outline" (click)="onSkipCustomize()">Pular</button>
+      <button type="button" class="btn btn--primary" [disabled]="!allGroupsValid()" (click)="onConfirmCustomize()">Confirmar</button>
+    </div>
+  }
 </app-modal>

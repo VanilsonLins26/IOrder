@@ -83,6 +83,16 @@
             </div>
             <div class="item-row__info">
               <p class="item-row__name">{{ item.productName }}</p>
+              @if (item.selectedOptions?.length) {
+                <div class="item-row__selected-options">
+                  @for (opt of item.selectedOptions; track opt.optionId) {
+                    <span class="item-row__option-tag">
+                      {{ opt.groupName }}: {{ opt.optionName }}
+                      @if (opt.priceModifier) { <span class="item-row__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span> }
+                    </span>
+                  }
+                </div>
+              }
               @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
               @if (item.imageUrls?.length) {
                 <div class="item-row__customize-images">

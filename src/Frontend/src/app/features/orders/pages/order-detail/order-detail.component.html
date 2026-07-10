@@ -76,6 +76,18 @@
               </div>
               <div class="order-item__info">
                 <p class="order-item__name">{{ item.productName }}</p>
+                @if (item.selectedOptions?.length) {
+                  <div class="order-item__selected-options">
+                    @for (opt of item.selectedOptions; track opt.optionId) {
+                      <span class="order-item__option-tag">
+                        {{ opt.groupName }}: {{ opt.optionName }}
+                        @if (opt.priceModifier) {
+                          <span class="order-item__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
                 @if (item.customize) {
                   <p class="order-item__customize">{{ item.customize }}</p>
                 }

@@ -3,6 +3,7 @@ export interface AddItemToCartRequestDto {
   productId: string;
   imageUrls: string[];
   customize: string;
+  selectedOptionIds: string[];
 }
 
 export interface ChangeCartItemQuantityRequestDto {
@@ -14,6 +15,8 @@ export interface ApplyCouponRequestDto {
   couponCode: string;
 }
 
+import type { SelectedOption } from './customization.model';
+
 export interface CartItemResponseDto {
   id: string;
   quantity: number;
@@ -21,6 +24,7 @@ export interface CartItemResponseDto {
   productId: string;
   totalPrice: number;
   imageUrls: string[];
+  selectedOptions: SelectedOption[];
   customize: string;
   productName: string;
   productImageUrl: string;
