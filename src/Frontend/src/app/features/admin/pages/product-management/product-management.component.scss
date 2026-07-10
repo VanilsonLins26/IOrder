@@ -179,3 +179,32 @@
     font-size: var(--font-size-sm);
   }
 }
+
+.form-group--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+
+  > label {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary-500);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
