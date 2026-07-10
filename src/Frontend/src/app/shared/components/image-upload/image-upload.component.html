@@ -1,0 +1,26 @@
+<div class="image-upload">
+  <div class="image-upload__preview">
+    @if (previewUrl()) {
+      <img [src]="previewUrl()" alt="Preview" class="image-upload__img" />
+      <button type="button" class="image-upload__remove" (click)="removeFile()" [disabled]="loading()">&times;</button>
+    } @else if (currentUrl()) {
+      <img [src]="currentUrl()" alt="Imagem atual" class="image-upload__img" />
+    } @else {
+      <div class="image-upload__placeholder">
+        <span class="image-upload__icon">&#128247;</span>
+        <span>Nenhuma imagem</span>
+      </div>
+    }
+  </div>
+
+  <label class="image-upload__label" [class.image-upload__label--disabled]="loading()">
+    <input
+      type="file"
+      accept="image/*"
+      class="image-upload__input"
+      (change)="onFilePicked($event)"
+      [disabled]="loading()"
+    />
+    {{ loading() ? 'Enviando...' : 'Selecionar Imagem' }}
+  </label>
+</div>

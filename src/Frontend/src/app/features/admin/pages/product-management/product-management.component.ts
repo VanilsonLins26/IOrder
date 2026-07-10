@@ -6,13 +6,14 @@ import { ProductApiService } from '../../../../core/services/api/product-api.ser
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { ProductResponse, ProductRequest, UpdateProductRequest, UnitOfMeasure, PromotionPriceRequest } from '../../../../core/models';
 
 @Component({
   selector: 'app-product-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.scss',
 })
@@ -29,6 +30,7 @@ export class ProductManagementComponent implements OnInit {
   readonly isProductModalOpen = signal(false);
   readonly isPromoModalOpen = signal(false);
   readonly isSaving = signal(false);
+  readonly uploadingImage = signal(false);
   readonly editingProduct = signal<ProductResponse | null>(null);
 
   // Forms
@@ -38,6 +40,7 @@ export class ProductManagementComponent implements OnInit {
     price: [0, [Validators.required, Validators.min(0)]],
     imageUrl: [''],
     unitOfMeasure: [0, [Validators.required]],
+    customizable: [false],
     categoryId: [''] // Será usado para vincular pós-criação ou na edição
   });
 
@@ -62,6 +65,7 @@ export class ProductManagementComponent implements OnInit {
       price: 0,
       imageUrl: '',
       unitOfMeasure: 0,
+      customizable: false,
       categoryId: ''
     });
     this.isProductModalOpen.set(true);
@@ -75,6 +79,7 @@ export class ProductManagementComponent implements OnInit {
       price: product.price,
       imageUrl: product.imageUrl || '',
       unitOfMeasure: product.unitOfMeasure,
+      customizable: product.customizable,
       // Para o categoryId teríamos que descobrir em qual categoria o produto está.
       // O admin.store tem categories, com a lista de products.
       categoryId: this.findCategoryForProduct(product.id, product)
@@ -97,6 +102,19 @@ export class ProductManagementComponent implements OnInit {
     return '';
   }
 
+  onProductImageSelected(file: File) {
+    const currentEditing = this.editingProduct();
+    if (!currentEditing) return;
+    this.uploadingImage.set(true);
+    this.productApi.updateImage(currentEditing.id, file).subscribe({
+      next: (res) => {
+        this.productForm.patchValue({ imageUrl: res.imageUrl });
+        this.uploadingImage.set(false);
+      },
+      error: () => this.uploadingImage.set(false),
+    });
+  }
+
   closeProductModal() {
     this.isProductModalOpen.set(false);
   }
@@ -112,6 +130,7 @@ export class ProductManagementComponent implements OnInit {
       price: formVal.price,
       imageUrl: formVal.imageUrl,
       unitOfMeasure: Number(formVal.unitOfMeasure),
+      customizable: formVal.customizable,
     };
 
     const storeId = this.adminStore.myStore()?.id;

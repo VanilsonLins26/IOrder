@@ -118,31 +118,39 @@
       @if (order.messages.length === 0) {
         <p class="no-messages">Nenhuma mensagem ainda. Envie uma mensagem para o lojista!</p>
       }
-      @for (msg of order.messages; track msg.id) {
-        <div class="message" [class.message--own]="msg.userRole !== 'ShopKeeper'">
-          <div class="message__header">
-            <span class="message__author">{{ msg.userRole === 'ShopKeeper' ? 'Lojista' : 'Você' }}</span>
-            <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
-            @if (msg.type === MessageTypeDto.Proposal) {
-              <span class="message__tag message__tag--proposal">Proposta</span>
-            }
-          </div>
-          <p class="message__text">{{ msg.message }}</p>
-          @if (msg.readAt) {
-            <span class="message__read">✓✓ Visualizada</span>
-          }
-          @if (msg.type === MessageTypeDto.Proposal) {
-            <div class="message__proposal">
-              @if (msg.proposedTotalAmount != null) {
-                <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
+      <div class="order-detail__messages">
+        @for (msg of order.messages; track msg.id) {
+          <div class="message" [class.message--own]="msg.userRole !== 'ShopKeeper'">
+            <div class="message__bubble">
+              <div class="message__header">
+                @if (msg.userRole !== 'ShopKeeper') {
+                  <span class="message__author">Você</span>
+                } @else {
+                  <span class="message__author">Lojista</span>
+                }
+                <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
+                @if (msg.type === MessageTypeDto.Proposal) {
+                  <span class="message__tag message__tag--proposal">Proposta</span>
+                }
+              </div>
+              <p class="message__text">{{ msg.message }}</p>
+              @if (msg.readAt) {
+                <span class="message__read">✓✓ Visualizada</span>
               }
-              @if (msg.proposedDeliveryDate != null) {
-                <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span>
+              @if (msg.type === MessageTypeDto.Proposal) {
+                <div class="message__proposal">
+                  @if (msg.proposedTotalAmount != null) {
+                    <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
+                  }
+                  @if (msg.proposedDeliveryDate != null) {
+                    <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span>
+                  }
+                </div>
               }
             </div>
-          }
-        </div>
-      }
+          </div>
+        }
+      </div>
     </section>
   }
 </div>

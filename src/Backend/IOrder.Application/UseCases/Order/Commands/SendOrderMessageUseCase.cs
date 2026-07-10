@@ -87,8 +87,9 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         order.ClearDomainEvents();
         await _domainEventDispatcher.DispatchAsync(events);
 
+        await _messagePublisher.PublishMessageAsync(orderId, message.Adapt<OrderMessageResponseDto>());
+
         var response = await _orderWriteOnlyRepository.GetByIdTracking(orderId);
-        await _messagePublisher.PublishMessageAsync(orderId, response.Adapt<OrderResponseDto>());
         return response.Adapt<OrderResponseDto>();
     }
 

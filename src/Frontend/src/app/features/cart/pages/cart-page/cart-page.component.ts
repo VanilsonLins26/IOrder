@@ -23,6 +23,10 @@ export class CartPageComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly couponInput = signal('');
+  readonly deliveryDate = signal('');
+  readonly deliveryTime = signal('');
+  readonly customerNotes = signal('');
+  readonly customerPhone = signal('');
   readonly creatingOrder = signal(false);
 
   ngOnInit() {
@@ -51,7 +55,19 @@ export class CartPageComponent implements OnInit {
 
   createOrder() {
     this.creatingOrder.set(true);
-    this.orderApi.create({}).subscribe({
+
+    let deliveryDate: string | null = null;
+    const dateVal = this.deliveryDate();
+    const timeVal = this.deliveryTime();
+    if (dateVal) {
+      deliveryDate = timeVal ? `${dateVal}T${timeVal}:00` : `${dateVal}T00:00:00`;
+    }
+
+    this.orderApi.create({
+      deliveryDate,
+      customerNotes: this.customerNotes() || null,
+      customerPhone: this.customerPhone() || null,
+    }).subscribe({
       next: (order) => {
         this.creatingOrder.set(false);
         this.cartStore.resetCart();
@@ -70,4 +86,8 @@ export class CartPageComponent implements OnInit {
   }
 
   protected readonly trackByItemId = (_: number, item: { id: string }) => item.id;
+
+  protected today(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
 }

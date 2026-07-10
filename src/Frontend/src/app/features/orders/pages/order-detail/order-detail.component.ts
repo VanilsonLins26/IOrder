@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, s
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '@auth0/auth0-angular';
 import { OrdersStore } from '../../store/orders.store';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
@@ -20,6 +21,7 @@ import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
   readonly store = inject(OrdersStore);
+  private readonly auth = inject(AuthService);
   private readonly orderApi = inject(OrderApiService);
   private readonly chatApi = inject(ChatApiService);
   private readonly chatSignalr = inject(ChatSignalRService);
@@ -32,8 +34,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly typingUser = signal<string | null>(null);
   private typingTimeout: ReturnType<typeof setTimeout> | null = null;
   private lastTypingNotify = 0;
+  private currentUserId: string | null = null;
 
   ngOnInit() {
+    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.store.loadById(this.id());
     this.initChat();
   }
@@ -50,7 +54,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.chatSignalr.markOrderRead(this.id());
 
     this.chatSignalr.onMessageReceived = (message) => {
-      if (message.userId === this.id()) return;
+      if (message.userId === this.currentUserId) return;
       this.store.appendMessage(message);
     };
 

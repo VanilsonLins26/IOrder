@@ -74,8 +74,21 @@
 >
   <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="settings-form">
     <div class="form-group">
-      <label for="prodName">Nome do Produto</label>
-      <input id="prodName" type="text" formControlName="name" class="form-control" />
+      <label>Imagem do Produto</label>
+      <app-image-upload
+        [currentUrl]="productForm.value.imageUrl"
+        [loading]="uploadingImage()"
+        (fileSelected)="onProductImageSelected($event)"
+      />
+      <input type="hidden" formControlName="imageUrl" />
+    </div>
+
+    <div class="form-group form-group--checkbox">
+      <label class="checkbox-label">
+        <input type="checkbox" formControlName="customizable" />
+        <span>Produto personalizável</span>
+      </label>
+      <p class="form-help">Se ativado, o cliente poderá adicionar instruções de personalização ao comprar.</p>
     </div>
 
     <div class="form-group">
@@ -112,8 +125,21 @@
     </div>
 
     <div class="form-group">
-      <label for="prodImage">URL da Imagem</label>
-      <input id="prodImage" type="url" formControlName="imageUrl" class="form-control" placeholder="https://..." />
+      <label>Imagem do Produto</label>
+      <app-image-upload
+        [currentUrl]="productForm.value.imageUrl"
+        [loading]="uploadingImage()"
+        (fileSelected)="onProductImageSelected($event)"
+      />
+      <input type="hidden" formControlName="imageUrl" />
+    </div>
+
+    <div class="form-group form-group--checkbox">
+      <label class="checkbox-label">
+        <input type="checkbox" formControlName="customizable" />
+        <span>Produto personalizável</span>
+      </label>
+      <p class="form-help">Se ativado, o cliente poderá adicionar instruções de personalização ao comprar.</p>
     </div>
 
     <div class="form-actions">

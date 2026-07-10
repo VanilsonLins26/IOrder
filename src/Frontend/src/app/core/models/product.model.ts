@@ -6,6 +6,7 @@ export interface ProductRequest {
   imageUrl: string;
   description: string;
   categoryId?: string;
+  customizable: boolean;
 }
 
 export interface ProductResponse {
@@ -17,6 +18,7 @@ export interface ProductResponse {
   imageUrl: string;
   description: string;
   active: boolean;
+  customizable: boolean;
   currentPromotionalPrice: number | null;
   promotions: PromotionPriceResponse[];
   categoryId?: string;
@@ -29,6 +31,7 @@ export interface UpdateProductRequest {
   imageUrl: string;
   description: string;
   active: boolean;
+  customizable: boolean;
   categoryId?: string;
 }
 

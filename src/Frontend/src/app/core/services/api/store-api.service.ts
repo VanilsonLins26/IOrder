@@ -55,4 +55,10 @@ export class StoreApiService {
   updateAddress(storeId: string, dto: AddressRequest): Observable<StoreResponse> {
     return this.http.put<StoreResponse>(`${this.baseUrl}/address/${storeId}`, dto);
   }
+
+  updateImage(file: File): Observable<{ imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<{ imageUrl: string }>(`${this.baseUrl}/image`, formData);
+  }
 }

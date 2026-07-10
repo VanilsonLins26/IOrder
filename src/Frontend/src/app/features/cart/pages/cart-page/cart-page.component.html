@@ -127,6 +127,47 @@
             <span>{{ (cartStore.discountedTotal() ?? cartStore.cartTotal()) | currency:'BRL' }}</span>
           </div>
 
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Data de Entrega</h3>
+            <div class="cart-summary__row">
+              <input
+                type="date"
+                class="form-control"
+                [ngModel]="deliveryDate()"
+                (ngModelChange)="deliveryDate.set($event)"
+                [min]="today()"
+              />
+              <input
+                type="time"
+                class="form-control"
+                [ngModel]="deliveryTime()"
+                (ngModelChange)="deliveryTime.set($event)"
+              />
+            </div>
+          </div>
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Observações</h3>
+            <textarea
+              class="form-control"
+              rows="2"
+              placeholder="Instruções adicionais para o pedido..."
+              [ngModel]="customerNotes()"
+              (ngModelChange)="customerNotes.set($event)"
+            ></textarea>
+          </div>
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Telefone de Contato</h3>
+            <input
+              type="tel"
+              class="form-control"
+              placeholder="(11) 99999-9999"
+              [ngModel]="customerPhone()"
+              (ngModelChange)="customerPhone.set($event)"
+            />
+          </div>
+
           <div class="cart-summary__checkout-wrapper">
             <button
               class="cart-summary__checkout-btn"

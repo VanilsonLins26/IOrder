@@ -4,13 +4,14 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormArray, FormGroup } fr
 import { AdminStore } from '../../store/admin.store';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { take } from 'rxjs';
 
 @Component({
   selector: 'app-store-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, LoadingSkeletonComponent],
+  imports: [CommonModule, ReactiveFormsModule, LoadingSkeletonComponent, ImageUploadComponent],
   templateUrl: './store-settings.component.html',
   styleUrl: './store-settings.component.scss',
 })
@@ -46,6 +47,7 @@ export class StoreSettingsComponent implements OnInit {
 
   readonly isSaving = signal(false);
   readonly saveSuccess = signal(false);
+  readonly uploadingImage = signal(false);
 
   constructor() {
     effect(() => {
@@ -121,6 +123,17 @@ export class StoreSettingsComponent implements OnInit {
         this.saveSuccess.set(true);
       },
       error: () => this.isSaving.set(false)
+    });
+  }
+
+  onStoreImageSelected(file: File) {
+    this.uploadingImage.set(true);
+    this.storeApi.updateImage(file).subscribe({
+      next: (res) => {
+        this.generalForm.patchValue({ imageUrl: res.imageUrl });
+        this.uploadingImage.set(false);
+      },
+      error: () => this.uploadingImage.set(false),
     });
   }
 

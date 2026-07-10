@@ -38,3 +38,18 @@
     <button type="button" class="btn btn--primary" (click)="onConfirmClearAndAdd()">Sim, limpar e adicionar</button>
   </div>
 </app-modal>
+
+<app-modal title="Personalizar Produto" [isOpen]="showCustomizeDialog()" (close)="onCancelCustomize()">
+  <p>Este produto pode ser personalizado. Descreva como você gostaria:</p>
+  <textarea
+    class="form-control"
+    rows="3"
+    placeholder="Ex: sem cebola, borda recheada, tamanho G..."
+    [ngModel]="customizeText()"
+    (ngModelChange)="customizeText.set($event)"
+  ></textarea>
+  <div class="dialog-actions" style="margin-top: var(--space-4);">
+    <button type="button" class="btn btn--outline" (click)="onSkipCustomize()">Pular</button>
+    <button type="button" class="btn btn--primary" (click)="onConfirmCustomize()">Confirmar</button>
+  </div>
+</app-modal>
