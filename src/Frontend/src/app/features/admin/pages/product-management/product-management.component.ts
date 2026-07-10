@@ -8,6 +8,7 @@ import { CustomizationApiService } from '../../../../core/services/api/customiza
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
 import { ProductResponse, ProductRequest, UpdateProductRequest, UnitOfMeasure, PromotionPriceRequest } from '../../../../core/models';
 import type { CustomizationGroup } from '../../../../core/models/customization.model';
 
@@ -15,7 +16,7 @@ import type { CustomizationGroup } from '../../../../core/models/customization.m
   selector: 'app-product-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.scss',
 })
