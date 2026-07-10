@@ -152,7 +152,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 9, 15, 47, 29, 931, DateTimeKind.Utc).AddTicks(5009),
+                            ExpiresAt = new DateTime(2027, 1, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(3577),
                             MaxDiscountAmount = 30m,
                             MaxUsageCount = 100,
                             MinPurchaseAmount = 50m
@@ -165,7 +165,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "FixedAmount",
                             DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 9, 15, 47, 29, 931, DateTimeKind.Utc).AddTicks(6647),
+                            ExpiresAt = new DateTime(2026, 10, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(4898),
                             MaxUsageCount = 50,
                             MinPurchaseAmount = 80m
                         },
@@ -177,7 +177,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 9, 15, 47, 29, 931, DateTimeKind.Utc).AddTicks(7816),
+                            ExpiresAt = new DateTime(2027, 7, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(5977),
                             MaxDiscountAmount = 50m,
                             MaxUsageCount = 200
                         });
@@ -692,6 +692,34 @@ namespace IOrder.infrastructure.Migrations
                             IconUrl = "",
                             Name = "Bebidas Artesanais"
                         });
+                });
+
+            modelBuilder.Entity("IOrder.Domain.Entities.UserProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserProfiles", (string)null);
                 });
 
             modelBuilder.Entity("IOrder.Domain.Entities.Category", b =>

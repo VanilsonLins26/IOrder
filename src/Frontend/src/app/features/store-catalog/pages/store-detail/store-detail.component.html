@@ -48,6 +48,30 @@
     [ngModel]="customizeText()"
     (ngModelChange)="customizeText.set($event)"
   ></textarea>
+
+  <div class="customize-images">
+    <label class="upload-btn" [class.loading]="uploadingCustomizeImage()">
+      <input
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event)"
+        [disabled]="uploadingCustomizeImage()"
+      />
+      @if (uploadingCustomizeImage()) {
+        <span>Enviando...</span>
+      } @else {
+        <span>+ Adicionar imagem</span>
+      }
+    </label>
+
+    @for (url of customizeImageUrls(); track url; let i = $index) {
+      <div class="preview-item">
+        <img [src]="url" alt="Imagem personalizada" />
+        <button type="button" class="remove-btn" (click)="removeCustomizeImage(i)">&times;</button>
+      </div>
+    }
+  </div>
+
   <div class="dialog-actions" style="margin-top: var(--space-4);">
     <button type="button" class="btn btn--outline" (click)="onSkipCustomize()">Pular</button>
     <button type="button" class="btn btn--primary" (click)="onConfirmCustomize()">Confirmar</button>

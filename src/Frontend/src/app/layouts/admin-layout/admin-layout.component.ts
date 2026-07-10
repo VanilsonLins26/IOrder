@@ -2,7 +2,6 @@ import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/cor
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
-import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -50,12 +49,6 @@ import { ThemeService } from '../../core/services/theme.service';
         </nav>
 
         <div class="admin-sidebar__footer">
-          <button class="admin-sidebar__link" (click)="themeService.toggle()">
-            <span class="admin-sidebar__icon">{{ themeService.isDark() ? '☀️' : '🌙' }}</span>
-            @if (!sidebarCollapsed()) {
-              <span>{{ themeService.isDark() ? 'Modo Claro' : 'Modo Escuro' }}</span>
-            }
-          </button>
           <a routerLink="/" class="admin-sidebar__link">
             <span class="admin-sidebar__icon">🏠</span>
             @if (!sidebarCollapsed()) { <span>Voltar ao Site</span> }
@@ -101,7 +94,6 @@ import { ThemeService } from '../../core/services/theme.service';
       top: 0; left: 0; bottom: 0;
       z-index: var(--z-fixed);
 
-      :host-context([data-theme='dark']) & { background: var(--color-neutral-900); }
     }
 
     .admin-layout--collapsed .admin-sidebar { width: 72px; }
@@ -140,7 +132,6 @@ import { ThemeService } from '../../core/services/theme.service';
       transition: background var(--transition-fast);
       &:hover {
         background: var(--color-neutral-200);
-        :host-context([data-theme='dark']) & { background: var(--color-neutral-800); }
       }
     }
 
@@ -168,16 +159,11 @@ import { ThemeService } from '../../core/services/theme.service';
       &:hover {
         background: var(--color-neutral-200);
         color: var(--text-primary);
-        :host-context([data-theme='dark']) & { background: var(--color-neutral-800); }
       }
 
       &--active {
         background: var(--color-primary-50);
         color: var(--color-primary-600);
-        :host-context([data-theme='dark']) & {
-          background: rgba(249, 115, 22, 0.1);
-          color: var(--color-primary-400);
-        }
       }
     }
 
@@ -257,7 +243,6 @@ import { ThemeService } from '../../core/services/theme.service';
 })
 export class AdminLayoutComponent {
   protected readonly auth             = inject(AuthService);
-  protected readonly themeService     = inject(ThemeService);
   protected readonly sidebarCollapsed = signal(false);
 
   toggleSidebar(): void { this.sidebarCollapsed.update((v) => !v); }

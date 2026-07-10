@@ -26,7 +26,6 @@ export class CartPageComponent implements OnInit {
   readonly deliveryDate = signal('');
   readonly deliveryTime = signal('');
   readonly customerNotes = signal('');
-  readonly customerPhone = signal('');
   readonly creatingOrder = signal(false);
 
   ngOnInit() {
@@ -66,7 +65,6 @@ export class CartPageComponent implements OnInit {
     this.orderApi.create({
       deliveryDate,
       customerNotes: this.customerNotes() || null,
-      customerPhone: this.customerPhone() || null,
     }).subscribe({
       next: (order) => {
         this.creatingOrder.set(false);

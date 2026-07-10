@@ -5,19 +5,11 @@
   overflow: hidden;
   margin-bottom: var(--space-8);
   
-  :host-context([data-theme='dark']) & {
-    background: var(--color-neutral-900);
-    border-color: var(--color-neutral-800);
-  }
 }
 
 .store-header__banner {
   height: 120px;
   background: linear-gradient(135deg, var(--color-primary-200), var(--color-secondary-200));
-  
-  :host-context([data-theme='dark']) & {
-    background: linear-gradient(135deg, var(--color-primary-800), var(--color-secondary-800));
-  }
   
   @media (min-width: 768px) {
     height: 160px;
@@ -50,10 +42,6 @@
   box-shadow: var(--shadow-md);
   flex-shrink: 0;
   
-  :host-context([data-theme='dark']) & {
-    border-color: var(--color-neutral-900);
-  }
-  
   @media (min-width: 768px) {
     width: 120px;
     height: 120px;
@@ -76,10 +64,6 @@
   justify-content: center;
   font-size: 2rem;
   background: var(--color-neutral-100);
-  
-  :host-context([data-theme='dark']) & {
-    background: var(--color-neutral-800);
-  }
   
   @media (min-width: 768px) {
     font-size: 3rem;

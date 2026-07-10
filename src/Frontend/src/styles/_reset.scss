@@ -107,23 +107,8 @@ table {
   }
 }
 
-[data-theme='dark'] {
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--color-neutral-600);
-
-    &:hover {
-      background-color: var(--color-neutral-500);
-    }
-  }
-}
-
 // Selection color
 ::selection {
   background-color: var(--color-primary-200);
   color: var(--color-primary-900);
-}
-
-[data-theme='dark'] ::selection {
-  background-color: var(--color-primary-800);
-  color: var(--color-primary-100);
 }

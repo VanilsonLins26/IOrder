@@ -55,6 +55,13 @@ export const routes: Routes = [
             (m) => m.OrderDetailComponent,
           ),
       },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/pages/profile-page/profile-page.component').then(
+            (m) => m.ProfilePageComponent,
+          ),
+      },
     ],
   },
 

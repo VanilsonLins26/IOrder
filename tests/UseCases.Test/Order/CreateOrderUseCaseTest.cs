@@ -86,6 +86,7 @@ public class CreateOrderUseCaseTest
         var validator = new CreateOrderValidator();
 
         var eventDispatcher = new Mock<IDomainEventDispatcher>();
+        var profileReadOnly = new ProfileReadOnlyRepositoryBuilder().Build();
 
         return new CreateOrderUseCase(
             loggedUser,
@@ -94,6 +95,7 @@ public class CreateOrderUseCaseTest
             orderWriteOnly.Build(),
             productReadOnly.Build(),
             couponReadOnly.Build(),
+            profileReadOnly,
             uow,
             eventDispatcher.Object,
             validator);
