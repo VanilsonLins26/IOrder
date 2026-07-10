@@ -32,6 +32,7 @@ export class ProductManagementComponent implements OnInit {
   readonly isSaving = signal(false);
   readonly uploadingImage = signal(false);
   readonly editingProduct = signal<ProductResponse | null>(null);
+  private readonly pendingImage = signal<File | null>(null);
 
   // Forms
   readonly productForm = this.fb.nonNullable.group({
@@ -104,7 +105,10 @@ export class ProductManagementComponent implements OnInit {
 
   onProductImageSelected(file: File) {
     const currentEditing = this.editingProduct();
-    if (!currentEditing) return;
+    if (!currentEditing) {
+      this.pendingImage.set(file);
+      return;
+    }
     this.uploadingImage.set(true);
     this.productApi.updateImage(currentEditing.id, file).subscribe({
       next: (res) => {
@@ -161,7 +165,19 @@ export class ProductManagementComponent implements OnInit {
       this.productApi.create(req).subscribe({
         next: (res) => {
           this.adminStore.addProduct(res);
-          this.syncCategory(res.id, formVal.categoryId, '');
+          const file = this.pendingImage();
+          if (file) {
+            this.pendingImage.set(null);
+            this.productApi.updateImage(res.id, file).subscribe({
+              next: () => {
+                this.adminStore.loadAdminData();
+                this.syncCategory(res.id, formVal.categoryId, '');
+              },
+              error: () => this.syncCategory(res.id, formVal.categoryId, ''),
+            });
+          } else {
+            this.syncCategory(res.id, formVal.categoryId, '');
+          }
         },
         error: () => this.isSaving.set(false)
       });
