@@ -55,8 +55,6 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   private async initChat() {
     await this.chatSignalr.start();
     await this.chatSignalr.joinOrderGroup(this.id());
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
 
     this.chatSignalr.onMessageReceived = (message) => {
       const current = this.order();
@@ -216,6 +214,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   closeImage() {
     this.expandedImage.set(null);
+  }
+
+  openChat() {
+    this.chatOpen.set(true);
+    this.chatApi.markAsRead(this.id()).subscribe();
+    this.chatSignalr.markOrderRead(this.id());
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;
