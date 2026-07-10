@@ -49,4 +49,10 @@ export class ProductApiService {
   createPromotion(dto: PromotionPriceRequest): Observable<PromotionPriceResponse> {
     return this.http.post<PromotionPriceResponse>(`${this.baseUrl}/promotion`, dto);
   }
+
+  updateImage(id: string, file: File): Observable<{ imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<{ imageUrl: string }>(`${this.baseUrl}/image/${id}`, formData);
+  }
 }
