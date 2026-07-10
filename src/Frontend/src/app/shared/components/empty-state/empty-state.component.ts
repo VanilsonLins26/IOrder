@@ -41,9 +41,6 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
       margin-bottom: var(--space-6);
       font-size: 2rem;
 
-      :host-context([data-theme='dark']) & {
-        background: var(--color-neutral-800);
-      }
     }
 
     .empty-state__title {

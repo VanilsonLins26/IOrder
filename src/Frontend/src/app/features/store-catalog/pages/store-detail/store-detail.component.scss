@@ -49,9 +49,6 @@
     margin-bottom: var(--space-2);
   }
   
-  :host-context([data-theme='dark']) & {
-    background: var(--color-neutral-900);
-  }
 }
 
 .dialog-actions {

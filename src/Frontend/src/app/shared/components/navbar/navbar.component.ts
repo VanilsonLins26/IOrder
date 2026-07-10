@@ -2,7 +2,6 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@ang
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
-import { ThemeService } from '../../../core/services/theme.service';
 import { CartStore } from '../../../features/cart/store/cart.store';
 
 @Component({
@@ -14,9 +13,8 @@ import { CartStore } from '../../../features/cart/store/cart.store';
   styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
-  protected readonly auth         = inject(AuthService);
-  protected readonly themeService = inject(ThemeService);
-  protected readonly cartStore    = inject(CartStore);
+  protected readonly auth      = inject(AuthService);
+  protected readonly cartStore = inject(CartStore);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly dropdownOpen = signal(false);
 

@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { StoreCategoryApiService } from '../../../../core/services/api/store-category-api.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { ThemeService } from '../../../../core/services/theme.service';
 import type { StoreCategoryResponse, StoreRequest } from '../../../../core/models';
 import { finalize } from 'rxjs';
 
@@ -110,10 +109,6 @@ import { finalize } from 'rxjs';
             }
           </button>
         </form>
-        
-        <button class="theme-toggle" (click)="themeService.toggle()" aria-label="Alternar tema">
-          {{ themeService.isDark() ? '☀️' : '🌙' }}
-        </button>
       </div>
     </div>
   `,
@@ -126,10 +121,6 @@ import { finalize } from 'rxjs';
       background: linear-gradient(135deg, var(--color-primary-50), var(--color-primary-100));
       padding: var(--space-4);
       position: relative;
-      
-      :host-context([data-theme='dark']) & {
-        background: linear-gradient(135deg, var(--color-neutral-900), var(--color-neutral-800));
-      }
     }
 
     .setup-card {
@@ -142,11 +133,6 @@ import { finalize } from 'rxjs';
       position: relative;
       border: 1px solid rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(20px);
-      
-      :host-context([data-theme='dark']) & {
-        border-color: rgba(255, 255, 255, 0.05);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      }
     }
 
     .setup-header {
@@ -268,22 +254,6 @@ import { finalize } from 'rxjs';
       }
     }
     
-    .theme-toggle {
-      position: absolute;
-      top: var(--space-4);
-      right: var(--space-4);
-      background: var(--surface-secondary);
-      border: 1px solid var(--border-color);
-      width: 40px; height: 40px;
-      border-radius: var(--radius-full);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: background 0.2s;
-      
-      &:hover { background: var(--border-color); }
-    }
-
     @keyframes bounceIn {
       0% { transform: scale(0.3); opacity: 0; }
       50% { transform: scale(1.05); opacity: 1; }
@@ -303,8 +273,6 @@ export class SetupStoreComponent implements OnInit {
   private readonly storeApi = inject(StoreApiService);
   private readonly categoryApi = inject(StoreCategoryApiService);
   private readonly toast = inject(ToastService);
-  protected readonly themeService = inject(ThemeService);
-
   readonly loading = signal(false);
   readonly loadingCep = signal(false);
   readonly storeCategories = signal<StoreCategoryResponse[]>([]);

@@ -24,14 +24,6 @@
         }
       </a>
 
-      <button
-        class="navbar__icon-btn"
-        (click)="themeService.toggle()"
-        [attr.aria-label]="themeService.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
-      >
-        <span aria-hidden="true">{{ themeService.isDark() ? '☀️' : '🌙' }}</span>
-      </button>
-
       @if (auth.isAuthenticated$ | async) {
         @if (auth.user$ | async; as user) {
           <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">

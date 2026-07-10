@@ -36,9 +36,6 @@
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 
-  :host-context([data-theme='dark']) & {
-    background: var(--color-neutral-900);
-  }
 }
 
 .settings-tabs {
@@ -72,11 +69,6 @@
       color: var(--color-primary-600);
       border-bottom-color: var(--color-primary-500);
       background: var(--surface-primary);
-      
-      :host-context([data-theme='dark']) & {
-        color: var(--color-primary-400);
-        background: var(--color-neutral-900);
-      }
     }
   }
 }
@@ -200,11 +192,6 @@
     }
   }
 
-  :host-context([data-theme='dark']) & {
-    &::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(0.8);
-    }
-  }
 }
 
 .hour-closed-msg {

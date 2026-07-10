@@ -89,25 +89,6 @@ import { ToastService, type Toast } from '../../../core/services/toast.service';
       }
     }
 
-    :host-context([data-theme='dark']) .toast {
-      &--success {
-        background-color: rgba(34, 197, 94, 0.15);
-        color: #86efac;
-      }
-      &--error {
-        background-color: rgba(239, 68, 68, 0.15);
-        color: #fca5a5;
-      }
-      &--warning {
-        background-color: rgba(234, 179, 8, 0.15);
-        color: #fde047;
-      }
-      &--info {
-        background-color: rgba(59, 130, 246, 0.15);
-        color: #93c5fd;
-      }
-    }
-
     .toast__icon {
       flex-shrink: 0;
       font-size: var(--font-size-lg);
