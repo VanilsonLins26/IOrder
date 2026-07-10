@@ -18,6 +18,7 @@ export enum MessageTypeDto {
 export interface CreateOrderRequestDto {
   customerNotes?: string | null;
   deliveryDate?: string | null;
+  customerPhone?: string | null;
 }
 
 export interface UpdateOrderStatusRequestDto {
