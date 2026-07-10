@@ -183,6 +183,20 @@
     margin-top: 2px;
   }
 
+  &__customize-images {
+    display: flex;
+    gap: 4px;
+    margin-top: var(--space-1);
+  }
+
+  &__customize-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+  }
+
   &__qty {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);

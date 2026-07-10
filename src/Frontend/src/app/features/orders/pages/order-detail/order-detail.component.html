@@ -79,6 +79,13 @@
                 @if (item.customize) {
                   <p class="order-item__customize">{{ item.customize }}</p>
                 }
+                @if (item.imageUrls?.length) {
+                  <div class="order-item__customize-images">
+                    @for (url of item.imageUrls; track url) {
+                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" />
+                    }
+                  </div>
+                }
               </div>
               <div class="order-item__qty">{{ item.quantity }}x</div>
               <div class="order-item__price">{{ item.unitPrice | currency:'BRL' }}</div>

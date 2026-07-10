@@ -84,6 +84,13 @@
             <div class="item-row__info">
               <p class="item-row__name">{{ item.productName }}</p>
               @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
+              @if (item.imageUrls?.length) {
+                <div class="item-row__customize-images">
+                  @for (url of item.imageUrls; track url) {
+                    <img [src]="url" alt="Customização" class="item-row__customize-thumb" />
+                  }
+                </div>
+              }
             </div>
             <span class="item-row__qty">{{ item.quantity }}x</span>
             <span class="item-row__price">{{ item.unitPrice | currency:'BRL' }}</span>

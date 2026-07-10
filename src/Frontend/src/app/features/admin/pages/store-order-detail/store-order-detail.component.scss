@@ -223,6 +223,20 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   &__customize { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 2px; }
+
+  &__customize-images {
+    display: flex;
+    gap: 4px;
+    margin-top: var(--space-1);
+  }
+
+  &__customize-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+  }
   &__qty, &__price { font-size: var(--font-size-sm); color: var(--text-secondary); }
   &__total {
     font-size: var(--font-size-sm);
