@@ -6,11 +6,9 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
-
 import { provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
-import { authInterceptor } from './core/auth/auth.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -19,7 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptors([authInterceptor, errorInterceptor]),
+      withInterceptors([errorInterceptor]),
     ),
     provideAuth0({
       domain: environment.auth0.domain,
