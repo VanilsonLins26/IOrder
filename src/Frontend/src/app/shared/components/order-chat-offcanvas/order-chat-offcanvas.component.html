@@ -6,8 +6,8 @@
     <button class="offcanvas__close" (click)="close()">&times;</button>
   </div>
 
-  <div class="offcanvas__body">
-    <div class="chat-messages" #messagesContainer>
+  <div class="offcanvas__body" #messagesContainer>
+    <div class="chat-messages">
       @if (messages().length === 0) {
         <p class="no-messages">Nenhuma mensagem ainda. Envie a primeira mensagem!</p>
       }
