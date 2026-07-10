@@ -342,7 +342,7 @@ export class ProductManagementComponent implements OnInit {
       })),
     };
 
-    this.customizationApi.save(dto).subscribe({
+    this.customizationApi.save(product.id, dto).subscribe({
       next: (saved) => {
         this.isSavingCustomization.set(false);
         this.editingCustomizationGroup.set(null);

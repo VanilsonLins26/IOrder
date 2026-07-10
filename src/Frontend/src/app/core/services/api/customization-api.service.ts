@@ -13,8 +13,8 @@ export class CustomizationApiService {
     return this.http.get<CustomizationGroup[]>(`${this.baseUrl}/product/${productId}`);
   }
 
-  save(dto: SaveCustomizationGroupRequest): Observable<CustomizationGroup> {
-    return this.http.post<CustomizationGroup>(this.baseUrl, dto);
+  save(productId: string, dto: SaveCustomizationGroupRequest): Observable<CustomizationGroup> {
+    return this.http.post<CustomizationGroup>(`${this.baseUrl}/product/${productId}`, dto);
   }
 
   delete(id: string): Observable<void> {
