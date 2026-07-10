@@ -50,9 +50,10 @@ public class GetCartUseCase : IGetCartUseCase
         {
             if (prices.TryGetValue(item.ProductId, out var productPrice))
             {
-                if (item.UnitPrice != productPrice)
+                var expectedPrice = productPrice + item.SelectedOptions.Sum(o => o.PriceModifier);
+                if (item.UnitPrice != expectedPrice)
                 {
-                    cart.UpdateItemPrice(productPrice, item.Id);
+                    cart.UpdateItemPrice(expectedPrice, item.Id);
                     cartModified = true;
                 }
             }

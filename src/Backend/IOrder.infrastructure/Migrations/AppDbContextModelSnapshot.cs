@@ -152,7 +152,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 10, 17, 1, 56, 78, DateTimeKind.Utc).AddTicks(392),
+                            ExpiresAt = new DateTime(2027, 1, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(6116),
                             MaxDiscountAmount = 30m,
                             MaxUsageCount = 100,
                             MinPurchaseAmount = 50m
@@ -165,7 +165,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "FixedAmount",
                             DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 10, 17, 1, 56, 83, DateTimeKind.Utc).AddTicks(4847),
+                            ExpiresAt = new DateTime(2026, 10, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(8034),
                             MaxUsageCount = 50,
                             MinPurchaseAmount = 80m
                         },
@@ -177,7 +177,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 10, 17, 1, 56, 84, DateTimeKind.Utc).AddTicks(1027),
+                            ExpiresAt = new DateTime(2027, 7, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(9852),
                             MaxDiscountAmount = 50m,
                             MaxUsageCount = 200
                         });
@@ -969,7 +969,7 @@ namespace IOrder.infrastructure.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores");
+                            b1.ToTable("Stores", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
