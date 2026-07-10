@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
+import { ChatApiService } from '../../../../core/services/api/chat-api.service';
+import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { OrderStatusDto, MessageTypeDto, OrderResponseDto } from '../../../../core/models';
+import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
+import type { OrderResponseDto } from '../../../../core/models';
 
 @Component({
   selector: 'app-store-order-detail',
@@ -14,23 +17,63 @@ import { OrderStatusDto, MessageTypeDto, OrderResponseDto } from '../../../../co
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StoreOrderDetailComponent implements OnInit {
+export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
   private readonly orderApi = inject(OrderApiService);
+  private readonly chatApi = inject(ChatApiService);
+  private readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
 
   readonly order = signal<OrderResponseDto | null>(null);
   readonly loading = signal(false);
   readonly messageText = signal('');
   readonly sendingMessage = signal(false);
+  readonly typingUser = signal<string | null>(null);
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
   readonly proposedDate = signal('');
   readonly shopkeeperNotes = signal('');
 
+  private typingTimeout: ReturnType<typeof setTimeout> | null = null;
+  private lastTypingNotify = 0;
+
   ngOnInit() {
     this.loadOrder();
+    this.initChat();
+  }
+
+  ngOnDestroy() {
+    this.chatSignalr.leaveOrderGroup(this.id());
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = null;
+    }
+  }
+
+  private async initChat() {
+    await this.chatSignalr.start();
+    await this.chatSignalr.joinOrderGroup(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe();
+    this.chatSignalr.markOrderRead(this.id());
+
+    this.chatSignalr.onMessageReceived = (message) => {
+      const current = this.order();
+      if (!current || message.userId === current.userId) return;
+      const alreadyExists = current.messages.some(m => m.id === message.id);
+      if (alreadyExists) return;
+      this.order.set({ ...current, messages: [...current.messages, message] });
+    };
+
+    this.chatSignalr.onUserTyping = (orderId) => {
+      if (orderId !== this.id()) return;
+      this.typingUser.set('Cliente');
+    };
+
+    this.chatSignalr.onUserStoppedTyping = (orderId) => {
+      if (orderId !== this.id()) return;
+      this.typingUser.set(null);
+    };
   }
 
   private loadOrder() {
@@ -39,6 +82,18 @@ export class StoreOrderDetailComponent implements OnInit {
       next: (o) => { this.order.set(o); this.loading.set(false); },
       error: () => { this.loading.set(false); this.toast.error('Erro ao carregar pedido.'); },
     });
+  }
+
+  onMessageInput() {
+    const now = Date.now();
+    if (now - this.lastTypingNotify > 3000) {
+      this.lastTypingNotify = now;
+      this.chatSignalr.userTyping(this.id());
+    }
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(() => {
+      this.chatSignalr.userStoppedTyping(this.id());
+    }, 1500);
   }
 
   getStatusLabel(status: OrderStatusDto): string {
@@ -99,12 +154,11 @@ export class StoreOrderDetailComponent implements OnInit {
     const text = this.messageText().trim();
     if (!text) return;
     this.sendingMessage.set(true);
+    this.chatSignalr.userStoppedTyping(this.id());
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
         this.messageText.set('');
         this.sendingMessage.set(false);
-        this.toast.success('Mensagem enviada!');
-        this.loadOrder();
       },
       error: (err) => {
         this.sendingMessage.set(false);

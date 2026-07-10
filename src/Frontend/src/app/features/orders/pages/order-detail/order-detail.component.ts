@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OrdersStore } from '../../store/orders.store';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
+import { ChatApiService } from '../../../../core/services/api/chat-api.service';
+import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 
@@ -15,19 +17,71 @@ import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrderDetailComponent implements OnInit {
+export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
   readonly store = inject(OrdersStore);
   private readonly orderApi = inject(OrderApiService);
+  private readonly chatApi = inject(ChatApiService);
+  private readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
   readonly messageText = signal('');
   readonly sendingMessage = signal(false);
   readonly cancelling = signal(false);
+  readonly typingUser = signal<string | null>(null);
+  private typingTimeout: ReturnType<typeof setTimeout> | null = null;
+  private lastTypingNotify = 0;
 
   ngOnInit() {
     this.store.loadById(this.id());
+    this.initChat();
+  }
+
+  ngOnDestroy() {
+    this.chatSignalr.leaveOrderGroup(this.id());
+    this.cleanupTyping();
+  }
+
+  private async initChat() {
+    await this.chatSignalr.start();
+    await this.chatSignalr.joinOrderGroup(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe();
+    this.chatSignalr.markOrderRead(this.id());
+
+    this.chatSignalr.onMessageReceived = (message) => {
+      if (message.userId === this.id()) return;
+      this.store.appendMessage(message);
+    };
+
+    this.chatSignalr.onUserTyping = (orderId) => {
+      if (orderId !== this.id()) return;
+      this.typingUser.set('Lojista');
+    };
+
+    this.chatSignalr.onUserStoppedTyping = (orderId) => {
+      if (orderId !== this.id()) return;
+      this.typingUser.set(null);
+    };
+  }
+
+  onMessageInput() {
+    const now = Date.now();
+    if (now - this.lastTypingNotify > 3000) {
+      this.lastTypingNotify = now;
+      this.chatSignalr.userTyping(this.id());
+    }
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(() => {
+      this.chatSignalr.userStoppedTyping(this.id());
+    }, 1500);
+  }
+
+  private cleanupTyping() {
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = null;
+    }
   }
 
   getStatusLabel(status: OrderStatusDto): string {
@@ -67,12 +121,11 @@ export class OrderDetailComponent implements OnInit {
     const text = this.messageText().trim();
     if (!text) return;
     this.sendingMessage.set(true);
+    this.chatSignalr.userStoppedTyping(this.id());
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
         this.messageText.set('');
         this.sendingMessage.set(false);
-        this.toast.success('Mensagem enviada!');
-        this.store.loadById(this.id());
       },
       error: (err) => {
         this.sendingMessage.set(false);

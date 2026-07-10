@@ -56,7 +56,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Guard de verificação de loja
 - ✅ Layouts separados (Cliente + Admin)
 - ⬜ Integração com carrinho (após finalização do backend)
-- ⬜ Chat em tempo real
+- ✅ Chat em tempo real (SignalR + REST)
 
 ### Infraestrutura
 
@@ -151,11 +151,23 @@ Use Case → AddDomainEvent() → IDomainEventDispatcher.DispatchAsync()
 
 ### Chat em Tempo Real
 ```
-SendOrderMessageUseCase → RabbitMQ (order-messages queue)
-                               ↓
-                         ChatConsumer
-                           ├── Redis dedup (30s)
-                           └── SignalR → clientes conectados
+Frontend (Angular 20)
+  ├── ChatSignalRService (conexão SignalR → /hubs/chat)
+  │     ├── MessageReceived → nova mensagem em tempo real
+  │     ├── UserTyping / UserStoppedTyping → indicador de digitação
+  │     └── MessagesRead → confirmação de leitura
+  ├── REST API (envio de mensagens → POST /Order/{id}/message)
+  └── OrderDetailComponent / StoreOrderDetailComponent
+        ├── Indicador de "digitando..."
+        ├── Marcação de lidas ao entrar na página
+        └── Recibos de leitura (✓✓)
+
+Backend
+  SendOrderMessageUseCase → RabbitMQ (order-messages queue)
+                                   ↓
+                             ChatConsumer
+                               ├── Redis dedup (30s)
+                               └── SignalR → clientes conectados
 ```
 
 ### Worker de Carrinhos Abandonados
@@ -166,8 +178,17 @@ O `AbandonedCartWorker` executa a cada 5 minutos e:
 4. O consumidor envia email: "Você deixou itens no carrinho"
 
 O Redis é usado para:
-- **Dedup de chat**: 30s TTL para evitar mensagens duplicadas no SignalR
+- **Dedup de chat**: 30s TTL para evitar mensagens duplicadas no SignalR (chave: `dedup:chat:{orderId}:{timestamp}`)
 - **Dedup de notificação de mensagens**: 10min TTL para evitar notificações repetidas de email
+
+### Frontend Chat
+O frontend utiliza `@microsoft/signalr` para conexão em tempo real com o hub SignalR. O fluxo:
+1. Usuário envia mensagem via REST (`POST /Order/{id}/message`)
+2. Backend processa, publica no RabbitMQ
+3. `ChatConsumer` consome e transmite para o grupo SignalR do pedido
+4. Frontend recebe `MessageReceived` e exibe a mensagem instantaneamente
+5. Indicadores de digitação são transmitidos via `UserTyping`/`UserStoppedTyping`
+6. Ao entrar na página, marca as mensagens como lidas via REST + SignalR
 
 ---
 

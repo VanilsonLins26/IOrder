@@ -5,7 +5,7 @@ import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { OrderApiService } from '../../../core/services/api/order-api.service';
 import { ToastService } from '../../../core/services/toast.service';
-import type { OrderResponseDto, PagedList } from '../../../core/models';
+import type { OrderResponseDto, OrderMessageResponseDto, PagedList } from '../../../core/models';
 
 type OrdersState = {
   orders: OrderResponseDto[];
@@ -99,6 +99,16 @@ export const OrdersStore = signalStore(
     ),
 
     clearCurrentOrder: () => patchState(store, { currentOrder: null }),
+
+    appendMessage: (message: OrderMessageResponseDto) => {
+      const order = store.currentOrder();
+      if (!order) return;
+      const alreadyExists = order.messages.some(m => m.id === message.id);
+      if (alreadyExists) return;
+      patchState(store, {
+        currentOrder: { ...order, messages: [...order.messages, message] },
+      });
+    },
 
     goToPage: (page: number) => {
       patchState(store, { currentPage: page });
