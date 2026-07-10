@@ -159,13 +159,7 @@
 
           <div class="cart-summary__section">
             <h3 class="cart-summary__subtitle">Telefone de Contato</h3>
-            <input
-              type="tel"
-              class="form-control"
-              placeholder="(11) 99999-9999"
-              [ngModel]="customerPhone()"
-              (ngModelChange)="customerPhone.set($event)"
-            />
+            <p class="cart-summary__hint">O telefone cadastrado no seu perfil será usado para contato. Você pode atualizá-lo em <a routerLink="/profile">Meu Perfil</a>.</p>
           </div>
 
           <div class="cart-summary__checkout-wrapper">

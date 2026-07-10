@@ -6,6 +6,7 @@ using IOrder.Domain.Repositories.Cart;
 using IOrder.Domain.Repositories.Coupon;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Product;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 using IOrder.Domain.Services;
 using IOrder.Exceptions;
@@ -22,6 +23,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IProductReadOnlyRepository _productReadOnlyRepository;
     private readonly ICouponReadOnlyRepository _couponReadOnlyRepository;
+    private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.CreateOrderRequestDto> _validator;
@@ -33,6 +35,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IProductReadOnlyRepository productReadOnlyRepository,
         ICouponReadOnlyRepository couponReadOnlyRepository,
+        IProfileReadOnlyRepository profileReadOnlyRepository,
         IUnitOfWork unitOfWork,
         IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.CreateOrderRequestDto> validator)
@@ -43,6 +46,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _productReadOnlyRepository = productReadOnlyRepository;
         _couponReadOnlyRepository = couponReadOnlyRepository;
+        _profileReadOnlyRepository = profileReadOnlyRepository;
         _unitOfWork = unitOfWork;
         _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
@@ -84,11 +88,14 @@ public class CreateOrderUseCase : ICreateOrderUseCase
 
         var customerEmail = _loggedUserService.GetUserEmail();
 
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        var phone = request.CustomerPhone ?? profile?.Phone;
+
         var order = new Domain.Entities.Order
         {
             UserId = userId,
             CustomerEmail = customerEmail,
-            CustomerPhone = request.CustomerPhone,
+            CustomerPhone = phone,
             StoreId = storeId,
             TotalAmount = discountedTotal,
             OriginalAmount = cart.CartTotal,

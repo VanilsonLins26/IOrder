@@ -315,6 +315,22 @@
   margin-bottom: var(--space-2);
 }
 
+.cart-summary__hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+
+  a {
+    color: var(--color-primary-600);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .cart-summary__row {
   display: flex;
   gap: var(--space-2);
