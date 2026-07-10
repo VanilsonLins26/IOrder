@@ -62,9 +62,10 @@ public class UpdateOrderStatusUseCaseTest
         var uow = UnitOfWorkBuilder.Build();
         var permissionService = StorePermissionServiceBuilder.Build(order?.StoreId ?? Guid.NewGuid());
         var validator = new UpdateOrderStatusValidator();
+        var loggedUser = LoggedUserBuilder.Build(Guid.NewGuid()); // Store owner logic doesn't require user matching
 
         var eventDispatcher = new Mock<IDomainEventDispatcher>();
 
-        return new UpdateOrderStatusUseCase(writeOnly, permissionService, uow, eventDispatcher.Object, validator);
+        return new UpdateOrderStatusUseCase(writeOnly, permissionService, uow, eventDispatcher.Object, validator, loggedUser);
     }
 }

@@ -14,6 +14,7 @@ public class OrderItem : EntityBase
     public List<SelectedOption> SelectedOptions { get; set; } = [];
     [JsonInclude]
     private readonly List<string> _imageUrls = [];
+    [JsonIgnore]
     public IReadOnlyCollection<string> ImageUrls => _imageUrls.AsReadOnly();
     public void UpdateImageUrls(IEnumerable<string> imageUrls)
     {

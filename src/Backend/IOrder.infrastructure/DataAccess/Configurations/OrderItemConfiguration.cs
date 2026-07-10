@@ -50,6 +50,7 @@ public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
                .HasColumnName("ImageUrls");
 
         builder.Ignore(x => x.TotalPrice);
+        builder.Ignore(x => x.ImageUrls);
     }
 
     private class StringListConverter : ValueConverter<List<string>, string>

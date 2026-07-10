@@ -18,19 +18,22 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.UpdateOrderStatusRequestDto> _validator;
+    private readonly ILoggedUserService _loggedUserService;
 
     public UpdateOrderStatusUseCase(
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IStorePermissionService storePermissionService,
         IUnitOfWork unitOfWork,
         IDomainEventDispatcher domainEventDispatcher,
-        IValidator<Communication.Request.UpdateOrderStatusRequestDto> validator)
+        IValidator<Communication.Request.UpdateOrderStatusRequestDto> validator,
+        ILoggedUserService loggedUserService)
     {
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _storePermissionService = storePermissionService;
         _unitOfWork = unitOfWork;
         _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
+        _loggedUserService = loggedUserService;
     }
 
     public async Task<OrderResponseDto> Execute(Guid id, Communication.Request.UpdateOrderStatusRequestDto request)
@@ -40,7 +43,13 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
         var order = await _orderWriteOnlyRepository.GetByIdTracking(id)
             ?? throw new NotFoundException([ResourceMessagesException.ORDER_NOT_FOUND]);
 
-        await _storePermissionService.ValidateStoreOwnerAsync(order.StoreId);
+        var userId = _loggedUserService.GetUserId();
+        var isClient = order.UserId == userId;
+
+        if (!isClient)
+        {
+            await _storePermissionService.ValidateStoreOwnerAsync(order.StoreId);
+        }
 
         var newStatus = request.Status switch
         {
@@ -52,6 +61,13 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
             Communication.Enums.OrderStatusDto.Cancelled => Domain.Entities.Enums.OrderStatus.Cancelled,
             _ => throw new ErrorOnValidationException([ResourceMessagesException.ORDER_INVALID_STATUS])
         };
+
+        if (isClient && newStatus != Domain.Entities.Enums.OrderStatus.AwaitingPayment 
+                     && newStatus != Domain.Entities.Enums.OrderStatus.Declined
+                     && newStatus != Domain.Entities.Enums.OrderStatus.Cancelled)
+        {
+            throw new UnauthorizedStoreException([ResourceMessagesException.UNAUTHORIZED_STORE]);
+        }
 
         switch (newStatus)
         {
