@@ -56,16 +56,14 @@
             </div>
 
             <div class="form-group">
-              <label for="storeImageUrl">URL da Imagem de Perfil / Capa</label>
-              <input id="storeImageUrl" type="url" formControlName="imageUrl" class="form-control" placeholder="https://exemplo.com/imagem.png" />
+              <label>Imagem de Perfil / Capa</label>
+              <app-image-upload
+                [currentUrl]="generalForm.value.imageUrl"
+                [loading]="uploadingImage()"
+                (fileSelected)="onStoreImageSelected($event)"
+              />
+              <input type="hidden" formControlName="imageUrl" />
             </div>
-
-            <!-- Previews image if valid url -->
-            @if (generalForm.value.imageUrl) {
-              <div class="image-preview">
-                <img [src]="generalForm.value.imageUrl" alt="Preview da Loja" onerror="this.style.display='none'" />
-              </div>
-            }
 
             <div class="form-actions">
               <button type="submit" class="btn btn--primary" [disabled]="generalForm.invalid || isSaving()">
