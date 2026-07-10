@@ -9,6 +9,9 @@
     @if (hasPromotion) {
       <span class="product-card__badge product-card__badge--promo">Promoção</span>
     }
+    @if (product().customizable) {
+      <span class="product-card__badge product-card__badge--custom">Customizável</span>
+    }
     @if (!product().active) {
       <span class="product-card__badge product-card__badge--inactive">Indisponível</span>
     }

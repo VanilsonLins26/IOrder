@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { ProductApiService } from '../../../../core/services/api/product-api.service';
@@ -15,7 +16,7 @@ import type { ProductResponse } from '../../../../core/models/product.model';
 @Component({
   selector: 'app-store-detail',
   standalone: true,
-  imports: [CommonModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent, ModalComponent],
+  imports: [CommonModule, FormsModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent, ModalComponent],
   templateUrl: './store-detail.component.html',
   styleUrl: './store-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,6 +68,8 @@ export class StoreDetailComponent {
   });
 
   readonly showStoreDialog = signal(false);
+  readonly showCustomizeDialog = signal(false);
+  readonly customizeText = signal('');
   private pendingProduct: ProductResponse | null = null;
 
   onAddToCart(product: ProductResponse) {
@@ -79,6 +82,29 @@ export class StoreDetailComponent {
       return;
     }
 
+    if (product.customizable) {
+      this.pendingProduct = product;
+      this.customizeText.set('');
+      this.showCustomizeDialog.set(true);
+      return;
+    }
+
+    this.addItemToCart(product);
+  }
+
+  onConfirmCustomize() {
+    const product = this.pendingProduct;
+    this.pendingProduct = null;
+    this.showCustomizeDialog.set(false);
+    if (!product) return;
+    this.addItemToCart(product, this.customizeText());
+  }
+
+  onSkipCustomize() {
+    const product = this.pendingProduct;
+    this.pendingProduct = null;
+    this.showCustomizeDialog.set(false);
+    if (!product) return;
     this.addItemToCart(product);
   }
 
@@ -90,6 +116,13 @@ export class StoreDetailComponent {
     if (!product) return;
 
     this.cartStore.clearCart();
+
+    if (product.customizable) {
+      this.customizeText.set('');
+      this.showCustomizeDialog.set(true);
+      return;
+    }
+
     this.addItemToCart(product);
   }
 
@@ -98,10 +131,16 @@ export class StoreDetailComponent {
     this.showStoreDialog.set(false);
   }
 
-  private addItemToCart(product: ProductResponse) {
+  onCancelCustomize() {
+    this.pendingProduct = null;
+    this.showCustomizeDialog.set(false);
+  }
+
+  private addItemToCart(product: ProductResponse, customize?: string) {
     this.cartStore.addItem({
       productId: product.id,
       quantity: 1,
+      customize,
       imageUrls: product.imageUrl ? [product.imageUrl] : [],
     });
   }

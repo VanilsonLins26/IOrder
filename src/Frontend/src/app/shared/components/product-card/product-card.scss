@@ -74,6 +74,13 @@
     background: var(--color-neutral-700);
     color: white;
   }
+
+  &--custom {
+    background: var(--color-primary-200);
+    color: var(--color-primary-900);
+    left: auto;
+    right: var(--space-2);
+  }
 }
 
 .product-card__body {
