@@ -302,6 +302,28 @@
   }
 }
 
+.cart-summary__section {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+.cart-summary__subtitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.cart-summary__row {
+  display: flex;
+  gap: var(--space-2);
+
+  .form-control {
+    flex: 1;
+  }
+}
+
 .cart-summary__checkout-wrapper {
   position: relative;
   margin-top: var(--space-4);
