@@ -26,7 +26,12 @@ public class Cart : IAggregateRoot
 
     public void AddCartItem(CartItem cartItem)
     {
-        var existingItem = Items.FirstOrDefault(i => i.ProductId == cartItem.ProductId && i.Customize == cartItem.Customize);
+        var existingItem = Items.FirstOrDefault(i =>
+            i.ProductId == cartItem.ProductId &&
+            i.Customize == cartItem.Customize &&
+            i.SelectedOptions.Select(o => o.OptionId).Order().SequenceEqual(
+                cartItem.SelectedOptions.Select(o => o.OptionId).Order()));
+
         if (existingItem != null)
         {
             existingItem.Quantity += cartItem.Quantity;

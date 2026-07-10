@@ -70,6 +70,7 @@ public class AddItemToCartUseCase : IAddItemToCartUseCase
         cartItem.ProductName = product.Name;
         cartItem.ProductImageUrl = product.ImageUrl;
         cartItem.StoreId = product.StoreId;
+        cartItem.UpdateImageUrls(request.ImageUrls);
 
         if (request.SelectedOptionIds.Count > 0)
         {
