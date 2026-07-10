@@ -29,6 +29,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
 
         case 401:
+          if (req.url.toLowerCase().includes('mystore')) {
+            break;
+          }
           toast.warning('Sessão expirada. Redirecionando para o login...');
           auth.logout({ logoutParams: { returnTo: window.location.origin } });
           break;
