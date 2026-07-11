@@ -39,7 +39,7 @@ public class AbandonedCartWorker : BackgroundService
                 var server = redis.GetServer(redis.GetEndPoints().First());
                 var cutoff = DateTime.UtcNow - _abandonmentThreshold;
 
-                foreach (var key in server.Keys(pattern: "cart:*", pageSize: 100))
+                await foreach (var key in server.KeysAsync(pattern: "cart:*", pageSize: 100))
                 {
                     if (stoppingToken.IsCancellationRequested) break;
 
