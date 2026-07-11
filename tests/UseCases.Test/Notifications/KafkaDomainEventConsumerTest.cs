@@ -1,6 +1,8 @@
 using CommomTestUtilities.Entities;
 using CommomTestUtilities.Repositories;
+using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories.Order;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Services;
 using IOrder.infrastructure.Workers;
@@ -65,7 +67,9 @@ public class KafkaDomainEventConsumerTest
         var emailMock = new Mock<IEmailService>();
         var evolutionMock = new Mock<IEvolutionApiService>();
         var orderRepo = new OrderReadOnlyRepositoryBuilder().GetByIdAsync(order).Build();
-        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository>(orderRepo);
+        var profileRepo = new Mock<IProfileReadOnlyRepository>();
+        profileRepo.Setup(p => p.GetByUserId(It.IsAny<string>())).ReturnsAsync((UserProfile?)null);
+        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository, IProfileReadOnlyRepository>(orderRepo, profileRepo.Object);
         var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory);
 
         await consumer.HandleEventAsync(envelope, CancellationToken.None);
@@ -202,7 +206,9 @@ public class KafkaDomainEventConsumerTest
         var emailMock = new Mock<IEmailService>();
         var evolutionMock = new Mock<IEvolutionApiService>();
         var orderRepo = new OrderReadOnlyRepositoryBuilder().GetByIdAsync(order).Build();
-        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository>(orderRepo);
+        var profileRepo = new Mock<IProfileReadOnlyRepository>();
+        profileRepo.Setup(p => p.GetByUserId(It.IsAny<string>())).ReturnsAsync((UserProfile?)null);
+        var scopeFactory = CreateScopeFactory<IOrderReadOnlyRepository, IProfileReadOnlyRepository>(orderRepo, profileRepo.Object);
         var consumer = BuildConsumer(emailMock, evolutionMock, scopeFactory);
 
         await consumer.HandleEventAsync(envelope, CancellationToken.None);

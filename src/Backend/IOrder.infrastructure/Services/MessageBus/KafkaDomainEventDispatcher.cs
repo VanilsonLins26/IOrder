@@ -34,7 +34,7 @@ public class KafkaDomainEventDispatcher : IDomainEventDispatcher
                 var payload = JsonSerializer.Serialize(new
                 {
                     EventType = domainEvent.GetType().Name,
-                    Data = domainEvent,
+                    Data = (object)domainEvent,
                     OccurredOn = DateTime.UtcNow
                 }, new JsonSerializerOptions
                 {

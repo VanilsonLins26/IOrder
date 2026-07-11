@@ -24,6 +24,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
     private readonly IProductReadOnlyRepository _productReadOnlyRepository;
     private readonly ICouponReadOnlyRepository _couponReadOnlyRepository;
     private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IProfileWriteOnlyRepository _profileWriteOnlyRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IValidator<Communication.Request.CreateOrderRequestDto> _validator;
@@ -36,6 +37,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         IProductReadOnlyRepository productReadOnlyRepository,
         ICouponReadOnlyRepository couponReadOnlyRepository,
         IProfileReadOnlyRepository profileReadOnlyRepository,
+        IProfileWriteOnlyRepository profileWriteOnlyRepository,
         IUnitOfWork unitOfWork,
         IDomainEventDispatcher domainEventDispatcher,
         IValidator<Communication.Request.CreateOrderRequestDto> validator)
@@ -47,6 +49,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         _productReadOnlyRepository = productReadOnlyRepository;
         _couponReadOnlyRepository = couponReadOnlyRepository;
         _profileReadOnlyRepository = profileReadOnlyRepository;
+        _profileWriteOnlyRepository = profileWriteOnlyRepository;
         _unitOfWork = unitOfWork;
         _domainEventDispatcher = domainEventDispatcher;
         _validator = validator;
@@ -86,10 +89,15 @@ public class CreateOrderUseCase : ICreateOrderUseCase
             }
         }
 
-        var customerEmail = _loggedUserService.GetUserEmail();
-
         var profile = await _profileReadOnlyRepository.GetByUserId(userId);
-        var phone = request.CustomerPhone ?? profile?.Phone;
+        var customerEmail = _loggedUserService.GetUserEmail() ?? profile?.Email;
+        var phone = request.CustomerPhone ?? _loggedUserService.GetUserPhone() ?? profile?.Phone;
+
+        if (profile is not null && !string.IsNullOrEmpty(phone) && string.IsNullOrEmpty(profile.Phone))
+        {
+            profile.Phone = phone;
+            _profileWriteOnlyRepository.Update(profile);
+        }
 
         var order = new Domain.Entities.Order
         {

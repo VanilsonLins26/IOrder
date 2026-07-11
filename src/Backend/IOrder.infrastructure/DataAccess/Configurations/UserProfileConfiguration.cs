@@ -15,6 +15,7 @@ public class UserProfileConfiguration : BaseEntityConfiguration<UserProfile>
 
         builder.Property(x => x.UserId).HasMaxLength(100).IsRequired();
         builder.Property(x => x.Phone).HasMaxLength(20);
+        builder.Property(x => x.Email).HasMaxLength(200);
 
         builder.HasIndex(x => x.UserId).IsUnique();
     }

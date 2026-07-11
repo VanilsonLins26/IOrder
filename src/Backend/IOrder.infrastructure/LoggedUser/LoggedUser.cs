@@ -1,3 +1,4 @@
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -11,10 +12,12 @@ namespace IOrder.infrastructure.LoggedUser;
 internal class LoggedUserService : ILoggedUserService
 {
     private readonly IHttpContextAccessor _accessor;
+    private readonly IProfileReadOnlyRepository _profileRepository;
 
-    public LoggedUserService(IHttpContextAccessor accessor)
+    public LoggedUserService(IHttpContextAccessor accessor, IProfileReadOnlyRepository profileRepository)
     {
         _accessor = accessor;
+        _profileRepository = profileRepository;
     }
 
     public string GetUserId()
@@ -24,12 +27,37 @@ internal class LoggedUserService : ILoggedUserService
 
     public string GetUserEmail()
     {
-        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+        var email = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrEmpty(email))
+            email = _accessor.HttpContext?.User?.FindFirst("email")?.Value;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            var userId = GetUserId();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                email = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Email;
+            }
+        }
+
+        return email;
     }
 
     public string? GetUserPhone()
     {
-        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+        var phone = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+
+        if (string.IsNullOrEmpty(phone))
+        {
+            var userId = GetUserId();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                phone = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Phone;
+            }
+        }
+
+        return phone;
     }
 
     public bool IsShopkeeper()
