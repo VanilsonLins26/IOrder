@@ -235,7 +235,7 @@ public class KafkaDomainEventConsumer : BackgroundService
         var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
         var oldStatusPt = StatusTraducao.GetValueOrDefault(oldStatus, oldStatus);
         var newStatusPt = StatusTraducao.GetValueOrDefault(newStatus, newStatus);
-        var orderLink = $"{_frontendUrl}/order/{orderId}";
+        var orderLink = $"{_frontendUrl}/orders/{orderId}";
 
         var customerEmail = order?.CustomerEmail;
         if (string.IsNullOrEmpty(customerEmail) && order?.UserId is not null)
