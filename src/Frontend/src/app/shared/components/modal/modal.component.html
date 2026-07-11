@@ -1,5 +1,5 @@
 @if (isOpen()) {
-  <div class="modal-backdrop" (click)="onBackdropClick($event)" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="close.emit()" role="dialog" aria-modal="true">
     <div class="modal-content">
       <header class="modal-header">
         <h2 class="modal-title">{{ title() }}</h2>
