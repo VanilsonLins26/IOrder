@@ -10,5 +10,6 @@ public class OrderItemResponseDto
     public int Quantity { get; set; }
     public decimal TotalPrice { get; set; }
     public string Customize { get; set; } = string.Empty;
+    public List<SelectedOptionResponseDto> SelectedOptions { get; set; } = [];
     public List<string> ImageUrls { get; set; } = [];
 }

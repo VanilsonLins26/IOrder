@@ -7,13 +7,15 @@ import { OrderApiService } from '../../../../core/services/api/order-api.service
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 import type { OrderResponseDto } from '../../../../core/models';
+import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,22 +25,21 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly orderApi = inject(OrderApiService);
   private readonly chatApi = inject(ChatApiService);
-  private readonly chatSignalr = inject(ChatSignalRService);
+  protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
 
   readonly order = signal<OrderResponseDto | null>(null);
   readonly loading = signal(false);
-  readonly messageText = signal('');
   readonly sendingMessage = signal(false);
   readonly typingUser = signal<string | null>(null);
+  readonly expandedImage = signal<string | null>(null);
+  readonly chatOpen = signal(false);
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
   readonly proposedDate = signal('');
   readonly shopkeeperNotes = signal('');
 
-  private typingTimeout: ReturnType<typeof setTimeout> | null = null;
-  private lastTypingNotify = 0;
   private currentUserId: string | null = null;
 
   ngOnInit() {
@@ -49,24 +50,37 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.chatSignalr.leaveOrderGroup(this.id());
-    if (this.typingTimeout) {
-      clearTimeout(this.typingTimeout);
-      this.typingTimeout = null;
-    }
   }
 
   private async initChat() {
     await this.chatSignalr.start();
     await this.chatSignalr.joinOrderGroup(this.id());
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
 
     this.chatSignalr.onMessageReceived = (message) => {
       const current = this.order();
-      if (!current || message.userId === this.currentUserId) return;
+      if (!current) return;
       const alreadyExists = current.messages.some(m => m.id === message.id);
       if (alreadyExists) return;
       this.order.set({ ...current, messages: [...current.messages, message] });
+      if (this.chatOpen()) {
+        this.chatApi.markAsRead(this.id()).subscribe();
+        this.chatSignalr.markOrderRead(this.id());
+      }
+    };
+
+    this.chatSignalr.onMessagesRead = (orderId) => {
+      if (orderId === this.id()) {
+        const current = this.order();
+        if (!current) return;
+        const now = new Date().toISOString();
+        const updatedMessages = current.messages.map(m => {
+          if (m.userId === this.currentUserId && !m.readAt) {
+            return { ...m, readAt: now };
+          }
+          return m;
+        });
+        this.order.set({ ...current, messages: updatedMessages });
+      }
     };
 
     this.chatSignalr.onUserTyping = (orderId) => {
@@ -88,17 +102,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  onMessageInput() {
-    const now = Date.now();
-    if (now - this.lastTypingNotify > 3000) {
-      this.lastTypingNotify = now;
-      this.chatSignalr.userTyping(this.id());
-    }
-    if (this.typingTimeout) clearTimeout(this.typingTimeout);
-    this.typingTimeout = setTimeout(() => {
-      this.chatSignalr.userStoppedTyping(this.id());
-    }, 1500);
-  }
+
 
   getStatusLabel(status: OrderStatusDto): string {
     const labels: Record<number, string> = {
@@ -123,10 +127,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar' },
         { status: OrderStatusDto.Declined, label: 'Recusar' },
       ],
-      [OrderStatusDto.Negotiating]: [
-        { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar Proposta' },
-        { status: OrderStatusDto.Declined, label: 'Recusar' },
-      ],
+      [OrderStatusDto.Negotiating]: [],
       [OrderStatusDto.AwaitingPayment]: [
         { status: OrderStatusDto.Paid, label: 'Confirmar Pagamento' },
         { status: OrderStatusDto.Cancelled, label: 'Cancelar' },
@@ -144,6 +145,23 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     return map[status] ?? [];
   }
 
+  toggleNegotiate() {
+    this.showNegotiate.set(!this.showNegotiate());
+    if (this.showNegotiate()) {
+      const o = this.order();
+      if (o) {
+        this.proposedAmount.set(o.totalAmount);
+        if (o.deliveryDate) {
+          const date = new Date(o.deliveryDate);
+          date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+          this.proposedDate.set(date.toISOString().slice(0, 16));
+        } else {
+          this.proposedDate.set('');
+        }
+      }
+    }
+  }
+
   updateStatus(status: OrderStatusDto) {
     this.orderApi.updateStatus(this.id(), { status }).subscribe({
       next: () => {
@@ -154,14 +172,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  sendMessage() {
-    const text = this.messageText().trim();
+  sendMessage(text: string) {
     if (!text) return;
     this.sendingMessage.set(true);
     this.chatSignalr.userStoppedTyping(this.id());
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
-        this.messageText.set('');
         this.sendingMessage.set(false);
       },
       error: (err) => {
@@ -187,6 +203,20 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => this.toast.error(err.error?.errors?.[0] || 'Erro ao enviar proposta.'),
     });
+  }
+
+  openImage(url: string) {
+    this.expandedImage.set(url);
+  }
+
+  closeImage() {
+    this.expandedImage.set(null);
+  }
+
+  openChat() {
+    this.chatOpen.set(true);
+    this.chatApi.markAsRead(this.id()).subscribe();
+    this.chatSignalr.markOrderRead(this.id());
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;

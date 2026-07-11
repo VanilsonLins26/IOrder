@@ -1,11 +1,16 @@
+using System.Text.Json;
 using IOrder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace IOrder.infrastructure.DataAccess.Configurations;
 
 public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new();
+
     public override void Configure(EntityTypeBuilder<OrderItem> builder)
     {
         base.Configure(builder);
@@ -35,6 +40,36 @@ public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
         builder.Property(x => x.Customize)
                .HasMaxLength(500);
 
+        builder.Property(x => x.SelectedOptions)
+               .HasConversion(new SelectedOptionsListConverter())
+               .HasColumnType("json");
+
+        builder.Property("_imageUrls")
+               .HasConversion(new StringListConverter())
+               .HasColumnType("json")
+               .HasColumnName("ImageUrls");
+
         builder.Ignore(x => x.TotalPrice);
+        builder.Ignore(x => x.ImageUrls);
+    }
+
+    private class StringListConverter : ValueConverter<List<string>, string>
+    {
+        public StringListConverter()
+            : base(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                v => JsonSerializer.Deserialize<List<string>>(v, JsonOptions) ?? new List<string>())
+        {
+        }
+    }
+
+    private class SelectedOptionsListConverter : ValueConverter<List<SelectedOption>, string>
+    {
+        public SelectedOptionsListConverter()
+            : base(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                v => JsonSerializer.Deserialize<List<SelectedOption>>(v, JsonOptions) ?? new List<SelectedOption>())
+        {
+        }
     }
 }

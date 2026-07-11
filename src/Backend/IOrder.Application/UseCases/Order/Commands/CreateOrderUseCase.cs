@@ -118,6 +118,9 @@ public class CreateOrderUseCase : ICreateOrderUseCase
                 Customize = cartItem.Customize
             };
 
+            orderItem.UpdateImageUrls(cartItem.ImageUrls);
+            orderItem.SelectedOptions = cartItem.SelectedOptions;
+
             order.AddItem(orderItem);
         }
 

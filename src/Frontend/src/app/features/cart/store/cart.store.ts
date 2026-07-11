@@ -62,15 +62,16 @@ export const CartStore = signalStore(
       ),
     ),
 
-    addItem: rxMethod<{ productId: string; quantity: number; customize?: string; imageUrls?: string[] }>(
+    addItem: rxMethod<{ productId: string; quantity: number; customize?: string; imageUrls?: string[]; selectedOptionIds?: string[] }>(
       pipe(
         tap(() => patchState(store, { loading: true })),
-        switchMap(({ productId, quantity, customize, imageUrls }) =>
+        switchMap(({ productId, quantity, customize, imageUrls, selectedOptionIds }) =>
           cartApi.addItem({
             productId,
             quantity,
             customize: customize || '',
             imageUrls: imageUrls || [],
+            selectedOptionIds: selectedOptionIds || [],
           }).pipe(
             tapResponse({
               next: (cart) => {

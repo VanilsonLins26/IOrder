@@ -25,7 +25,7 @@
         </button>
       }
       @if (o.status === OrderStatusDto.Pending || o.status === OrderStatusDto.Negotiating) {
-        <button class="action-btn action-btn--secondary" (click)="showNegotiate.set(!showNegotiate())">
+        <button class="action-btn action-btn--secondary" (click)="toggleNegotiate()">
           {{ showNegotiate() ? 'Cancelar' : 'Negociar' }}
         </button>
       }
@@ -37,11 +37,11 @@
         <div class="negotiate__fields">
           <label>
             Valor proposto
-            <input type="number" step="0.01" [ngModel]="proposedAmount()" (ngModelChange)="proposedAmount.set($event)" placeholder="0,00" />
+            <input type="text" appCurrencyInput [ngModel]="proposedAmount()" (ngModelChange)="proposedAmount.set($event)" placeholder="0,00" />
           </label>
           <label>
             Data de entrega
-            <input type="date" [ngModel]="proposedDate()" (ngModelChange)="proposedDate.set($event)" />
+            <input type="datetime-local" [ngModel]="proposedDate()" (ngModelChange)="proposedDate.set($event)" />
           </label>
           <label>
             Observações
@@ -61,7 +61,7 @@
         }
         <div class="info-row info-row--total"><span>Total</span><span>{{ o.totalAmount | currency:'BRL' }}</span></div>
         @if (o.deliveryDate) {
-          <div class="info-row"><span>Entrega</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy" }}</span></div>
+          <div class="info-row"><span>Entrega</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span></div>
         }
       </div>
       @if (o.customerNotes) {
@@ -78,12 +78,30 @@
         @for (item of o.items; track item.id) {
           <div class="item-row">
             <div class="item-row__image">
-              @if (item.productImageUrl) { <img [src]="item.productImageUrl" alt="" /> }
+              @if (item.productImageUrl) { <img [src]="item.productImageUrl" alt="" (click)="openImage(item.productImageUrl)" style="cursor: pointer" /> }
+              @else if (item.imageUrls[0]) { <img [src]="item.imageUrls[0]" alt="" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" /> }
               @else { <div class="item-row__placeholder">📦</div> }
             </div>
             <div class="item-row__info">
               <p class="item-row__name">{{ item.productName }}</p>
+              @if (item.selectedOptions?.length) {
+                <div class="item-row__selected-options">
+                  @for (opt of item.selectedOptions; track opt.optionId) {
+                    <span class="item-row__option-tag">
+                      {{ opt.groupName }}: {{ opt.optionName }}
+                      @if (opt.priceModifier) { <span class="item-row__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span> }
+                    </span>
+                  }
+                </div>
+              }
               @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
+              @if (item.imageUrls?.length) {
+                <div class="item-row__customize-images">
+                  @for (url of item.imageUrls; track url) {
+                    <img [src]="url" alt="Customização" class="item-row__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
+                  }
+                </div>
+              }
             </div>
             <span class="item-row__qty">{{ item.quantity }}x</span>
             <span class="item-row__price">{{ item.unitPrice | currency:'BRL' }}</span>
@@ -92,62 +110,33 @@
         }
       </div>
     </section>
+    
+    <div style="margin-top: 24px;">
+      <button class="action-btn action-btn--primary" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; font-size: 1rem;" (click)="openChat()">
+        💬 Abrir Negociação / Chat
+      </button>
+    </div>
 
-    <section class="store-order-detail__section">
-      <h2>Mensagens</h2>
+    <app-order-chat-offcanvas
+      [isOpen]="chatOpen()"
+      [messages]="o.messages"
+      [orderStatus]="o.status"
+      userRole="ShopKeeper"
+      [typingUser]="typingUser()"
+      [sendingMessage]="sendingMessage()"
+      (closeOffcanvas)="chatOpen.set(false)"
+      (onSendMessage)="sendMessage($event)"
+      (typingNotify)="chatSignalr.userTyping(id())"
+      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+    ></app-order-chat-offcanvas>
+  }
 
-      <div class="send-message">
-        <input
-          type="text"
-          class="send-message__input"
-          placeholder="Digite sua mensagem..."
-          [ngModel]="messageText()"
-          (ngModelChange)="messageText.set($event); onMessageInput()"
-          (keyup.enter)="sendMessage()"
-          [disabled]="sendingMessage()"
-        />
-        <button class="send-message__btn" (click)="sendMessage()" [disabled]="sendingMessage() || !messageText().trim()">
-          @if (sendingMessage()) { <span class="spinner spinner--sm"></span> }
-          Enviar
-        </button>
+  @if (expandedImage()) {
+    <div class="image-modal" (click)="closeImage()">
+      <div class="image-modal__content" (click)="$event.stopPropagation()">
+        <button class="image-modal__close" (click)="closeImage()">&times;</button>
+        <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
       </div>
-
-      @if (typingUser()) {
-        <p class="typing-indicator">{{ typingUser() }} está digitando...</p>
-      }
-
-      @if (o.messages.length === 0) {
-        <p class="no-messages">Nenhuma mensagem ainda.</p>
-      }
-      <div class="store-order-detail__messages">
-        @for (msg of o.messages; track msg.id) {
-          <div class="message" [class.message--own]="msg.userRole === 'ShopKeeper'">
-            <div class="message__bubble">
-              <div class="message__header">
-                @if (msg.userRole === 'ShopKeeper') {
-                  <span class="message__author">Você</span>
-                } @else {
-                  <span class="message__author">Cliente</span>
-                }
-                <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
-                @if (msg.type === MessageTypeDto.Proposal) {
-                  <span class="message__tag message__tag--proposal">Proposta</span>
-                }
-              </div>
-              <p class="message__text">{{ msg.message }}</p>
-              @if (msg.readAt) {
-                <span class="message__read">✓✓ Visualizada pelo cliente</span>
-              }
-              @if (msg.proposedTotalAmount != null || msg.proposedDeliveryDate != null) {
-                <div class="message__proposal">
-                  @if (msg.proposedTotalAmount != null) { <span>Valor: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span> }
-                  @if (msg.proposedDeliveryDate != null) { <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy" }}</strong></span> }
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </section>
+    </div>
   }
 </div>

@@ -223,6 +223,20 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   &__customize { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 2px; }
+
+  &__customize-images {
+    display: flex;
+    gap: 4px;
+    margin-top: var(--space-1);
+  }
+
+  &__customize-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+  }
   &__qty, &__price { font-size: var(--font-size-sm); color: var(--text-secondary); }
   &__total {
     font-size: var(--font-size-sm);
@@ -365,4 +379,56 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+
+  &__content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+
+  &__img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+  }
+
+  &__close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 8px;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

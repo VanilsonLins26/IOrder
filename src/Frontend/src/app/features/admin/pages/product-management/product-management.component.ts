@@ -1,19 +1,22 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { AdminStore } from '../../store/admin.store';
 import { ProductApiService } from '../../../../core/services/api/product-api.service';
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
+import { CustomizationApiService } from '../../../../core/services/api/customization-api.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
 import { ProductResponse, ProductRequest, UpdateProductRequest, UnitOfMeasure, PromotionPriceRequest } from '../../../../core/models';
+import type { CustomizationGroup } from '../../../../core/models/customization.model';
 
 @Component({
   selector: 'app-product-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.scss',
 })
@@ -21,6 +24,7 @@ export class ProductManagementComponent implements OnInit {
   readonly adminStore = inject(AdminStore);
   private readonly productApi = inject(ProductApiService);
   private readonly categoryApi = inject(CategoryApiService);
+  private readonly customizationApi = inject(CustomizationApiService);
   private readonly fb = inject(FormBuilder);
 
   // Enum para template
@@ -29,9 +33,14 @@ export class ProductManagementComponent implements OnInit {
   // Modals state
   readonly isProductModalOpen = signal(false);
   readonly isPromoModalOpen = signal(false);
+  readonly isCustomizationModalOpen = signal(false);
   readonly isSaving = signal(false);
+  readonly isSavingCustomization = signal(false);
   readonly uploadingImage = signal(false);
   readonly editingProduct = signal<ProductResponse | null>(null);
+  readonly customizationGroups = signal<CustomizationGroup[]>([]);
+  readonly editingCustomizationGroup = signal<CustomizationGroup | null>(null);
+  readonly loadingCustomization = signal(false);
   private readonly pendingImage = signal<File | null>(null);
 
   // Forms
@@ -44,6 +53,39 @@ export class ProductManagementComponent implements OnInit {
     customizable: [false],
     categoryId: [''] // Será usado para vincular pós-criação ou na edição
   });
+
+  readonly customizationForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required]],
+    type: ['SingleChoice' as 'SingleChoice' | 'MultipleChoice', [Validators.required]],
+    minSelections: [1],
+    maxSelections: [1],
+    required: [true],
+    position: [0],
+    options: this.fb.array([
+      this.createOptionFormGroup()
+    ])
+  });
+
+  private createOptionFormGroup() {
+    return this.fb.nonNullable.group({
+      id: [''],
+      name: ['', [Validators.required]],
+      priceModifier: [0],
+      position: [0],
+    });
+  }
+
+  get optionsArray() {
+    return this.customizationForm.get('options') as FormArray;
+  }
+
+  addOption() {
+    this.optionsArray.push(this.createOptionFormGroup());
+  }
+
+  removeOption(index: number) {
+    this.optionsArray.removeAt(index);
+  }
 
   readonly promoForm = this.fb.nonNullable.group({
     price: [0, [Validators.required, Validators.min(0.01)]],
@@ -214,6 +256,115 @@ export class ProductManagementComponent implements OnInit {
       this.isSaving.set(false);
       this.adminStore.loadAdminData();
     }
+  }
+
+  // --- Customization ---
+  openCustomization(product: ProductResponse) {
+    this.editingProduct.set(product);
+    this.customizationGroups.set([]);
+    this.loadingCustomization.set(true);
+    this.isCustomizationModalOpen.set(true);
+    this.customizationApi.getByProduct(product.id).subscribe({
+      next: (groups) => {
+        this.customizationGroups.set(groups);
+        this.loadingCustomization.set(false);
+      },
+      error: () => {
+        this.loadingCustomization.set(false);
+      },
+    });
+  }
+
+  closeCustomizationModal() {
+    this.isCustomizationModalOpen.set(false);
+  }
+
+  openAddGroup() {
+    this.editingCustomizationGroup.set(null);
+    this.customizationForm.reset({
+      name: '',
+      type: 'SingleChoice',
+      minSelections: 1,
+      maxSelections: 1,
+      required: true,
+      position: this.customizationGroups().length,
+    });
+    this.optionsArray.clear();
+    this.addOption();
+  }
+
+  openEditGroup(group: CustomizationGroup) {
+    this.editingCustomizationGroup.set(group);
+    this.optionsArray.clear();
+    for (const opt of group.options) {
+      const fg = this.createOptionFormGroup();
+      fg.patchValue({
+        id: opt.id,
+        name: opt.name,
+        priceModifier: opt.priceModifier,
+        position: opt.position,
+      });
+      this.optionsArray.push(fg);
+    }
+    this.customizationForm.patchValue({
+      name: group.name,
+      type: group.type,
+      minSelections: group.minSelections,
+      maxSelections: group.maxSelections,
+      required: group.required,
+      position: group.position,
+    });
+  }
+
+  cancelEditGroup() {
+    this.editingCustomizationGroup.set(null);
+  }
+
+  saveCustomizationGroup() {
+    if (this.customizationForm.invalid) return;
+    const product = this.editingProduct();
+    if (!product) return;
+
+    this.isSavingCustomization.set(true);
+    const formVal = this.customizationForm.getRawValue();
+    const dto = {
+      id: this.editingCustomizationGroup()?.id,
+      name: formVal.name,
+      type: formVal.type,
+      minSelections: formVal.minSelections,
+      maxSelections: formVal.maxSelections,
+      required: formVal.required,
+      position: formVal.position,
+      options: formVal.options.map((o: any) => ({
+        id: o.id || undefined,
+        name: o.name,
+        priceModifier: o.priceModifier,
+        position: o.position,
+      })),
+    };
+
+    this.customizationApi.save(product.id, dto).subscribe({
+      next: (saved) => {
+        this.isSavingCustomization.set(false);
+        this.editingCustomizationGroup.set(null);
+        // Reload groups
+        this.customizationApi.getByProduct(product.id).subscribe({
+          next: (groups) => this.customizationGroups.set(groups),
+        });
+      },
+      error: () => {
+        this.isSavingCustomization.set(false);
+      },
+    });
+  }
+
+  deleteCustomizationGroup(id: string) {
+    if (!confirm('Tem certeza que deseja excluir este grupo de customização?')) return;
+    this.customizationApi.delete(id).subscribe({
+      next: () => {
+        this.customizationGroups.update(groups => groups.filter(g => g.id !== id));
+      },
+    });
   }
 
   deleteProduct(id: string) {

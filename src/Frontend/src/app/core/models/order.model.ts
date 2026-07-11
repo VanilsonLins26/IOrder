@@ -1,3 +1,5 @@
+import type { SelectedOption } from './customization.model';
+
 export enum OrderStatusDto {
   Pending = 0,
   Negotiating = 1,
@@ -59,6 +61,7 @@ export interface OrderItemResponseDto {
   unitPrice: number;
   quantity: number;
   totalPrice: number;
+  selectedOptions: SelectedOption[];
   customize: string;
   imageUrls: string[];
 }

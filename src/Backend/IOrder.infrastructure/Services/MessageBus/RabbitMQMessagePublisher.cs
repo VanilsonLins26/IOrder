@@ -25,7 +25,8 @@ public class RabbitMQMessagePublisher : IOrderMessagePublisher
             Timestamp = DateTime.UtcNow
         };
 
-        var json = JsonSerializer.Serialize(body);
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var json = JsonSerializer.Serialize(body, options);
         var bytes = Encoding.UTF8.GetBytes(json);
 
         var props = new BasicProperties();

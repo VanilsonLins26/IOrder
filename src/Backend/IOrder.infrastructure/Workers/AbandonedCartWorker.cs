@@ -3,6 +3,7 @@ using System.Text.Json;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Events;
 using IOrder.Domain.Services;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,9 @@ public class AbandonedCartWorker : BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var redis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
+                var cache = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
                 var dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+                var profileRepo = scope.ServiceProvider.GetRequiredService<IOrder.Domain.Repositories.Profile.IProfileReadOnlyRepository>();
 
                 var server = redis.GetServer(redis.GetEndPoints().First());
                 var cutoff = DateTime.UtcNow - _abandonmentThreshold;
@@ -40,30 +43,38 @@ public class AbandonedCartWorker : BackgroundService
                 {
                     if (stoppingToken.IsCancellationRequested) break;
 
-                    var redisDb = redis.GetDatabase();
-                    var cartJson = (string?)await redisDb.StringGetAsync(key);
-
-                    if (string.IsNullOrEmpty(cartJson)) continue;
-
-                    var cart = JsonSerializer.Deserialize<Cart>(cartJson);
-                    if (cart is null || cart.Items.Count == 0) continue;
-
-                    if (cart.LastModifiedAt < cutoff)
+                    try
                     {
-                        _logger.LogInformation(
-                            "Cart abandoned by user {UserId} (last modified: {LastModifiedAt})",
-                            cart.UserId, cart.LastModifiedAt);
+                        var cartJson = await cache.GetStringAsync(key);
 
-                        var userPhone = cart.UserPhone;
-                        if (string.IsNullOrEmpty(userPhone))
+                        if (string.IsNullOrEmpty(cartJson)) continue;
+
+                        var cart = JsonSerializer.Deserialize<Cart>(cartJson);
+                        if (cart is null || cart.Items.Count == 0) continue;
+
+                        if (cart.LastModifiedAt < cutoff)
                         {
-                            _logger.LogWarning("User {UserId} has no phone — skipping abandoned cart event", cart.UserId);
-                            continue;
+                            _logger.LogInformation(
+                                "Cart abandoned by user {UserId} (last modified: {LastModifiedAt})",
+                                cart.UserId, cart.LastModifiedAt);
+
+                            var profile = await profileRepo.GetByUserId(cart.UserId);
+                            var userPhone = profile?.Phone ?? cart.UserPhone;
+
+                            if (string.IsNullOrEmpty(userPhone))
+                            {
+                                _logger.LogWarning("User {UserId} has no phone — skipping abandoned cart event", cart.UserId);
+                                continue;
+                            }
+
+                            await dispatcher.DispatchAsync([new CartAbandonedEvent(cart.UserId, userPhone)]);
+
+                            await cache.RemoveAsync(key);
                         }
-
-                        await dispatcher.DispatchAsync([new CartAbandonedEvent(cart.UserId, userPhone)]);
-
-                        await redisDb.KeyDeleteAsync(key);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing key {Key}", key);
                     }
                 }
             }

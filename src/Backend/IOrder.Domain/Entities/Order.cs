@@ -52,10 +52,6 @@ public class Order : EntityBase, IAggregateRoot
     {
         var oldStatus = Status;
         Status = OrderStatus.Negotiating;
-        if (newTotalAmount.HasValue)
-            TotalAmount = newTotalAmount.Value;
-        if (newDeliveryDate.HasValue)
-            DeliveryDate = newDeliveryDate.Value;
         if (shopkeeperNotes is not null)
             ShopkeeperNotes = shopkeeperNotes;
         UpdatedAt = DateTime.UtcNow;
@@ -66,6 +62,16 @@ public class Order : EntityBase, IAggregateRoot
     {
         var oldStatus = Status;
         Status = OrderStatus.AwaitingPayment;
+        
+        var lastProposal = Messages.LastOrDefault(m => m.Type == MessageType.Proposal);
+        if (lastProposal != null)
+        {
+            if (lastProposal.ProposedTotalAmount.HasValue)
+                TotalAmount = lastProposal.ProposedTotalAmount.Value;
+            if (lastProposal.ProposedDeliveryDate.HasValue)
+                DeliveryDate = lastProposal.ProposedDeliveryDate.Value;
+        }
+
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new OrderStatusChangedEvent(Id, UserId, StoreId, oldStatus, Status));
     }

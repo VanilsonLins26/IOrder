@@ -32,6 +32,12 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Redis Cache para carrinho de compras
 - ✅ Seed Data populado (lojas, categorias, produtos)
 - ✅ Carrinho de Compras (Redis-based)
+- ✅ Customização Avançada de Produtos:
+  - ✅ CRUD de grupos de customização (SingleChoice / MultipleChoice) com opções e price modifiers
+  - ✅ `SelectedOption` como entidade aninhada em `CartItem` e `OrderItem` (cálculo automático do preço)
+  - ✅ Admin: gestão de customizações por produto
+  - ✅ Store: diálogo com opções estruturadas (radio/checkbox) + observações livres + imagens
+  - ✅ Carrinho e pedidos exibem as opções selecionadas com preços
 - ✅ Módulo de Chat em tempo real (SignalR + RabbitMQ)
 - ✅ RabbitMQ (fila de mensagens do chat com dedup via Redis)
 - ✅ Apache Kafka (domain events: order, store, price, message)
@@ -55,7 +61,8 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Guards de autenticação (Auth0) e roles
 - ✅ Guard de verificação de loja
 - ✅ Layouts separados (Cliente + Admin)
-- ⬜ Integração com carrinho (após finalização do backend)
+- ✅ Integração com carrinho
+- ✅ Customização avançada com opções estruturadas e price modifiers
 - ✅ Chat em tempo real (SignalR + REST)
 
 ### Infraestrutura

@@ -152,7 +152,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(3577),
+                            ExpiresAt = new DateTime(2027, 1, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(6116),
                             MaxDiscountAmount = 30m,
                             MaxUsageCount = 100,
                             MinPurchaseAmount = 50m
@@ -165,7 +165,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "FixedAmount",
                             DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(4898),
+                            ExpiresAt = new DateTime(2026, 10, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(8034),
                             MaxUsageCount = 50,
                             MinPurchaseAmount = 80m
                         },
@@ -177,10 +177,97 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 10, 7, 10, 47, 89, DateTimeKind.Utc).AddTicks(5977),
+                            ExpiresAt = new DateTime(2027, 7, 10, 15, 29, 49, 696, DateTimeKind.Utc).AddTicks(9852),
                             MaxDiscountAmount = 50m,
                             MaxUsageCount = 200
                         });
+                });
+
+            modelBuilder.Entity("IOrder.Domain.Entities.CustomizationGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("MaxSelections")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("MinSelections")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Position")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("Required")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CustomizationGroups", (string)null);
+                });
+
+            modelBuilder.Entity("IOrder.Domain.Entities.CustomizationOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Position")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal>("PriceModifier")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0m);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("CustomizationOptions", (string)null);
                 });
 
             modelBuilder.Entity("IOrder.Domain.Entities.Order", b =>
@@ -299,8 +386,17 @@ namespace IOrder.infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("SelectedOptions")
+                        .IsRequired()
+                        .HasColumnType("json");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("_imageUrls")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("ImageUrls");
 
                     b.HasKey("Id");
 
@@ -733,6 +829,28 @@ namespace IOrder.infrastructure.Migrations
                     b.Navigation("Store");
                 });
 
+            modelBuilder.Entity("IOrder.Domain.Entities.CustomizationGroup", b =>
+                {
+                    b.HasOne("IOrder.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("IOrder.Domain.Entities.CustomizationOption", b =>
+                {
+                    b.HasOne("IOrder.Domain.Entities.CustomizationGroup", "Group")
+                        .WithMany("Options")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("IOrder.Domain.Entities.Order", b =>
                 {
                     b.HasOne("IOrder.Domain.Entities.Store", "Store")
@@ -851,7 +969,7 @@ namespace IOrder.infrastructure.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores");
+                            b1.ToTable("Stores", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
@@ -925,6 +1043,11 @@ namespace IOrder.infrastructure.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("OpeningHours");
+                });
+
+            modelBuilder.Entity("IOrder.Domain.Entities.CustomizationGroup", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("IOrder.Domain.Entities.Order", b =>

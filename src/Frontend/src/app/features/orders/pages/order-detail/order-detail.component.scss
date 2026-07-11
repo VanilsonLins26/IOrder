@@ -183,6 +183,20 @@
     margin-top: 2px;
   }
 
+  &__customize-images {
+    display: flex;
+    gap: 4px;
+    margin-top: var(--space-1);
+  }
+
+  &__customize-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+  }
+
   &__qty {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
@@ -374,5 +388,95 @@
     gap: var(--space-4);
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
+  }
+}
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+
+  &__content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+
+  &__img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+  }
+
+  &__close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 8px;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.action-btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+
+  &--primary {
+    background: var(--color-primary-600);
+    color: white;
+
+    &:hover {
+      background: var(--color-primary-700);
+    }
+    
+    &:disabled {
+      background: var(--color-primary-300);
+      cursor: not-allowed;
+    }
+  }
+
+  &--secondary {
+    background: var(--color-danger-500);
+    color: white;
+
+    &:hover {
+      background: var(--color-danger-600);
+    }
+    
+    &:disabled {
+      background: var(--color-danger-300);
+      cursor: not-allowed;
+    }
   }
 }

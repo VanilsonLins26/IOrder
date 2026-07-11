@@ -7,3 +7,4 @@ export { OrderApiService }         from './order-api.service';
 export { ChatApiService }          from './chat-api.service';
 export { ProfileApiService }       from './profile-api.service';
 export { UploadApiService }        from './upload-api.service';
+export { CustomizationApiService } from './customization-api.service';
