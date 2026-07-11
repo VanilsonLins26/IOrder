@@ -88,9 +88,7 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
         await _domainEventDispatcher.DispatchAsync(events);
 
         await _messagePublisher.PublishMessageAsync(orderId, message.Adapt<OrderMessageResponseDto>());
-
-        var response = await _orderWriteOnlyRepository.GetByIdTracking(orderId);
-        return response.Adapt<OrderResponseDto>();
+        return order.Adapt<OrderResponseDto>();
     }
 
     private async Task Validate(Communication.Request.SendOrderMessageRequestDto request)

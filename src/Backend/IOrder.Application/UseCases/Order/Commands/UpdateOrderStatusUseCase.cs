@@ -100,8 +100,7 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
         order.ClearDomainEvents();
         await _domainEventDispatcher.DispatchAsync(events);
 
-        var response = await _orderWriteOnlyRepository.GetByIdTracking(id);
-        return response.Adapt<OrderResponseDto>();
+        return order.Adapt<OrderResponseDto>();
     }
 
     private async Task Validate(Communication.Request.UpdateOrderStatusRequestDto request)
