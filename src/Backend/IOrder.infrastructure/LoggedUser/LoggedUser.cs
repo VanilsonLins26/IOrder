@@ -1,5 +1,7 @@
 using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
+using IOrder.Exceptions;
+using IOrder.Exceptions.ExceptionBase;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -22,7 +24,8 @@ internal class LoggedUserService : ILoggedUserService
 
     public string GetUserId()
     {
-        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedException("Usuário não autenticado.");
     }
 
     public string GetUserEmail()
@@ -35,10 +38,7 @@ internal class LoggedUserService : ILoggedUserService
         if (string.IsNullOrEmpty(email))
         {
             var userId = GetUserId();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                email = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Email;
-            }
+            email = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Email;
         }
 
         return email;
@@ -51,10 +51,7 @@ internal class LoggedUserService : ILoggedUserService
         if (string.IsNullOrEmpty(phone))
         {
             var userId = GetUserId();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                phone = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Phone;
-            }
+            phone = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Phone;
         }
 
         return phone;
