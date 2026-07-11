@@ -11,12 +11,13 @@ import { ChatSignalRService } from '../../../../core/services/chat-signalr.servi
 import { ToastService } from '../../../../core/services/toast.service';
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,6 +39,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly expandedImage = signal<string | null>(null);
   readonly chatOpen = signal(false);
   readonly currentUser = toSignal(this.auth.user$);
+
+  readonly showCancelConfirm = signal(false);
+  readonly showAcceptConfirm = signal(false);
+  readonly showDeclineConfirm = signal(false);
 
 
   ngOnInit() {
@@ -90,11 +95,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   cancelOrder() {
-    if (!confirm('Tem certeza que deseja cancelar este pedido?')) return;
     this.cancelling.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Cancelled }).subscribe({
       next: () => {
         this.cancelling.set(false);
+        this.showCancelConfirm.set(false);
         this.toast.success('Pedido cancelado.');
         this.store.loadById(this.id());
       },
@@ -106,11 +111,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   acceptProposal() {
-    if (!confirm('Aceitar esta proposta de valor e entrega?')) return;
     this.updatingStatus.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.AwaitingPayment }).subscribe({
       next: () => {
         this.updatingStatus.set(false);
+        this.showAcceptConfirm.set(false);
         this.toast.success('Proposta aceita! O pedido aguarda pagamento.');
         this.store.loadById(this.id());
       },
@@ -122,11 +127,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   declineProposal() {
-    if (!confirm('Tem certeza que deseja recusar a proposta? O pedido será recusado.')) return;
     this.updatingStatus.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Declined }).subscribe({
       next: () => {
         this.updatingStatus.set(false);
+        this.showDeclineConfirm.set(false);
         this.toast.success('Proposta recusada.');
         this.store.loadById(this.id());
       },

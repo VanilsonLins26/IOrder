@@ -99,3 +99,13 @@
     </div>
   </form>
 </app-modal>
+
+<app-confirmation-modal
+  title="Excluir Categoria"
+  message="Tem certeza que deseja excluir esta categoria? Produtos associados a ela poderão ficar sem categoria!"
+  [isOpen]="showDeleteConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteCategory()"
+  (cancel)="showDeleteConfirm.set(false)"
+  (close)="showDeleteConfirm.set(false)"
+></app-confirmation-modal>

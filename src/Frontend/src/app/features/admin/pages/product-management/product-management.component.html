@@ -277,3 +277,23 @@
     </form>
   }
 </app-modal>
+
+<app-confirmation-modal
+  title="Excluir Produto"
+  message="Tem certeza que deseja excluir este produto?"
+  [isOpen]="showDeleteProductConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteProduct()"
+  (cancel)="showDeleteProductConfirm.set(false)"
+  (close)="showDeleteProductConfirm.set(false)"
+></app-confirmation-modal>
+
+<app-confirmation-modal
+  title="Excluir Grupo de Customização"
+  message="Tem certeza que deseja excluir este grupo de customização?"
+  [isOpen]="showDeleteCustomizationConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteCustomizationGroup()"
+  (cancel)="showDeleteCustomizationConfirm.set(false)"
+  (close)="showDeleteCustomizationConfirm.set(false)"
+></app-confirmation-modal>
