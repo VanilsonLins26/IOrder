@@ -32,15 +32,22 @@ export const AdminStore = signalStore(
     // --- LOAD ALL DATA ---
     loadAdminData: rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { loading: true, error: null })),
+        tap(() => {
+          if (!store.myStore()) {
+            patchState(store, { loading: true, error: null });
+          }
+        }),
         switchMap(() => {
+          if (store.myStore()) {
+            patchState(store, { loading: false });
+            return of(undefined);
+          }
           return storeApi.getMyStore().pipe(
             switchMap((myStore) => {
-              // Now fetch categories and products in parallel using the store ID
               return forkJoin({
                 myStore: of(myStore),
                 categories: categoryApi.getByStoreId(myStore.id),
-                productsPage: productApi.getPaged({ storeId: myStore.id, pageSize: 100 }) // Fetching up to 100 for admin grid
+                productsPage: productApi.getPaged({ storeId: myStore.id, pageSize: 100 })
               });
             }),
             tapResponse({
