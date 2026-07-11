@@ -47,6 +47,9 @@ public class AddItemToCartUseCase : IAddItemToCartUseCase
         var product = await _productReadOnlyRepository.GetByIdAsync(request.ProductId) ?? throw new NotFoundException([ResourceMessagesException.PRODUCT_NOT_FOUND]);
         var cart = await _readOnlyRepositoy.GetCartAsync(userId) ?? new Domain.Entities.Cart { UserId = userId };
 
+        cart.UserEmail = _loggedUserService.GetUserEmail();
+        cart.UserPhone = _loggedUserService.GetUserPhone();
+
         if (cart.Items.Count != 0)
         {
             var existingStoreId = cart.Items

@@ -34,6 +34,7 @@ public class AbandonedCartWorker : BackgroundService
                 var redis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
                 var cache = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
                 var dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+                var profileRepo = scope.ServiceProvider.GetRequiredService<IOrder.Domain.Repositories.Profile.IProfileReadOnlyRepository>();
 
                 var server = redis.GetServer(redis.GetEndPoints().First());
                 var cutoff = DateTime.UtcNow - _abandonmentThreshold;
@@ -57,7 +58,9 @@ public class AbandonedCartWorker : BackgroundService
                                 "Cart abandoned by user {UserId} (last modified: {LastModifiedAt})",
                                 cart.UserId, cart.LastModifiedAt);
 
-                            var userPhone = cart.UserPhone;
+                            var profile = await profileRepo.GetByUserId(cart.UserId);
+                            var userPhone = profile?.Phone ?? cart.UserPhone;
+
                             if (string.IsNullOrEmpty(userPhone))
                             {
                                 _logger.LogWarning("User {UserId} has no phone — skipping abandoned cart event", cart.UserId);
