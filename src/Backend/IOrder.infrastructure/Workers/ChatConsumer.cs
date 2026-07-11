@@ -75,7 +75,7 @@ public class ChatConsumer : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing chat message");
-                await channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
+                await channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
             }
         };
 
