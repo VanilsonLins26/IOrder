@@ -13,6 +13,19 @@ namespace IOrder.infrastructure.Workers;
 
 public class KafkaDomainEventConsumer : BackgroundService
 {
+    private static readonly Dictionary<string, string> StatusTraducao = new()
+    {
+        ["Pending"] = "Pendente",
+        ["Negotiating"] = "Negociando",
+        ["AwaitingPayment"] = "Aguardando Pagamento",
+        ["Paid"] = "Pago",
+        ["Preparing"] = "Preparando",
+        ["Ready"] = "Pronto",
+        ["Delivered"] = "Entregue",
+        ["Cancelled"] = "Cancelado",
+        ["Declined"] = "Recusado"
+    };
+
     private readonly IConsumer<string, string> _consumer;
     private readonly string _topic;
     private readonly ILogger<KafkaDomainEventConsumer> _logger;
@@ -22,6 +35,7 @@ public class KafkaDomainEventConsumer : BackgroundService
     private readonly IDistributedCache _cache;
     private readonly string? _adminEmail;
     private readonly string? _adminPhone;
+    private readonly string _frontendUrl;
 
     public KafkaDomainEventConsumer(
         IConfiguration configuration,
@@ -39,6 +53,7 @@ public class KafkaDomainEventConsumer : BackgroundService
         _cache = cache;
         _adminEmail = configuration["Smtp:AdminEmail"];
         _adminPhone = configuration["EvolutionApi:AdminNumber"];
+        _frontendUrl = (configuration["FrontendUrl"] ?? "http://localhost:4200").TrimEnd('/');
 
         var config = new ConsumerConfig
         {
@@ -94,7 +109,10 @@ public class KafkaDomainEventConsumer : BackgroundService
     {
         try
         {
-            var envelope = JsonSerializer.Deserialize<DomainEventEnvelope>(message.Value);
+            var envelope = JsonSerializer.Deserialize<DomainEventEnvelope>(message.Value, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
             if (envelope is null)
             {
@@ -208,44 +226,63 @@ public class KafkaDomainEventConsumer : BackgroundService
 
         using var scope = _scopeFactory.CreateScope();
         var orderRepository = scope.ServiceProvider.GetRequiredService<IOrderReadOnlyRepository>();
+        var profileRepository = scope.ServiceProvider.GetRequiredService<IOrder.Domain.Repositories.Profile.IProfileReadOnlyRepository>();
         var order = await orderRepository.GetByIdAsync(envelope.Data.OrderId.Value);
 
-        if (order?.CustomerEmail is null)
+        var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
+        var orderId = envelope.Data?.OrderId;
+        var oldStatus = envelope.Data?.OldStatus ?? "Desconhecido";
+        var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
+        var oldStatusPt = StatusTraducao.GetValueOrDefault(oldStatus, oldStatus);
+        var newStatusPt = StatusTraducao.GetValueOrDefault(newStatus, newStatus);
+        var orderLink = $"{_frontendUrl}/order/{orderId}";
+
+        var customerEmail = order?.CustomerEmail;
+        if (string.IsNullOrEmpty(customerEmail) && order?.UserId is not null)
         {
-            _logger.LogWarning("Order {OrderId} has no customer email", envelope.Data.OrderId);
+            var profile = await profileRepository.GetByUserId(order.UserId);
+            customerEmail = profile?.Email;
         }
-        else
+
+        if (!string.IsNullOrEmpty(customerEmail))
         {
-            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
-            var oldStatus = envelope.Data?.OldStatus ?? "Desconhecido";
-            var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
-            var subject = "Pedido #" + orderIdShort + " - " + newStatus;
+            var subject = "Pedido #" + orderIdShort + " - " + newStatusPt;
             var body = $"""
                 <h2>Status do pedido atualizado</h2>
                 <p>Pedido <strong>#{orderIdShort}</strong></p>
-                <p>Status: <strong>{oldStatus}</strong> > <strong>{newStatus}</strong></p>
-                <p>Acompanhe pelo aplicativo para mais detalhes.</p>
+                <p>Status: <strong>{oldStatusPt}</strong> &gt; <strong>{newStatusPt}</strong></p>
+                <p>
+                    <a href="{orderLink}">Clique aqui para acompanhar</a>
+                </p>
                 <br/>
                 <p>Atenciosamente,<br/>Equipe IOrder</p>
                 """;
 
-            await _emailService.SendAsync(order.CustomerEmail, subject, body);
+            await _emailService.SendAsync(customerEmail, subject, body);
+        }
+        else
+        {
+            _logger.LogWarning("Order {OrderId} has no customer email", envelope.Data.OrderId);
         }
 
-        if (order?.CustomerPhone is not null)
+        var customerPhone = order?.CustomerPhone;
+        if (string.IsNullOrEmpty(customerPhone) && order?.UserId is not null)
         {
-            var orderIdShort = envelope.Data?.OrderId?.ToString("N")[..8].ToUpper();
-            var oldStatus = envelope.Data?.OldStatus ?? "Desconhecido";
-            var newStatus = envelope.Data?.NewStatus ?? "Desconhecido";
+            var profile = await profileRepository.GetByUserId(order.UserId);
+            customerPhone = profile?.Phone;
+        }
+
+        if (!string.IsNullOrEmpty(customerPhone))
+        {
             var whatsappMessage = $"""
-                *Pedido #{orderIdShort} - {newStatus}*
+                *Pedido #{orderIdShort} - {newStatusPt}*
                 
-                Status atualizado: {oldStatus} > {newStatus}
+                Status atualizado: {oldStatusPt} > {newStatusPt}
                 
-                Acompanhe pelo aplicativo para mais detalhes.
+                Acompanhe: {orderLink}
                 """;
 
-            await _evolutionApiService.SendTextAsync(order.CustomerPhone, whatsappMessage);
+            await _evolutionApiService.SendTextAsync(customerPhone, whatsappMessage);
         }
     }
 

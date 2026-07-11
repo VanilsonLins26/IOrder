@@ -30,6 +30,9 @@ internal class LoggedUserService : ILoggedUserService
         var email = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
 
         if (string.IsNullOrEmpty(email))
+            email = _accessor.HttpContext?.User?.FindFirst("email")?.Value;
+
+        if (string.IsNullOrEmpty(email))
         {
             var userId = GetUserId();
             if (!string.IsNullOrEmpty(userId))
@@ -43,7 +46,18 @@ internal class LoggedUserService : ILoggedUserService
 
     public string? GetUserPhone()
     {
-        return _accessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+        var phone = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+
+        if (string.IsNullOrEmpty(phone))
+        {
+            var userId = GetUserId();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                phone = _profileRepository.GetByUserId(userId).GetAwaiter().GetResult()?.Phone;
+            }
+        }
+
+        return phone;
     }
 
     public bool IsShopkeeper()

@@ -5,6 +5,7 @@ using CommomTestUtilities.Requests.Order;
 using CommomTestUtilities.Services;
 using IOrder.Application.UseCases.Order.Commands;
 using IOrder.Domain.Entities;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
@@ -87,6 +88,7 @@ public class CreateOrderUseCaseTest
 
         var eventDispatcher = new Mock<IDomainEventDispatcher>();
         var profileReadOnly = new ProfileReadOnlyRepositoryBuilder().Build();
+        var profileWriteOnly = new Mock<IProfileWriteOnlyRepository>();
 
         return new CreateOrderUseCase(
             loggedUser,
@@ -96,6 +98,7 @@ public class CreateOrderUseCaseTest
             productReadOnly.Build(),
             couponReadOnly.Build(),
             profileReadOnly,
+            profileWriteOnly.Object,
             uow,
             eventDispatcher.Object,
             validator);

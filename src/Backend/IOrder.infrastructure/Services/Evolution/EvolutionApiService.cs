@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using IOrder.Domain.Services;
@@ -33,9 +34,10 @@ public class EvolutionApiService : IEvolutionApiService
     {
         try
         {
+            var normalized = NormalizePhone(phoneNumber);
             var payload = new SendTextRequest
             {
-                Number = phoneNumber,
+                Number = normalized,
                 Text = message
             };
 
@@ -44,8 +46,8 @@ public class EvolutionApiService : IEvolutionApiService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation(
-                    "WhatsApp sent to {PhoneNumber}", phoneNumber);
+                    _logger.LogInformation(
+                        "WhatsApp sent to {PhoneNumber} (normalized: {Normalized})", phoneNumber, normalized);
             }
             else
             {
@@ -59,6 +61,14 @@ public class EvolutionApiService : IEvolutionApiService
         {
             _logger.LogError(ex, "Error sending WhatsApp to {PhoneNumber}", phoneNumber);
         }
+    }
+
+    private static string NormalizePhone(string phone)
+    {
+        var digits = new string(phone.Where(char.IsDigit).ToArray());
+        if (!digits.StartsWith("55"))
+            digits = "55" + digits;
+        return digits;
     }
 
     private class SendTextRequest
