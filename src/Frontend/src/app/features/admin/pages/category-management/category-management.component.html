@@ -76,7 +76,8 @@
   <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="settings-form">
     <div class="form-group">
       <label for="catName">Nome da Categoria</label>
-      <input id="catName" type="text" formControlName="name" class="form-control" placeholder="Ex: Lanches, Bebidas..." />
+      <input id="catName" type="text" formControlName="name" class="form-control" placeholder="Ex: Lanches, Bebidas..."
+        [attr.aria-invalid]="categoryForm.get('name')?.invalid && (categoryForm.get('name')?.dirty || categoryForm.get('name')?.touched)" />
     </div>
 
     <div class="form-group">
@@ -99,3 +100,13 @@
     </div>
   </form>
 </app-modal>
+
+<app-confirmation-modal
+  title="Excluir Categoria"
+  message="Tem certeza que deseja excluir esta categoria? Produtos associados a ela poderão ficar sem categoria!"
+  [isOpen]="showDeleteConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteCategory()"
+  (cancel)="showDeleteConfirm.set(false)"
+  (close)="showDeleteConfirm.set(false)"
+></app-confirmation-modal>

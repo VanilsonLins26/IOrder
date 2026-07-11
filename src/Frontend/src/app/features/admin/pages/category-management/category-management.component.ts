@@ -4,6 +4,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { AdminStore } from '../../store/admin.store';
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import type { CategoryResponse, CategoryRequest, UpdateCategoryPositionsRequest } from '../../../../core/models';
 
@@ -11,7 +12,7 @@ import type { CategoryResponse, CategoryRequest, UpdateCategoryPositionsRequest 
   selector: 'app-category-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DragDropModule, ModalComponent, LoadingSkeletonComponent],
+  imports: [ReactiveFormsModule, DragDropModule, ModalComponent, ConfirmationModalComponent, LoadingSkeletonComponent],
   templateUrl: './category-management.component.html',
   styleUrl: './category-management.component.scss',
 })
@@ -24,6 +25,8 @@ export class CategoryManagementComponent implements OnInit {
   readonly isModalOpen = signal(false);
   readonly isSaving = signal(false);
   readonly editingCategoryId = signal<string | null>(null);
+  readonly showDeleteConfirm = signal(false);
+  readonly categoryToDelete = signal<string | null>(null);
 
   // Form
   readonly categoryForm = this.fb.nonNullable.group({
@@ -127,12 +130,19 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   deleteCategory(id: string) {
-    if (confirm('Tem certeza que deseja excluir esta categoria? Produtos associados a ela poderão ficar sem categoria!')) {
-      this.categoryApi.delete(id).subscribe({
-        next: () => {
-          this.adminStore.deleteCategory(id);
-        }
-      });
-    }
+    this.categoryToDelete.set(id);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDeleteCategory() {
+    const id = this.categoryToDelete();
+    if (!id) return;
+    this.categoryApi.delete(id).subscribe({
+      next: () => {
+        this.adminStore.deleteCategory(id);
+        this.showDeleteConfirm.set(false);
+        this.categoryToDelete.set(null);
+      }
+    });
   }
 }

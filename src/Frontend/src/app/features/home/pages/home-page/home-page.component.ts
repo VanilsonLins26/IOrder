@@ -42,8 +42,13 @@ export class HomePageComponent {
     stream: () => this.storeCategoryApi.getAll(),
   });
 
-  private readonly storesResource = rxResource<PagedList<StoreResponse>, void>({
-    stream: () => this.storeApi.getPaged({ pageNumber: 1, pageSize: 12 }),
+  private readonly storesResource = rxResource<PagedList<StoreResponse>, string | null>({
+    params: () => this.selectedCatId(),
+    stream: (req) => this.storeApi.getPaged({ 
+      pageNumber: 1, 
+      pageSize: 12,
+      categoryId: req.params ?? undefined 
+    }),
   });
 
   // ---- Derived signals ----
@@ -62,14 +67,11 @@ export class HomePageComponent {
   });
 
   readonly filteredStores = computed(() => {
-    const catId = this.selectedCatId();
     const query = this.searchQuery().toLowerCase().trim();
-
-    return this.stores().filter((s: StoreResponse) => {
-      const matchesCat   = !catId || s.categoryId === catId;
-      const matchesQuery = !query || s.name.toLowerCase().includes(query);
-      return matchesCat && matchesQuery;
-    });
+    if (!query) return this.stores();
+    return this.stores().filter((s: StoreResponse) =>
+      s.name.toLowerCase().includes(query)
+    );
   });
 
   // ---- Drag to Scroll State ----

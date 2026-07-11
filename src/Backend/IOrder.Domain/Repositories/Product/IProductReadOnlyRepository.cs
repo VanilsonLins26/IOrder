@@ -7,7 +7,7 @@ namespace IOrder.Domain.Repositories.Product;
 
 public interface IProductReadOnlyRepository
 {
-    IEnumerable<Entities.Product> GetAll();
+    Task<IList<Entities.Product>> GetAllAsync();
 
     Task<bool> ExistsPromotionInDate(Guid productId, DateTime inicialDate, DateTime finalDate);
 

@@ -21,9 +21,9 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         _context = context;
     }
 
-    public IEnumerable<Domain.Entities.Product> GetAll()
+    public async Task<IList<Domain.Entities.Product>> GetAllAsync()
     {
-        return _context.Products.AsNoTracking();
+        return await _context.Products.AsNoTracking().ToListAsync();
     }
 
     public async Task<Domain.Entities.Product> GetByIdAsync(Guid id)

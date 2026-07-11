@@ -64,6 +64,7 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
 
         var message = new Domain.Entities.OrderMessage
         {
+            OrderId = order.Id,
             UserId = currentUserId,
             UserRole = userRole,
             Message = request.Message,
@@ -77,7 +78,6 @@ public class SendOrderMessageUseCase : ISendOrderMessageUseCase
             order.Negotiate(request.ProposedTotalAmount, request.ProposedDeliveryDate, request.Message);
         }
 
-        message.OrderId = order.Id;
         order.AddMessage(message);
         _orderWriteOnlyRepository.AddOrderMessage(message);
 

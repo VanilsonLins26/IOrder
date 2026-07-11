@@ -6,6 +6,7 @@ import { ProductApiService } from '../../../../core/services/api/product-api.ser
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
 import { CustomizationApiService } from '../../../../core/services/api/customization-api.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
@@ -16,7 +17,7 @@ import type { CustomizationGroup } from '../../../../core/models/customization.m
   selector: 'app-product-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
+  imports: [CurrencyPipe, ReactiveFormsModule, ModalComponent, ConfirmationModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.scss',
 })
@@ -42,6 +43,12 @@ export class ProductManagementComponent implements OnInit {
   readonly editingCustomizationGroup = signal<CustomizationGroup | null>(null);
   readonly loadingCustomization = signal(false);
   private readonly pendingImage = signal<File | null>(null);
+
+  // Confirmation modals
+  readonly showDeleteProductConfirm = signal(false);
+  readonly productToDelete = signal<string | null>(null);
+  readonly showDeleteCustomizationConfirm = signal(false);
+  readonly customizationGroupToDelete = signal<string | null>(null);
 
   // Forms
   readonly productForm = this.fb.nonNullable.group({
@@ -359,20 +366,35 @@ export class ProductManagementComponent implements OnInit {
   }
 
   deleteCustomizationGroup(id: string) {
-    if (!confirm('Tem certeza que deseja excluir este grupo de customização?')) return;
+    this.customizationGroupToDelete.set(id);
+    this.showDeleteCustomizationConfirm.set(true);
+  }
+
+  confirmDeleteCustomizationGroup() {
+    const id = this.customizationGroupToDelete();
+    if (!id) return;
     this.customizationApi.delete(id).subscribe({
       next: () => {
         this.customizationGroups.update(groups => groups.filter(g => g.id !== id));
+        this.showDeleteCustomizationConfirm.set(false);
+        this.customizationGroupToDelete.set(null);
       },
     });
   }
 
   deleteProduct(id: string) {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-      this.productApi.delete(id).subscribe(() => {
-        this.adminStore.deleteProduct(id);
-      });
-    }
+    this.productToDelete.set(id);
+    this.showDeleteProductConfirm.set(true);
+  }
+
+  confirmDeleteProduct() {
+    const id = this.productToDelete();
+    if (!id) return;
+    this.productApi.delete(id).subscribe(() => {
+      this.adminStore.deleteProduct(id);
+      this.showDeleteProductConfirm.set(false);
+      this.productToDelete.set(null);
+    });
   }
 
   // --- Promoção ---

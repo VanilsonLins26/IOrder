@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Text.Json.Serialization;
 using IOrder.Domain.SeedWork;
 
 namespace IOrder.Domain.Entities;
@@ -16,6 +11,19 @@ public class Cart : IAggregateRoot
     public string CouponCode { get; set; } = string.Empty;
     public decimal CartTotal => Items.Sum(item => item.TotalPrice);
     public List<CartItem> Items { get; set; } = [];
+
+    private readonly List<IDomainEvent> _domainEvents = [];
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    public void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
+    }
 
 
     public void UpdateCartItems(IEnumerable<CartItem> cartItems)

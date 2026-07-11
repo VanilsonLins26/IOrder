@@ -9,7 +9,7 @@ import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
-import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
+import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
 import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
@@ -60,9 +60,24 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     this.chatSignalr.onMessageReceived = (message) => {
       const current = this.order();
       if (!current) return;
-      const alreadyExists = current.messages.some(m => m.id === message.id);
-      if (alreadyExists) return;
-      this.order.set({ ...current, messages: [...current.messages, message] });
+      const uid = this.currentUser()?.sub ?? '';
+      if (uid && message.userId === uid) {
+        const existingIdx = current.messages.findIndex(
+          m => m.id.startsWith('temp-') && m.message === message.message && m.userId === uid
+        );
+        if (existingIdx !== -1) {
+          const updated = [...current.messages];
+          updated[existingIdx] = message;
+          this.order.set({ ...current, messages: updated });
+        } else {
+          this.order.set({ ...current, messages: [...current.messages, message] });
+        }
+      } else {
+        const alreadyExists = current.messages.some(m => m.id === message.id);
+        if (!alreadyExists) {
+          this.order.set({ ...current, messages: [...current.messages, message] });
+        }
+      }
       if (this.chatOpen()) {
         this.chatApi.markAsRead(this.id()).subscribe();
         this.chatSignalr.markOrderRead(this.id());
@@ -148,12 +163,36 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     if (!text) return;
     this.sendingMessage.set(true);
     this.chatSignalr.userStoppedTyping(this.id());
+
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const uid = this.currentUser()?.sub ?? '';
+    const tempMessage: OrderMessageResponseDto = {
+      id: tempId,
+      userId: uid,
+      userRole: 'ShopKeeper',
+      message: text,
+      sentAt: new Date().toISOString(),
+      type: MessageTypeDto.Text,
+      proposedTotalAmount: null,
+      proposedDeliveryDate: null,
+      readAt: null,
+      readByUserId: null,
+    };
+    const current = this.order();
+    if (current) {
+      this.order.set({ ...current, messages: [...current.messages, tempMessage] });
+    }
+
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
         this.sendingMessage.set(false);
       },
       error: (err) => {
         this.sendingMessage.set(false);
+        const c = this.order();
+        if (c) {
+          this.order.set({ ...c, messages: c.messages.filter(m => m.id !== tempId) });
+        }
         this.toast.error(err.error?.errors?.[0] || 'Erro ao enviar mensagem.');
       },
     });

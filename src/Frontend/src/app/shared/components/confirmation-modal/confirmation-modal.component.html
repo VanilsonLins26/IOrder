@@ -1,0 +1,14 @@
+<app-modal [title]="title()" [isOpen]="isOpen()" (close)="close.emit()">
+  <p class="confirmation-message">{{ message() }}</p>
+  <div class="confirmation-actions">
+    <button type="button" class="btn btn--secondary" (click)="cancel.emit()" [disabled]="loading()">
+      {{ cancelLabel() }}
+    </button>
+    <button type="button" class="btn btn--primary" (click)="confirm.emit()" [disabled]="loading()">
+      @if (loading()) {
+        <span class="spinner"></span>
+      }
+      {{ confirmLabel() }}
+    </button>
+  </div>
+</app-modal>

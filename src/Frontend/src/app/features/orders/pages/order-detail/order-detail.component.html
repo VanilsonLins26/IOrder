@@ -20,7 +20,7 @@
 
     <div class="order-detail__actions">
       @if (order.status === OrderStatusDto.Pending) {
-        <button class="order-detail__cancel-btn" (click)="cancelOrder()" [disabled]="cancelling()">
+        <button class="order-detail__cancel-btn" (click)="showCancelConfirm.set(true)" [disabled]="cancelling()">
           {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
         </button>
       }
@@ -67,9 +67,9 @@
             <div class="order-item">
               <div class="order-item__image">
                 @if (item.productImageUrl) {
-                  <img [src]="item.productImageUrl" alt="" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
+                  <img [src]="item.productImageUrl" alt="Foto do produto" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
                 } @else if (item.imageUrls[0]) {
-                  <img [src]="item.imageUrls[0]" alt="" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
+                  <img [src]="item.imageUrls[0]" alt="Imagem do produto" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
                 } @else {
                   <div class="order-item__img-placeholder">📦</div>
                 }
@@ -126,10 +126,43 @@
       (onSendMessage)="sendMessage($event)"
       (typingNotify)="chatSignalr.userTyping(id())"
       (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
-      (onAcceptProposal)="acceptProposal()"
-      (onDeclineProposal)="declineProposal()"
+      (onAcceptProposal)="showAcceptConfirm.set(true)"
+      (onDeclineProposal)="showDeclineConfirm.set(true)"
     ></app-order-chat-offcanvas>
   }
+
+  <app-confirmation-modal
+    title="Cancelar Pedido"
+    message="Tem certeza que deseja cancelar este pedido?"
+    [isOpen]="showCancelConfirm()"
+    confirmLabel="Sim, Cancelar"
+    [loading]="cancelling()"
+    (confirm)="cancelOrder()"
+    (cancel)="showCancelConfirm.set(false)"
+    (close)="showCancelConfirm.set(false)"
+  ></app-confirmation-modal>
+
+  <app-confirmation-modal
+    title="Aceitar Proposta"
+    message="Aceitar esta proposta de valor e entrega?"
+    [isOpen]="showAcceptConfirm()"
+    confirmLabel="Sim, Aceitar"
+    [loading]="updatingStatus()"
+    (confirm)="acceptProposal()"
+    (cancel)="showAcceptConfirm.set(false)"
+    (close)="showAcceptConfirm.set(false)"
+  ></app-confirmation-modal>
+
+  <app-confirmation-modal
+    title="Recusar Proposta"
+    message="Tem certeza que deseja recusar a proposta? O pedido será recusado."
+    [isOpen]="showDeclineConfirm()"
+    confirmLabel="Sim, Recusar"
+    [loading]="updatingStatus()"
+    (confirm)="declineProposal()"
+    (cancel)="showDeclineConfirm.set(false)"
+    (close)="showDeclineConfirm.set(false)"
+  ></app-confirmation-modal>
 
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">

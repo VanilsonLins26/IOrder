@@ -14,7 +14,7 @@ export class ToastService {
   private readonly _toasts = signal<Toast[]>([]);
   private nextId = 0;
 
-  readonly toasts = computed(() => this._toasts());
+  readonly toasts = this._toasts.asReadonly();
 
   success(message: string, duration = 4000): void {
     this.show(message, 'success', duration);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace IOrder.Domain.Entities;
 
-public abstract class EntityBase : IEquatable<EntityBase>
+public abstract class EntityBase : IEquatable<EntityBase>, IAggregateRoot
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
     public bool Active { get; private set; } = true;

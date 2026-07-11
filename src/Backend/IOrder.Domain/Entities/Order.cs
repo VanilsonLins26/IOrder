@@ -19,7 +19,7 @@ public class Order : EntityBase, IAggregateRoot
     public decimal? DiscountedTotal { get; set; }
     public DateTime? DeliveryDate { get; set; }
     public string? CustomerNotes { get; set; }
-    public string? ShopkeeperNotes { get; set; }
+    public string? ShopkeeperNotes { get; private set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? LastMessageAt { get; private set; }

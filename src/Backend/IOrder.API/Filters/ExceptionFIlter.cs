@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace IOrder.API.Filters;
 
-public class ExceptionFIlter : IExceptionFilter
+public class ExceptionFilter : IExceptionFilter
 {
     public void OnException(ExceptionContext context)
     {

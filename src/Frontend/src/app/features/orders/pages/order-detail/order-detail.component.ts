@@ -9,14 +9,15 @@ import { OrderApiService } from '../../../../core/services/api/order-api.service
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
+import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +40,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly chatOpen = signal(false);
   readonly currentUser = toSignal(this.auth.user$);
 
+  readonly showCancelConfirm = signal(false);
+  readonly showAcceptConfirm = signal(false);
+  readonly showDeclineConfirm = signal(false);
+
 
   ngOnInit() {
     this.store.loadById(this.id());
@@ -54,7 +59,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     await this.chatSignalr.joinOrderGroup(this.id());
 
     this.chatSignalr.onMessageReceived = (message) => {
-      this.store.appendMessage(message);
+      const uid = this.currentUser()?.sub ?? '';
+      if (uid && message.userId === uid) {
+        const tempId = this.store.currentOrder()?.messages
+          .find(m => m.id.startsWith('temp-') && m.message === message.message && m.userId === uid)?.id ?? message.id;
+        this.store.replaceMessage(tempId, message);
+      } else {
+        this.store.appendMessage(message);
+      }
       if (this.chatOpen()) {
         this.chatApi.markAsRead(this.id()).subscribe();
         this.chatSignalr.markOrderRead(this.id());
@@ -90,11 +102,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   cancelOrder() {
-    if (!confirm('Tem certeza que deseja cancelar este pedido?')) return;
     this.cancelling.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Cancelled }).subscribe({
       next: () => {
         this.cancelling.set(false);
+        this.showCancelConfirm.set(false);
         this.toast.success('Pedido cancelado.');
         this.store.loadById(this.id());
       },
@@ -106,11 +118,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   acceptProposal() {
-    if (!confirm('Aceitar esta proposta de valor e entrega?')) return;
     this.updatingStatus.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.AwaitingPayment }).subscribe({
       next: () => {
         this.updatingStatus.set(false);
+        this.showAcceptConfirm.set(false);
         this.toast.success('Proposta aceita! O pedido aguarda pagamento.');
         this.store.loadById(this.id());
       },
@@ -122,11 +134,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   declineProposal() {
-    if (!confirm('Tem certeza que deseja recusar a proposta? O pedido será recusado.')) return;
     this.updatingStatus.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Declined }).subscribe({
       next: () => {
         this.updatingStatus.set(false);
+        this.showDeclineConfirm.set(false);
         this.toast.success('Proposta recusada.');
         this.store.loadById(this.id());
       },
@@ -141,12 +153,30 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     if (!text) return;
     this.sendingMessage.set(true);
     this.chatSignalr.userStoppedTyping(this.id());
+
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const uid = this.currentUser()?.sub ?? '';
+    const tempMessage: OrderMessageResponseDto = {
+      id: tempId,
+      userId: uid,
+      userRole: 'Client',
+      message: text,
+      sentAt: new Date().toISOString(),
+      type: MessageTypeDto.Text,
+      proposedTotalAmount: null,
+      proposedDeliveryDate: null,
+      readAt: null,
+      readByUserId: null,
+    };
+    this.store.appendMessage(tempMessage);
+
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
         this.sendingMessage.set(false);
       },
       error: (err) => {
         this.sendingMessage.set(false);
+        this.store.removeMessage(tempId);
         this.toast.error(err.error?.errors?.[0] || 'Erro ao enviar mensagem.');
       },
     });

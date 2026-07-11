@@ -45,7 +45,7 @@ public class DeleteCategoryUseCase : IDeleteCategoryUseCase
 
         await _storePermissionService.ValidateCategoryOwnershipAsync(category);
 
-        var products = _productReadOnlyRepository.GetAll().Where(p => p.CategoryId == id).ToList();
+        var products = (await _productReadOnlyRepository.GetAllAsync()).Where(p => p.CategoryId == id).ToList();
 
         if (products.Any())
         {

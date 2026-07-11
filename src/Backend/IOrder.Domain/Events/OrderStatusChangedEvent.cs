@@ -8,8 +8,8 @@ public class OrderStatusChangedEvent : IDomainEvent
     public Guid OrderId { get; }
     public string UserId { get; }
     public Guid StoreId { get; }
-    public string OldStatus { get; }
-    public string NewStatus { get; }
+    public OrderStatus OldStatus { get; }
+    public OrderStatus NewStatus { get; }
     public DateTime OccurredOn { get; }
 
     public OrderStatusChangedEvent(Guid orderId, string userId, Guid storeId, OrderStatus oldStatus, OrderStatus newStatus)
@@ -17,8 +17,8 @@ public class OrderStatusChangedEvent : IDomainEvent
         OrderId = orderId;
         UserId = userId;
         StoreId = storeId;
-        OldStatus = oldStatus.ToString();
-        NewStatus = newStatus.ToString();
+        OldStatus = oldStatus;
+        NewStatus = newStatus;
         OccurredOn = DateTime.UtcNow;
     }
 }
