@@ -40,7 +40,7 @@ public class EmptyCategoryUseCase : IEmptyCategoryUseCase
         
         await _permissionService.ValidateCategoryOwnershipAsync(category);
 
-        var products = _productReadOnlyRepository.GetAll().Where(p => p.CategoryId == categoryId).ToList();
+        var products = (await _productReadOnlyRepository.GetAllAsync()).Where(p => p.CategoryId == categoryId).ToList();
 
         if (products.Any())
         {

@@ -64,7 +64,7 @@ public class EmptyCategoryUseCaseTest
         productWriteOnlyRepository.GetByIdsTracking(new List<Guid> { categoryProducts.Count > 0 ? categoryProducts[0].Id : Guid.NewGuid() }, categoryProducts);
         
         var productReadOnlyRepository = new ProductReadOnlyRepositoryBuilder();
-        productReadOnlyRepository.GetAll(categoryProducts);
+        productReadOnlyRepository.GetAllAsync(categoryProducts);
 
         var uow = UnitOfWorkBuilder.Build();
         var permissionService = StorePermissionServiceBuilder.Build(storeId);

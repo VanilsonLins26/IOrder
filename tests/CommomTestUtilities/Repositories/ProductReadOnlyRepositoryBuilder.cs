@@ -14,6 +14,7 @@ public class ProductReadOnlyRepositoryBuilder
     public ProductReadOnlyRepositoryBuilder()
     {
         _repository = new Mock<IProductReadOnlyRepository>();
+        _repository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>());
     }
 
     public IProductReadOnlyRepository Build() => _repository.Object;
@@ -23,9 +24,9 @@ public class ProductReadOnlyRepositoryBuilder
         _repository.Setup(repository => repository.NameExists(productName)).ReturnsAsync(true);
     }
 
-    public void GetAll(IEnumerable<Product> products)
+    public void GetAllAsync(IEnumerable<Product> products)
     {
-        _repository.Setup(repository => repository.GetAll()).Returns(products);
+        _repository.Setup(repository => repository.GetAllAsync()).ReturnsAsync(products.ToList());
     }
 
     public void GetByIdReturnsNull(Guid productId)
