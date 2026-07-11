@@ -22,8 +22,13 @@ public class GetOrderByIdUseCase : IGetOrderByIdUseCase
 
     public async Task<OrderResponseDto> Execute(Guid id)
     {
+        var userId = _loggedUserService.GetUserId()
+            ?? throw new UnauthorizedStoreException([ResourceMessagesException.ORDER_NOT_FOUND]);
         var order = await _readOnlyRepository.GetByIdAsync(id)
             ?? throw new NotFoundException([ResourceMessagesException.ORDER_NOT_FOUND]);
+
+        if (order.UserId != userId && order.Store?.UserId != userId)
+            throw new UnauthorizedStoreException([ResourceMessagesException.ORDER_NOT_FOUND]);
 
         return order.Adapt<OrderResponseDto>();
     }

@@ -20,6 +20,7 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
             .AsNoTracking()
             .Include(o => o.Items)
             .Include(o => o.Messages.OrderBy(m => m.SentAt))
+            .Include(o => o.Store)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
