@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { AdminStore } from '../../store/admin.store';
 import { ProductApiService } from '../../../../core/services/api/product-api.service';
@@ -16,7 +16,7 @@ import type { CustomizationGroup } from '../../../../core/models/customization.m
   selector: 'app-product-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
+  imports: [CurrencyPipe, ReactiveFormsModule, ModalComponent, LoadingSkeletonComponent, ImageUploadComponent, CurrencyInputDirective],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.scss',
 })

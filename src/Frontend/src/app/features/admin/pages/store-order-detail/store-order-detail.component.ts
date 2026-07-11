@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
@@ -17,7 +17,7 @@ import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

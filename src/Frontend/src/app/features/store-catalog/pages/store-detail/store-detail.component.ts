@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
@@ -19,7 +19,7 @@ import type { CustomizationGroup } from '../../../../core/models/customization.m
 @Component({
   selector: 'app-store-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent, ModalComponent],
+  imports: [CurrencyPipe, FormsModule, StoreInfoHeaderComponent, ProductGridComponent, LoadingSkeletonComponent, ModalComponent],
   templateUrl: './store-detail.component.html',
   styleUrl: './store-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

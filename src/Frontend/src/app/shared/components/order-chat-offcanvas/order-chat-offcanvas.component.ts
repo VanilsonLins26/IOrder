@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, effect, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderMessageResponseDto, OrderStatusDto, MessageTypeDto } from '../../../core/models';
 
 @Component({
   selector: 'app-order-chat-offcanvas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [DatePipe, CurrencyPipe, FormsModule],
   templateUrl: './order-chat-offcanvas.component.html',
   styleUrl: './order-chat-offcanvas.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

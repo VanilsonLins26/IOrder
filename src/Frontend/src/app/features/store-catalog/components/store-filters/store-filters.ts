@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import type { StoreCategoryResponse } from '../../../../core/models/store-category.model';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 
 @Component({
   selector: 'app-store-filters',
   standalone: true,
-  imports: [CommonModule, LoadingSkeletonComponent],
+  imports: [LoadingSkeletonComponent],
   templateUrl: './store-filters.html',
   styleUrl: './store-filters.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

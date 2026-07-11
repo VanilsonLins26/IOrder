@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrdersStore } from '../../../orders/store/orders.store';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
@@ -10,7 +10,7 @@ import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '
 @Component({
   selector: 'app-store-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink],
   templateUrl: './store-orders.component.html',
   styleUrl: './store-orders.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
