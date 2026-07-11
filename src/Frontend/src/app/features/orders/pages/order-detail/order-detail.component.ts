@@ -9,7 +9,7 @@ import { OrderApiService } from '../../../../core/services/api/order-api.service
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
+import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
@@ -59,7 +59,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     await this.chatSignalr.joinOrderGroup(this.id());
 
     this.chatSignalr.onMessageReceived = (message) => {
-      this.store.appendMessage(message);
+      const uid = this.currentUser()?.sub ?? '';
+      if (uid && message.userId === uid) {
+        const tempId = this.store.currentOrder()?.messages
+          .find(m => m.id.startsWith('temp-') && m.message === message.message && m.userId === uid)?.id ?? message.id;
+        this.store.replaceMessage(tempId, message);
+      } else {
+        this.store.appendMessage(message);
+      }
       if (this.chatOpen()) {
         this.chatApi.markAsRead(this.id()).subscribe();
         this.chatSignalr.markOrderRead(this.id());
@@ -146,12 +153,30 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     if (!text) return;
     this.sendingMessage.set(true);
     this.chatSignalr.userStoppedTyping(this.id());
+
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const uid = this.currentUser()?.sub ?? '';
+    const tempMessage: OrderMessageResponseDto = {
+      id: tempId,
+      userId: uid,
+      userRole: 'Client',
+      message: text,
+      sentAt: new Date().toISOString(),
+      type: MessageTypeDto.Text,
+      proposedTotalAmount: null,
+      proposedDeliveryDate: null,
+      readAt: null,
+      readByUserId: null,
+    };
+    this.store.appendMessage(tempMessage);
+
     this.orderApi.sendMessage(this.id(), { message: text, type: MessageTypeDto.Text }).subscribe({
       next: () => {
         this.sendingMessage.set(false);
       },
       error: (err) => {
         this.sendingMessage.set(false);
+        this.store.removeMessage(tempId);
         this.toast.error(err.error?.errors?.[0] || 'Erro ao enviar mensagem.');
       },
     });

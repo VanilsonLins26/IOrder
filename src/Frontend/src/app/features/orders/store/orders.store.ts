@@ -110,6 +110,37 @@ export const OrdersStore = signalStore(
       });
     },
 
+    replaceMessage: (tempId: string, realMessage: OrderMessageResponseDto) => {
+      const order = store.currentOrder();
+      if (!order) return;
+      const idx = order.messages.findIndex(m => m.id === tempId);
+      if (idx === -1) {
+        const alreadyExists = order.messages.some(m => m.id === realMessage.id);
+        if (!alreadyExists) {
+          patchState(store, {
+            currentOrder: { ...order, messages: [...order.messages, realMessage] },
+          });
+        }
+        return;
+      }
+      const updated = [...order.messages];
+      updated[idx] = realMessage;
+      patchState(store, {
+        currentOrder: { ...order, messages: updated },
+      });
+    },
+
+    removeMessage: (messageId: string) => {
+      const order = store.currentOrder();
+      if (!order) return;
+      patchState(store, {
+        currentOrder: {
+          ...order,
+          messages: order.messages.filter(m => m.id !== messageId),
+        },
+      });
+    },
+
     markMessagesAsRead: (currentUserId: string) => {
       const order = store.currentOrder();
       if (!order) return;
