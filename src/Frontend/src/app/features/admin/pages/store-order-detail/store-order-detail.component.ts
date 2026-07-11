@@ -12,6 +12,7 @@ import { CurrencyInputDirective } from '../../../../shared/directives/currency-i
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-store-order-detail',
@@ -105,44 +106,15 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
 
   getStatusLabel(status: OrderStatusDto): string {
-    const labels: Record<number, string> = {
-      0: 'Pendente', 1: 'Negociando', 2: 'Aguardando Pagamento', 3: 'Pago',
-      4: 'Preparando', 5: 'Pronto', 6: 'Entregue', 7: 'Cancelado', 8: 'Recusado',
-    };
-    return labels[status] ?? 'Desconhecido';
+    return getOrderStatusLabel(status);
   }
 
   getStatusClass(status: OrderStatusDto): string {
-    const classes: Record<number, string> = {
-      0: 'status--pending', 1: 'status--negotiating', 2: 'status--awaiting',
-      3: 'status--paid', 4: 'status--preparing', 5: 'status--ready',
-      6: 'status--delivered', 7: 'status--cancelled', 8: 'status--declined',
-    };
-    return classes[status] ?? '';
+    return getOrderStatusClass(status);
   }
 
   getNextStatuses(status: OrderStatusDto): { status: OrderStatusDto; label: string }[] {
-    const map: Record<number, { status: OrderStatusDto; label: string }[]> = {
-      [OrderStatusDto.Pending]: [
-        { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar' },
-        { status: OrderStatusDto.Declined, label: 'Recusar' },
-      ],
-      [OrderStatusDto.Negotiating]: [],
-      [OrderStatusDto.AwaitingPayment]: [
-        { status: OrderStatusDto.Paid, label: 'Confirmar Pagamento' },
-        { status: OrderStatusDto.Cancelled, label: 'Cancelar' },
-      ],
-      [OrderStatusDto.Paid]: [
-        { status: OrderStatusDto.Preparing, label: 'Iniciar Preparo' },
-      ],
-      [OrderStatusDto.Preparing]: [
-        { status: OrderStatusDto.Ready, label: 'Marcar como Pronto' },
-      ],
-      [OrderStatusDto.Ready]: [
-        { status: OrderStatusDto.Delivered, label: 'Confirmar Entrega' },
-      ],
-    };
-    return map[status] ?? [];
+    return getOrderNextStatuses(status);
   }
 
   toggleNegotiate() {
