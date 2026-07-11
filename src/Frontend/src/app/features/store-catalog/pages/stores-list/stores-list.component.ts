@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { CatalogStore } from '../../store/catalog.store';
 import { StoreFiltersComponent } from '../../components/store-filters/store-filters';
 import { StoreCardComponent } from '../../../../shared/components/store-card/store-card';
@@ -11,7 +10,6 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule, 
     StoreFiltersComponent, 
     StoreCardComponent, 
     EmptyStateComponent, 

@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AdminStore } from '../../store/admin.store';
@@ -12,7 +11,7 @@ import type { CategoryResponse, CategoryRequest, UpdateCategoryPositionsRequest 
   selector: 'app-category-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule, ModalComponent, LoadingSkeletonComponent],
+  imports: [ReactiveFormsModule, DragDropModule, ModalComponent, LoadingSkeletonComponent],
   templateUrl: './category-management.component.html',
   styleUrl: './category-management.component.scss',
 })

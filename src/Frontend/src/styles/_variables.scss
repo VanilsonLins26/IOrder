@@ -67,6 +67,26 @@
   --color-info: #3b82f6;
   --color-info-dark: #1d4ed8;
 
+  // Order Status Colors
+  --color-status-pending-bg: #fef3c7;
+  --color-status-pending-text: #92400e;
+  --color-status-negotiating-bg: #dbeafe;
+  --color-status-negotiating-text: #1e40af;
+  --color-status-awaiting-bg: #fce7f3;
+  --color-status-awaiting-text: #9d174d;
+  --color-status-paid-bg: #d1fae5;
+  --color-status-paid-text: #065f46;
+  --color-status-preparing-bg: #e0e7ff;
+  --color-status-preparing-text: #3730a3;
+  --color-status-ready-bg: #dbeafe;
+  --color-status-ready-text: #1e40af;
+  --color-status-delivered-bg: #d1fae5;
+  --color-status-delivered-text: #065f46;
+  --color-status-cancelled-bg: #fee2e2;
+  --color-status-cancelled-text: #991b1b;
+  --color-status-declined-bg: #fee2e2;
+  --color-status-declined-text: #991b1b;
+
   // Surfaces
   --surface-primary: #ffffff;
   --surface-secondary: #f8fafc;

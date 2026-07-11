@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { OrdersStore } from '../../store/orders.store';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
+import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink, EmptyStateComponent, LoadingSkeletonComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, EmptyStateComponent, LoadingSkeletonComponent],
   templateUrl: './my-orders.component.html',
   styleUrl: './my-orders.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,33 +23,11 @@ export class MyOrdersComponent implements OnInit {
   }
 
   getStatusLabel(status: number): string {
-    const labels: Record<number, string> = {
-      0: 'Pendente',
-      1: 'Negociando',
-      2: 'Aguardando Pagamento',
-      3: 'Pago',
-      4: 'Preparando',
-      5: 'Pronto',
-      6: 'Entregue',
-      7: 'Cancelado',
-      8: 'Recusado',
-    };
-    return labels[status] ?? 'Desconhecido';
+    return getOrderStatusLabel(status);
   }
 
   getStatusClass(status: number): string {
-    const classes: Record<number, string> = {
-      0: 'status--pending',
-      1: 'status--negotiating',
-      2: 'status--awaiting',
-      3: 'status--paid',
-      4: 'status--preparing',
-      5: 'status--ready',
-      6: 'status--delivered',
-      7: 'status--cancelled',
-      8: 'status--declined',
-    };
-    return classes[status] ?? '';
+    return getOrderStatusClass(status);
   }
 
   changePage(page: number) {

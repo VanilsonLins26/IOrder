@@ -132,15 +132,17 @@
                     {{ getDayName(i) }}
                   </div>
                   
-                  <div class="hour-inputs" *ngIf="!control.value.isClosed">
-                    <input type="time" formControlName="openHour" class="form-control time-input" />
-                    <span>até</span>
-                    <input type="time" formControlName="closeHour" class="form-control time-input" />
-                  </div>
-
-                  <div class="hour-closed-msg" *ngIf="control.value.isClosed">
-                    Fechado
-                  </div>
+                  @if (!control.value.isClosed) {
+                    <div class="hour-inputs">
+                      <input type="time" formControlName="openHour" class="form-control time-input" />
+                      <span>até</span>
+                      <input type="time" formControlName="closeHour" class="form-control time-input" />
+                    </div>
+                  } @else {
+                    <div class="hour-closed-msg">
+                      Fechado
+                    </div>
+                  }
 
                   <div class="hour-toggle">
                     <label class="toggle-switch">

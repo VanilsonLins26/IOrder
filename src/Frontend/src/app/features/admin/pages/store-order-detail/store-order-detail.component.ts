@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
@@ -11,11 +12,12 @@ import { CurrencyInputDirective } from '../../../../shared/directives/currency-i
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,11 +41,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly proposedAmount = signal<number | null>(null);
   readonly proposedDate = signal('');
   readonly shopkeeperNotes = signal('');
+  readonly currentUser = toSignal(this.auth.user$);
 
-  private currentUserId: string | null = null;
 
   ngOnInit() {
-    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.loadOrder();
     this.initChat();
   }
@@ -74,7 +75,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         if (!current) return;
         const now = new Date().toISOString();
         const updatedMessages = current.messages.map(m => {
-          if (m.userId === this.currentUserId && !m.readAt) {
+          if (m.userId === this.currentUser()?.sub && !m.readAt) {
             return { ...m, readAt: now };
           }
           return m;
@@ -105,44 +106,15 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
 
   getStatusLabel(status: OrderStatusDto): string {
-    const labels: Record<number, string> = {
-      0: 'Pendente', 1: 'Negociando', 2: 'Aguardando Pagamento', 3: 'Pago',
-      4: 'Preparando', 5: 'Pronto', 6: 'Entregue', 7: 'Cancelado', 8: 'Recusado',
-    };
-    return labels[status] ?? 'Desconhecido';
+    return getOrderStatusLabel(status);
   }
 
   getStatusClass(status: OrderStatusDto): string {
-    const classes: Record<number, string> = {
-      0: 'status--pending', 1: 'status--negotiating', 2: 'status--awaiting',
-      3: 'status--paid', 4: 'status--preparing', 5: 'status--ready',
-      6: 'status--delivered', 7: 'status--cancelled', 8: 'status--declined',
-    };
-    return classes[status] ?? '';
+    return getOrderStatusClass(status);
   }
 
   getNextStatuses(status: OrderStatusDto): { status: OrderStatusDto; label: string }[] {
-    const map: Record<number, { status: OrderStatusDto; label: string }[]> = {
-      [OrderStatusDto.Pending]: [
-        { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar' },
-        { status: OrderStatusDto.Declined, label: 'Recusar' },
-      ],
-      [OrderStatusDto.Negotiating]: [],
-      [OrderStatusDto.AwaitingPayment]: [
-        { status: OrderStatusDto.Paid, label: 'Confirmar Pagamento' },
-        { status: OrderStatusDto.Cancelled, label: 'Cancelar' },
-      ],
-      [OrderStatusDto.Paid]: [
-        { status: OrderStatusDto.Preparing, label: 'Iniciar Preparo' },
-      ],
-      [OrderStatusDto.Preparing]: [
-        { status: OrderStatusDto.Ready, label: 'Marcar como Pronto' },
-      ],
-      [OrderStatusDto.Ready]: [
-        { status: OrderStatusDto.Delivered, label: 'Confirmar Entrega' },
-      ],
-    };
-    return map[status] ?? [];
+    return getOrderNextStatuses(status);
   }
 
   toggleNegotiate() {

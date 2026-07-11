@@ -1,4 +1,6 @@
-<div class="offcanvas-backdrop" *ngIf="isOpen()" (click)="close()"></div>
+@if (isOpen()) {
+  <div class="offcanvas-backdrop" (click)="close()"></div>
+}
 
 <div class="offcanvas" [class.offcanvas--open]="isOpen()">
   <div class="offcanvas__header">

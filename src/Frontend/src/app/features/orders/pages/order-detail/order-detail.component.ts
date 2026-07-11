@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
@@ -10,11 +11,12 @@ import { ChatSignalRService } from '../../../../core/services/chat-signalr.servi
 import { ToastService } from '../../../../core/services/toast.service';
 import { OrderStatusDto, MessageTypeDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,12 +37,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly typingUser = signal<string | null>(null);
   readonly expandedImage = signal<string | null>(null);
   readonly chatOpen = signal(false);
+  readonly currentUser = toSignal(this.auth.user$);
 
-
-  private currentUserId: string | null = null;
 
   ngOnInit() {
-    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.store.loadById(this.id());
     this.initChat();
   }
@@ -62,8 +62,9 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     };
 
     this.chatSignalr.onMessagesRead = (orderId) => {
-      if (orderId === this.id() && this.currentUserId) {
-        this.store.markMessagesAsRead(this.currentUserId);
+      const uid = this.currentUser()?.sub ?? null;
+      if (orderId === this.id() && uid) {
+        this.store.markMessagesAsRead(uid);
       }
     };
 
@@ -81,20 +82,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
 
   getStatusLabel(status: OrderStatusDto): string {
-    const labels: Record<number, string> = {
-      0: 'Pendente', 1: 'Negociando', 2: 'Aguardando Pagamento', 3: 'Pago',
-      4: 'Preparando', 5: 'Pronto', 6: 'Entregue', 7: 'Cancelado', 8: 'Recusado',
-    };
-    return labels[status] ?? 'Desconhecido';
+    return getOrderStatusLabel(status);
   }
 
   getStatusClass(status: OrderStatusDto): string {
-    const classes: Record<number, string> = {
-      0: 'status--pending', 1: 'status--negotiating', 2: 'status--awaiting',
-      3: 'status--paid', 4: 'status--preparing', 5: 'status--ready',
-      6: 'status--delivered', 7: 'status--cancelled', 8: 'status--declined',
-    };
-    return classes[status] ?? '';
+    return getOrderStatusClass(status);
   }
 
   cancelOrder() {

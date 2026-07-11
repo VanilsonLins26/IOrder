@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartStore } from '../../store/cart.store';
@@ -11,7 +11,7 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
 @Component({
   selector: 'app-cart-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, EmptyStateComponent, LoadingSkeletonComponent],
+  imports: [CurrencyPipe, FormsModule, EmptyStateComponent, LoadingSkeletonComponent],
   templateUrl: './cart-page.component.html',
   styleUrl: './cart-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

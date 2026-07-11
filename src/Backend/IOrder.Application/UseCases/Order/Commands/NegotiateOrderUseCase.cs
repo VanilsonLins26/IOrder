@@ -74,9 +74,8 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         order.ClearDomainEvents();
         await _domainEventDispatcher.DispatchAsync(events);
 
-        var response = await _orderWriteOnlyRepository.GetByIdTracking(id);
-        await _messagePublisher.PublishMessageAsync(id, response.Adapt<OrderResponseDto>());
-        return response.Adapt<OrderResponseDto>();
+        await _messagePublisher.PublishMessageAsync(id, order.Adapt<OrderResponseDto>());
+        return order.Adapt<OrderResponseDto>();
     }
 
     private async Task Validate(Communication.Request.NegotiateOrderRequestDto request)

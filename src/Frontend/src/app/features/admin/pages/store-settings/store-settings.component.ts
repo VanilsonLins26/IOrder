@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, effect, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray, FormGroup } from '@angular/forms';
 import { AdminStore } from '../../store/admin.store';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
@@ -11,7 +10,7 @@ import { take } from 'rxjs';
   selector: 'app-store-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, LoadingSkeletonComponent, ImageUploadComponent],
+  imports: [ReactiveFormsModule, LoadingSkeletonComponent, ImageUploadComponent],
   templateUrl: './store-settings.component.html',
   styleUrl: './store-settings.component.scss',
 })
