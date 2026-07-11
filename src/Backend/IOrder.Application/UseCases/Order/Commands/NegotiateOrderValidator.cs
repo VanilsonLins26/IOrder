@@ -13,6 +13,7 @@ public class NegotiateOrderValidator : AbstractValidator<NegotiateOrderRequestDt
             .MaximumLength(1000).WithMessage(ResourceMessagesException.CUSTOMIZE_TOO_LONG);
 
         RuleFor(x => x.ProposedTotalAmount)
+            .NotNull().WithMessage(ResourceMessagesException.PRICE_EMPTY)
             .GreaterThan(0).WithMessage(ResourceMessagesException.PRICE_GREATER_THAN_0);
 
         RuleFor(x => x.ProposedDeliveryDate)

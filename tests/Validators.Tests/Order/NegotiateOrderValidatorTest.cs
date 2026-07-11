@@ -45,6 +45,19 @@ public class NegotiateOrderValidatorTest
     }
 
     [Fact]
+    public void Error_ProposedTotalAmount_Null()
+    {
+        var validator = new NegotiateOrderValidator();
+        var request = NegotiateOrderRequestBuilder.Build();
+        request.ProposedTotalAmount = null;
+
+        var result = validator.Validate(request);
+
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(ResourceMessagesException.PRICE_EMPTY);
+    }
+
+    [Fact]
     public void Error_ProposedTotalAmount_Zero()
     {
         var validator = new NegotiateOrderValidator();
