@@ -55,6 +55,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
 
         var message = new Domain.Entities.OrderMessage
         {
+            OrderId = order.Id,
             UserId = _loggedUserService.GetUserId(),
             UserRole = "ShopKeeper",
             Message = request.ShopkeeperNotes ?? "Proposal sent",
@@ -63,7 +64,6 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
             ProposedDeliveryDate = request.ProposedDeliveryDate
         };
 
-        message.OrderId = order.Id;
         order.AddMessage(message);
         _orderWriteOnlyRepository.AddOrderMessage(message);
         order.Negotiate(request.ProposedTotalAmount, request.ProposedDeliveryDate, request.ShopkeeperNotes);

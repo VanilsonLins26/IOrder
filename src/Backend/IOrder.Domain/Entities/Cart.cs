@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Text.Json.Serialization;
 using IOrder.Domain.SeedWork;
 
 namespace IOrder.Domain.Entities;
