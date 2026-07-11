@@ -40,13 +40,21 @@ public class UpdateUserProfileUseCase : IUpdateUserProfileUseCase
             profile = new Domain.Entities.UserProfile
             {
                 UserId = userId,
-                Phone = request.Phone
+                Phone = request.Phone,
+                Email = request.Email
             };
             await _writeOnlyRepository.Create(profile);
         }
         else
         {
             profile.Phone = request.Phone;
+
+            if (!string.IsNullOrEmpty(request.Email))
+            {
+                profile.Email = request.Email;
+                profile.EmailManuallySet = true;
+            }
+
             _writeOnlyRepository.Update(profile);
         }
 
@@ -54,7 +62,8 @@ public class UpdateUserProfileUseCase : IUpdateUserProfileUseCase
 
         return new UserProfileResponseDto
         {
-            Phone = profile.Phone ?? string.Empty
+            Phone = profile.Phone ?? string.Empty,
+            Email = profile.Email
         };
     }
 }
