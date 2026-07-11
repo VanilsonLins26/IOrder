@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
@@ -20,7 +21,7 @@ export class ChatSignalRService {
   async start(): Promise<void> {
     if (this.hubConnection?.state === 'Connected') return;
 
-    const token = await this.auth.getAccessTokenSilently().toPromise() ?? '';
+    const token = await firstValueFrom(this.auth.getAccessTokenSilently()) ?? '';
 
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.signalrUrl}`, {

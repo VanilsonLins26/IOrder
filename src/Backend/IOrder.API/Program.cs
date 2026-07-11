@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add(typeof(ExceptionFIlter));
+    options.Filters.Add(typeof(ExceptionFilter));
 });
 
 builder.Services.AddCors(options =>

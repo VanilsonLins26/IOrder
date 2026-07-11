@@ -80,19 +80,19 @@ export class StoreDetailComponent {
   readonly customizationGroups = signal<CustomizationGroup[]>([]);
   readonly selectedOptionIds = signal<Set<string>>(new Set());
   readonly loadingCustomization = signal(false);
-  private pendingProduct: ProductResponse | null = null;
+  readonly pendingProduct = signal<ProductResponse | null>(null);
 
   onAddToCart(product: ProductResponse) {
     const currentItems = this.cartStore.items();
     const currentStoreId = this.id();
 
     if (currentItems.length > 0 && currentItems[0].storeId && currentItems[0].storeId !== currentStoreId) {
-      this.pendingProduct = product;
+      this.pendingProduct.set(product)
       this.showStoreDialog.set(true);
       return;
     }
 
-    this.pendingProduct = product;
+    this.pendingProduct.set(product)
     this.customizeText.set('');
     this.selectedOptionIds.set(new Set());
     this.customizationGroups.set([]);
@@ -152,9 +152,9 @@ export class StoreDetailComponent {
   }
 
   onConfirmCustomize() {
-    const product = this.pendingProduct;
+    const product = this.pendingProduct()
     const optionIds = Array.from(this.selectedOptionIds());
-    this.pendingProduct = null;
+    this.pendingProduct.set(null)
     this.showCustomizeDialog.set(false);
     this.customizationGroups.set([]);
     if (!product) return;
@@ -163,8 +163,8 @@ export class StoreDetailComponent {
   }
 
   onSkipCustomize() {
-    const product = this.pendingProduct;
-    this.pendingProduct = null;
+    const product = this.pendingProduct()
+    this.pendingProduct.set(null)
     this.showCustomizeDialog.set(false);
     this.customizationGroups.set([]);
     if (!product) return;
@@ -195,8 +195,8 @@ export class StoreDetailComponent {
   }
 
   onConfirmClearAndAdd() {
-    const product = this.pendingProduct;
-    this.pendingProduct = null;
+    const product = this.pendingProduct()
+    this.pendingProduct.set(null)
     this.showStoreDialog.set(false);
 
     if (!product) return;
@@ -231,12 +231,12 @@ export class StoreDetailComponent {
   }
 
   onCancelStoreDialog() {
-    this.pendingProduct = null;
+    this.pendingProduct.set(null)
     this.showStoreDialog.set(false);
   }
 
   onCancelCustomize() {
-    this.pendingProduct = null;
+    this.pendingProduct.set(null)
     this.showCustomizeDialog.set(false);
     this.customizeImageUrls.set([]);
     this.customizationGroups.set([]);

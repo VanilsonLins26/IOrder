@@ -108,11 +108,5 @@ export const AdminStore = signalStore(
         products: state.products.filter((p) => p.id !== id),
       }));
     },
-  })),
-  withHooks({
-    onInit(store) {
-      // Optional: automatically load if auth is ready.
-      // For now, we will call loadAdminData from the Layout or Dashboard.
-    },
-  })
+  }))
 );

@@ -67,9 +67,9 @@
             <div class="order-item">
               <div class="order-item__image">
                 @if (item.productImageUrl) {
-                  <img [src]="item.productImageUrl" alt="" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
+                  <img [src]="item.productImageUrl" alt="Foto do produto" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
                 } @else if (item.imageUrls[0]) {
-                  <img [src]="item.imageUrls[0]" alt="" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
+                  <img [src]="item.imageUrls[0]" alt="Imagem do produto" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
                 } @else {
                   <div class="order-item__img-placeholder">📦</div>
                 }
