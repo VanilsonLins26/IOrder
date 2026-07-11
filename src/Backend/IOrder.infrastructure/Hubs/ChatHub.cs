@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace IOrder.infrastructure.Hubs;
 
+[Authorize]
 public class ChatHub : Hub
 {
     private readonly IDistributedCache _cache;
