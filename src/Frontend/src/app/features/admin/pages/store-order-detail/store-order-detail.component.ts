@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -39,11 +40,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly proposedAmount = signal<number | null>(null);
   readonly proposedDate = signal('');
   readonly shopkeeperNotes = signal('');
+  readonly currentUser = toSignal(this.auth.user$);
 
-  private currentUserId: string | null = null;
 
   ngOnInit() {
-    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.loadOrder();
     this.initChat();
   }
@@ -74,7 +74,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         if (!current) return;
         const now = new Date().toISOString();
         const updatedMessages = current.messages.map(m => {
-          if (m.userId === this.currentUserId && !m.readAt) {
+          if (m.userId === this.currentUser()?.sub && !m.readAt) {
             return { ...m, readAt: now };
           }
           return m;

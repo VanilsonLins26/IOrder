@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -35,12 +36,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly typingUser = signal<string | null>(null);
   readonly expandedImage = signal<string | null>(null);
   readonly chatOpen = signal(false);
+  readonly currentUser = toSignal(this.auth.user$);
 
-
-  private currentUserId: string | null = null;
 
   ngOnInit() {
-    this.auth.user$.subscribe(user => { this.currentUserId = user?.sub ?? null; });
     this.store.loadById(this.id());
     this.initChat();
   }
@@ -62,8 +61,9 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     };
 
     this.chatSignalr.onMessagesRead = (orderId) => {
-      if (orderId === this.id() && this.currentUserId) {
-        this.store.markMessagesAsRead(this.currentUserId);
+      const uid = this.currentUser()?.sub ?? null;
+      if (orderId === this.id() && uid) {
+        this.store.markMessagesAsRead(uid);
       }
     };
 
