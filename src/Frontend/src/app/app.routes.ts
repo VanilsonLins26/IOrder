@@ -36,6 +36,7 @@ export const routes: Routes = [
       },
       {
         path: 'cart',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/cart/pages/cart-page/cart-page.component').then(
             (m) => m.CartPageComponent,
@@ -43,6 +44,7 @@ export const routes: Routes = [
       },
       {
         path: 'orders',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/orders/pages/my-orders/my-orders.component').then(
             (m) => m.MyOrdersComponent,
@@ -50,6 +52,7 @@ export const routes: Routes = [
       },
       {
         path: 'orders/:id',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/orders/pages/order-detail/order-detail.component').then(
             (m) => m.OrderDetailComponent,
