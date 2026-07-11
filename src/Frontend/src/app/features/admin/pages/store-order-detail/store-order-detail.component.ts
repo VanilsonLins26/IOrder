@@ -127,10 +127,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar' },
         { status: OrderStatusDto.Declined, label: 'Recusar' },
       ],
-      [OrderStatusDto.Negotiating]: [
-        { status: OrderStatusDto.AwaitingPayment, label: 'Aceitar Proposta' },
-        { status: OrderStatusDto.Declined, label: 'Recusar' },
-      ],
+      [OrderStatusDto.Negotiating]: [],
       [OrderStatusDto.AwaitingPayment]: [
         { status: OrderStatusDto.Paid, label: 'Confirmar Pagamento' },
         { status: OrderStatusDto.Cancelled, label: 'Cancelar' },
