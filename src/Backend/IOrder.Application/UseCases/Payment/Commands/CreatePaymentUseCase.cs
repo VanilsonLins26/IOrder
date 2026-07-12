@@ -4,9 +4,11 @@ using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Repositories.Order;
+using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Security.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Mapster;
 
 namespace IOrder.Application.UseCases.Payment.Commands;
 
@@ -15,17 +17,20 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IValidator<CreatePaymentRequestDto> _validator;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
+    private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
     private readonly IPaymentService _paymentService;
 
     public CreatePaymentUseCase(
         IValidator<CreatePaymentRequestDto> validator,
         ILoggedUserService loggedUserService,
         IOrderReadOnlyRepository orderReadOnlyRepository,
+        IPaymentReadOnlyRepository paymentReadOnlyRepository,
         IPaymentService paymentService)
     {
         _validator = validator;
         _loggedUserService = loggedUserService;
         _orderReadOnlyRepository = orderReadOnlyRepository;
+        _paymentReadOnlyRepository = paymentReadOnlyRepository;
         _paymentService = paymentService;
     }
 
@@ -43,6 +48,10 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 
         if (order.Status != OrderStatus.AwaitingPayment)
             throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING]);
+
+        var existingPayment = await _paymentReadOnlyRepository.GetByOrderIdAsync(order.Id);
+        if (existingPayment is not null && existingPayment.Status == Domain.Entities.Enums.PaymentStatus.Pending)
+            return existingPayment.Adapt<PaymentResponseDto>();
 
         var paymentResponse = request.Method switch
         {
