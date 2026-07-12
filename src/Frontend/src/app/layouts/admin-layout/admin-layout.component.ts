@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/cor
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
+import { ChatNotificationService } from '../../core/services/chat-notification.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -32,7 +33,18 @@ import { AuthService } from '@auth0/auth0-angular';
           </a>
           <a routerLink="/admin/orders"     routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link">
             <span class="admin-sidebar__icon">📋</span>
-            @if (!sidebarCollapsed()) { <span>Pedidos</span> }
+            @if (!sidebarCollapsed()) { 
+              <span>Pedidos</span> 
+              @if (chatNotification.totalUnread() > 0) {
+                <span style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.7rem; margin-left: auto;">
+                  {{ chatNotification.totalUnread() }}
+                </span>
+              }
+            } @else if (chatNotification.totalUnread() > 0) {
+              <span style="position: absolute; top: 0; right: 0; background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.6rem;">
+                {{ chatNotification.totalUnread() }}
+              </span>
+            }
           </a>
           <a routerLink="/admin/products"   routerLinkActive="admin-sidebar__link--active" class="admin-sidebar__link">
             <span class="admin-sidebar__icon">📦</span>
@@ -242,7 +254,8 @@ import { AuthService } from '@auth0/auth0-angular';
   `],
 })
 export class AdminLayoutComponent {
-  protected readonly auth             = inject(AuthService);
+  protected readonly auth = inject(AuthService);
+  protected readonly chatNotification = inject(ChatNotificationService);
   protected readonly sidebarCollapsed = signal(false);
 
   toggleSidebar(): void { this.sidebarCollapsed.update((v) => !v); }

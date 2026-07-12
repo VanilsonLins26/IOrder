@@ -45,6 +45,11 @@
                   <a routerLink="/orders" class="navbar__dropdown-item" (click)="closeDropdown()">
                     <span class="navbar__dropdown-icon" aria-hidden="true">📦</span>
                     Meus Pedidos
+                    @if (chatNotification.totalUnread() > 0) {
+                      <span style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.7rem; margin-left: auto;">
+                        {{ chatNotification.totalUnread() }}
+                      </span>
+                    }
                   </a>
                   <a routerLink="/profile" class="navbar__dropdown-item" (click)="closeDropdown()">
                     <span class="navbar__dropdown-icon" aria-hidden="true">👤</span>
