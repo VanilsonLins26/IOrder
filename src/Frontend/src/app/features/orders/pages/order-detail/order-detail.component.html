@@ -24,6 +24,11 @@
           {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
         </button>
       }
+      @if (order.status === OrderStatusDto.AwaitingPayment) {
+        <button class="order-detail__pay-btn" (click)="openPaymentModal()">
+          Pagar Agora
+        </button>
+      }
     </div>
 
     <div class="order-detail__grid">
@@ -129,6 +134,14 @@
       (onAcceptProposal)="showAcceptConfirm.set(true)"
       (onDeclineProposal)="showDeclineConfirm.set(true)"
     ></app-order-chat-offcanvas>
+
+    <app-payment-brick
+      [orderId]="id()"
+      [totalAmount]="order.totalAmount"
+      [isOpen]="showPaymentModal()"
+      [payerEmail]="userEmail()"
+      (close)="showPaymentModal.set(false)"
+    ></app-payment-brick>
   }
 
   <app-confirmation-modal

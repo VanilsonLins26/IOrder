@@ -6,8 +6,10 @@ using IOrder.Application.UseCases.Payment.Commands;
 using IOrder.Communication.Enums;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Repositories.Payment;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Mapster;
 using Shouldly;
 
 namespace UseCases.Test.Payment;
@@ -101,16 +103,50 @@ public class CreatePaymentUseCaseTest
         exception.GetErrorMessages().ShouldHaveSingleItem().ShouldBe(ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING);
     }
 
+    [Fact]
+    public async Task Success_Duplicate_PIX_Returns_Existing()
+    {
+        var order = OrderBuilder.Build();
+        order.Accept();
+        var request = CreatePaymentRequestBuilder.BuildPix();
+        var existingPayment = new IOrder.Domain.Entities.Payment
+        {
+            Id = Guid.NewGuid(),
+            OrderId = order.Id,
+            Amount = order.TotalAmount,
+            CreatedAt = DateTime.UtcNow
+        };
+        existingPayment.SetPixPayment("12345", "base64-image", "copy-paste-key");
+        var expectedResponse = existingPayment.Adapt<PaymentResponseDto>();
+        var paymentReadOnly = new PaymentReadOnlyRepositoryBuilder()
+            .GetByOrderIdAsync(existingPayment)
+            .Build();
+
+        var useCase = CreateUseCase(order, request, null, paymentReadOnly: paymentReadOnly);
+
+        var result = await useCase.Execute(request);
+
+        result.ShouldNotBeNull();
+        result.Method.ShouldBe(PaymentMethodDto.Pix);
+        result.Status.ShouldBe(PaymentStatusDto.Pending);
+        result.Id.ShouldBe(existingPayment.Id);
+    }
+
     private static CreatePaymentUseCase CreateUseCase(
         IOrder.Domain.Entities.Order? order,
         IOrder.Communication.Request.CreatePaymentRequestDto? request,
         PaymentResponseDto? paymentResponse,
-        string loggedUserId = "test-user-id")
+        string loggedUserId = "test-user-id",
+        IPaymentReadOnlyRepository? paymentReadOnly = null)
     {
         var orderReadOnly = new OrderReadOnlyRepositoryBuilder()
             .GetByIdAsync(order)
             .Build();
         var loggedUser = LoggedUserBuilder.Build(loggedUserId);
+
+        paymentReadOnly ??= new PaymentReadOnlyRepositoryBuilder()
+            .GetByOrderIdAsync(null)
+            .Build();
 
         PaymentServiceBuilder paymentServiceBuilder = new();
         if (request is not null && paymentResponse is not null)
@@ -133,6 +169,7 @@ public class CreatePaymentUseCaseTest
             new CreatePaymentValidator(),
             loggedUser,
             orderReadOnly,
+            paymentReadOnly,
             paymentServiceBuilder.Build());
     }
 

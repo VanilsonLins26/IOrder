@@ -197,6 +197,23 @@ O frontend utiliza `@microsoft/signalr` para conexão em tempo real com o hub Si
 5. Indicadores de digitação são transmitidos via `UserTyping`/`UserStoppedTyping`
 6. Ao entrar na página, marca as mensagens como lidas via REST + SignalR
 
+### 💳 Módulo de Pagamentos (Mercado Pago)
+O sistema possui integração completa com o **Mercado Pago** através do **Checkout Bricks** no frontend (Angular) e SDK oficial no backend (.NET).
+
+**Métodos suportados:**
+- PIX (com cópia e cola + QR Code)
+- Cartão de Crédito (com parcelamento)
+- Boleto Bancário
+
+**Fluxo de Aprovação Híbrido:**
+Para garantir resiliência, a aplicação não depende 100% de Webhooks:
+1. **Aprovação Síncrona:** Se um pagamento via cartão de crédito for aprovado instantaneamente pelo banco, o `CreatePaymentUseCase` captura o status `approved` na própria resposta da criação, marcando o pedido como Pago, emitindo os eventos de domínio e notificando o frontend via SignalR (`PaymentStatusChanged`) na mesma hora.
+2. **Aprovação Assíncrona (Webhook):** Pagamentos como PIX, Boleto ou cartões em Análise de Fraude geram pagamentos no estado `Pending`. Quando o cliente paga (ou a análise conclui), o Mercado Pago aciona nosso Webhook (`POST /Payment/webhook`). O backend processa o payload, atualiza o status, notifica o cliente e emite os eventos de domínio.
+
+**Configuração Local (Sandbox):**
+- É necessário utilizar o `ngrok` apontando para a porta da API para receber os webhooks do Mercado Pago localmente.
+- O campo `WebhookUrl` no `appsettings.Development.json` deve ser constantemente atualizado com o domínio gerado pelo ngrok a cada reinicialização.
+
 ---
 
 ## 🛠️ Tecnologias
@@ -225,7 +242,7 @@ O frontend utiliza `@microsoft/signalr` para conexão em tempo real com o hub Si
 | **Event Log** | Apache Kafka | 2.15.0 | ✅ |
 | **Email** | MailHog (SMTP) | — | ✅ |
 | **WhatsApp** | EvolutionAPI (Baileys) | — | ✅ |
-| **Payments** | Mercado Pago | — | 🚧 |
+| **Payments** | Mercado Pago | Checkout Bricks | ✅ |
 
 ---
 

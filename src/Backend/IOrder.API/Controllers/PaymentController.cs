@@ -23,9 +23,23 @@ public class PaymentController : IOrderBaseController
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreatePayment(
         [FromServices] ICreatePaymentUseCase useCase,
+        [FromServices] IHubContext<ChatHub> hubContext,
         [FromBody] CreatePaymentRequestDto request)
     {
         var response = await useCase.Execute(request);
+
+        if (response?.Status is PaymentStatusDto.Approved or PaymentStatusDto.Rejected)
+        {
+            await hubContext.Clients.Group(response.OrderId.ToString()).SendAsync(
+                "PaymentStatusChanged",
+                new
+                {
+                    OrderId = response.OrderId,
+                    PaymentId = response.Id,
+                    Status = response.Status
+                });
+        }
+
         return Created(string.Empty, response);
     }
 

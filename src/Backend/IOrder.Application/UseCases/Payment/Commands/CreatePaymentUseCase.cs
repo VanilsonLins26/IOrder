@@ -3,10 +3,14 @@ using IOrder.Application.Services.Payment;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
+using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Security.Services;
+using IOrder.Domain.Events;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
+using Mapster;
 
 namespace IOrder.Application.UseCases.Payment.Commands;
 
@@ -15,18 +19,27 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IValidator<CreatePaymentRequestDto> _validator;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
+    private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
+    private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
     private readonly IPaymentService _paymentService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreatePaymentUseCase(
         IValidator<CreatePaymentRequestDto> validator,
         ILoggedUserService loggedUserService,
         IOrderReadOnlyRepository orderReadOnlyRepository,
-        IPaymentService paymentService)
+        IOrderWriteOnlyRepository orderWriteOnlyRepository,
+        IPaymentReadOnlyRepository paymentReadOnlyRepository,
+        IPaymentService paymentService,
+        IUnitOfWork unitOfWork)
     {
         _validator = validator;
         _loggedUserService = loggedUserService;
         _orderReadOnlyRepository = orderReadOnlyRepository;
+        _orderWriteOnlyRepository = orderWriteOnlyRepository;
+        _paymentReadOnlyRepository = paymentReadOnlyRepository;
         _paymentService = paymentService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PaymentResponseDto> Execute(CreatePaymentRequestDto request)
@@ -44,6 +57,10 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         if (order.Status != OrderStatus.AwaitingPayment)
             throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING]);
 
+        var existingPayment = await _paymentReadOnlyRepository.GetByOrderIdAsync(order.Id);
+        if (existingPayment is not null && existingPayment.Status == Domain.Entities.Enums.PaymentStatus.Pending)
+            return existingPayment.Adapt<PaymentResponseDto>();
+
         var paymentResponse = request.Method switch
         {
             Communication.Enums.PaymentMethodDto.Pix => await _paymentService.CreatePixPaymentAsync(
@@ -57,6 +74,18 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 
             _ => throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_METHOD_INVALID])
         };
+
+        if (paymentResponse.Status == Communication.Enums.PaymentStatusDto.Approved)
+        {
+            var trackedOrder = await _orderWriteOnlyRepository.GetByIdTracking(order.Id);
+            if (trackedOrder != null)
+            {
+                trackedOrder.MarkAsPaid();
+                trackedOrder.AddDomainEvent(new PaymentApprovedEvent(trackedOrder.Id, paymentResponse.Id, paymentResponse.Amount));
+                _orderWriteOnlyRepository.Update(trackedOrder);
+                await _unitOfWork.Commit();
+            }
+        }
 
         return paymentResponse;
     }

@@ -40,7 +40,7 @@ public class PaymentConfiguration : BaseEntityConfiguration<Domain.Entities.Paym
                .HasColumnType("text");
 
         builder.Property(x => x.PixCopyPaste)
-               .HasMaxLength(500);
+               .HasColumnType("text");
 
         builder.Property(x => x.BoletoUrl)
                .HasMaxLength(500);

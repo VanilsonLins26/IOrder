@@ -8,3 +8,4 @@ export { ChatApiService }          from './chat-api.service';
 export { ProfileApiService }       from './profile-api.service';
 export { UploadApiService }        from './upload-api.service';
 export { CustomizationApiService } from './customization-api.service';
+export { PaymentApiService } from './payment-api.service';
