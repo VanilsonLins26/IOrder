@@ -49,9 +49,10 @@ export class MyOrdersComponent implements OnInit {
     if (!orders.length) return false;
     const firstOrderDate = new Date(orders[0].createdAt).getTime();
     
-    return this.chatNotification.unreadConversations().some(c => 
-      new Date(c.createdAt).getTime() > firstOrderDate
-    );
+    const unread = this.chatNotification.unreadConversations();
+    const result = unread.some(c => new Date(c.createdAt).getTime() > firstOrderDate);
+    console.log('hasUnreadOnPreviousPage:', { firstOrderDate, unread, result });
+    return result;
   }
 
   hasUnreadOnNextPage(): boolean {
@@ -59,9 +60,10 @@ export class MyOrdersComponent implements OnInit {
     if (!orders.length) return false;
     const lastOrderDate = new Date(orders[orders.length - 1].createdAt).getTime();
     
-    return this.chatNotification.unreadConversations().some(c => 
-      new Date(c.createdAt).getTime() < lastOrderDate
-    );
+    const unread = this.chatNotification.unreadConversations();
+    const result = unread.some(c => new Date(c.createdAt).getTime() < lastOrderDate);
+    console.log('hasUnreadOnNextPage:', { lastOrderDate, unread, result });
+    return result;
   }
 
   changePage(page: number) {

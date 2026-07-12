@@ -123,20 +123,23 @@
         }
       </button>
     </div>
-
-    <app-order-chat-offcanvas
-      [isOpen]="chatOpen()"
-      [messages]="o.messages"
-      [orderStatus]="o.status"
-      userRole="ShopKeeper"
-      [typingUser]="typingUser()"
-      [sendingMessage]="sendingMessage()"
-      (closeOffcanvas)="chatOpen.set(false)"
-      (onSendMessage)="sendMessage($event)"
-      (typingNotify)="chatSignalr.userTyping(id())"
-      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
-    ></app-order-chat-offcanvas>
   }
+</div>
+
+@if (o) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="o.messages"
+    [orderStatus]="o.status"
+    userRole="ShopKeeper"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+  ></app-order-chat-offcanvas>
+}
 
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">
@@ -146,4 +149,3 @@
       </div>
     </div>
   }
-</div>

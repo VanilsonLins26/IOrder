@@ -123,31 +123,34 @@
         }
       </button>
     </div>
-
-    <app-order-chat-offcanvas
-      [isOpen]="chatOpen()"
-      [messages]="order.messages"
-      [orderStatus]="order.status"
-      userRole="Client"
-      [typingUser]="typingUser()"
-      [sendingMessage]="sendingMessage()"
-      [updatingStatus]="updatingStatus()"
-      (closeOffcanvas)="chatOpen.set(false)"
-      (onSendMessage)="sendMessage($event)"
-      (typingNotify)="chatSignalr.userTyping(id())"
-      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
-      (onAcceptProposal)="showAcceptConfirm.set(true)"
-      (onDeclineProposal)="showDeclineConfirm.set(true)"
-    ></app-order-chat-offcanvas>
-
-    <app-payment-brick
-      [orderId]="id()"
-      [totalAmount]="order.totalAmount"
-      [isOpen]="showPaymentModal()"
-      [payerEmail]="userEmail()"
-      (close)="showPaymentModal.set(false)"
-    ></app-payment-brick>
   }
+</div>
+
+@if (order) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="order.messages"
+    [orderStatus]="order.status"
+    userRole="Client"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    [updatingStatus]="updatingStatus()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+    (onAcceptProposal)="showAcceptConfirm.set(true)"
+    (onDeclineProposal)="showDeclineConfirm.set(true)"
+  ></app-order-chat-offcanvas>
+
+  <app-payment-brick
+    [orderId]="id()"
+    [totalAmount]="order.totalAmount"
+    [isOpen]="showPaymentModal()"
+    [payerEmail]="userEmail()"
+    (close)="showPaymentModal.set(false)"
+  ></app-payment-brick>
+}
 
   <app-confirmation-modal
     title="Cancelar Pedido"
@@ -190,4 +193,3 @@
       </div>
     </div>
   }
-</div>
