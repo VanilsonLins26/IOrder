@@ -114,6 +114,8 @@ public class MercadoPagoService : IPaymentService
             mpPayment.Installments ?? installments,
             mpPayment.TransactionDetails?.InstallmentAmount?.ToString() ?? "");
 
+        UpdatePaymentStatus(payment, mpPayment.Status);
+
         await _paymentWriteRepo.CreateAsync(payment);
         await _unitOfWork.Commit();
 
