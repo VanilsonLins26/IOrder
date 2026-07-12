@@ -7,7 +7,7 @@ import type { CreatePaymentRequestDto, PaymentResponseDto, PublicKeyResponseDto 
 @Injectable({ providedIn: 'root' })
 export class PaymentApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/payments`;
+  private readonly baseUrl = `${environment.apiUrl}/Payment`;
 
   create(dto: CreatePaymentRequestDto): Observable<PaymentResponseDto> {
     return this.http.post<PaymentResponseDto>(this.baseUrl, dto);
