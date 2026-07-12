@@ -7,6 +7,8 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Events;
 using IOrder.Domain.Repositories;
+using IOrder.Domain.SeedWork;
+using IOrder.Domain.Services;
 using Moq;
 using Shouldly;
 

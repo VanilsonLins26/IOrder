@@ -28,7 +28,7 @@ public class PaymentBuilder
             case PaymentMethod.CreditCard:
                 payment.SetCardPayment(
                     faker.Random.AlphaNumeric(12),
-                    faker.Finance.LastFourDigits(),
+                    faker.Random.ReplaceNumbers("####"),
                     faker.Random.Int(1, 12),
                     faker.Finance.Amount(10, 100).ToString("F2"));
                 break;
@@ -89,7 +89,7 @@ public class PaymentBuilder
         };
         payment.SetCardPayment(
             faker.Random.AlphaNumeric(12),
-            faker.Finance.LastFourDigits(),
+            faker.Random.ReplaceNumbers("####"),
             faker.Random.Int(1, 12),
             faker.Finance.Amount(10, 100).ToString("F2"));
         return payment;

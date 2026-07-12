@@ -18,7 +18,7 @@ public class CreatePaymentUseCaseTest
     public async Task Success_PIX()
     {
         var order = OrderBuilder.Build();
-        order.Status = OrderStatus.AwaitingPayment;
+        order.Accept();
         var request = CreatePaymentRequestBuilder.BuildPix();
         var expectedResponse = BuildPaymentResponse(PaymentMethodDto.Pix);
         var useCase = CreateUseCase(order, request, expectedResponse);
@@ -34,7 +34,7 @@ public class CreatePaymentUseCaseTest
     public async Task Success_CreditCard()
     {
         var order = OrderBuilder.Build();
-        order.Status = OrderStatus.AwaitingPayment;
+        order.Accept();
         var request = CreatePaymentRequestBuilder.BuildCreditCard();
         var expectedResponse = BuildPaymentResponse(PaymentMethodDto.CreditCard);
         var useCase = CreateUseCase(order, request, expectedResponse);
@@ -50,7 +50,7 @@ public class CreatePaymentUseCaseTest
     public async Task Success_Boleto()
     {
         var order = OrderBuilder.Build();
-        order.Status = OrderStatus.AwaitingPayment;
+        order.Accept();
         var request = CreatePaymentRequestBuilder.BuildBoleto();
         var expectedResponse = BuildPaymentResponse(PaymentMethodDto.Boleto);
         var useCase = CreateUseCase(order, request, expectedResponse);
@@ -78,7 +78,7 @@ public class CreatePaymentUseCaseTest
     public async Task Error_Order_Not_Owned()
     {
         var order = OrderBuilder.Build(userId: "other-user");
-        order.Status = OrderStatus.AwaitingPayment;
+        order.Accept();
         var request = CreatePaymentRequestBuilder.Build();
         var useCase = CreateUseCase(order, request, null, loggedUserId: "current-user");
 
@@ -92,7 +92,6 @@ public class CreatePaymentUseCaseTest
     public async Task Error_Order_Not_Awaiting_Payment()
     {
         var order = OrderBuilder.Build();
-        order.Status = OrderStatus.Pending;
         var request = CreatePaymentRequestBuilder.Build();
         var useCase = CreateUseCase(order, request, null);
 
@@ -104,7 +103,7 @@ public class CreatePaymentUseCaseTest
 
     private static CreatePaymentUseCase CreateUseCase(
         IOrder.Domain.Entities.Order? order,
-        Communication.Request.CreatePaymentRequestDto? request,
+        IOrder.Communication.Request.CreatePaymentRequestDto? request,
         PaymentResponseDto? paymentResponse,
         string loggedUserId = "test-user-id")
     {
@@ -149,7 +148,7 @@ public class CreatePaymentUseCaseTest
             CreatedAt = DateTime.UtcNow,
             PixQrCode = method == PaymentMethodDto.Pix ? faker.Image.PicsumUrl() : null,
             PixCopyPaste = method == PaymentMethodDto.Pix ? faker.Random.AlphaNumeric(60) : null,
-            CardLastFourDigits = method == PaymentMethodDto.CreditCard ? faker.Finance.LastFourDigits() : null,
+            CardLastFourDigits = method == PaymentMethodDto.CreditCard ? faker.Random.ReplaceNumbers("####") : null,
             Installments = method == PaymentMethodDto.CreditCard ? faker.Random.Int(1, 12) : null,
             BoletoUrl = method == PaymentMethodDto.Boleto ? faker.Internet.Url() : null,
             BoletoBarcode = method == PaymentMethodDto.Boleto ? faker.Random.AlphaNumeric(48) : null,
