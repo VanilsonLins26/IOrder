@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/cor
 import { RouterOutlet, Router } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService } from '@auth0/auth0-angular';
 import { Roles } from '../../core/auth/role.guard';
 
 @Component({
@@ -35,8 +35,9 @@ export class ClientLayoutComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit(): void {
-    this.authService.user$.subscribe(user => {
-      if (user && user.roles && user.roles.includes(Roles.ShopKeeper)) {
+    this.authService.user$.subscribe((user: any) => {
+      const roles: string[] = user?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
+      if (roles.includes(Roles.ShopKeeper)) {
         this.router.navigate(['/admin']);
       }
     });

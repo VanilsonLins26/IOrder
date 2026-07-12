@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';

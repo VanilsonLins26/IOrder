@@ -45,7 +45,7 @@
 
               <div class="cart-item__info">
                 <p class="cart-item__name">{{ item.productName || 'Produto' }}</p>
-                @if (item.selectedOptions?.length) {
+                @if (item.selectedOptions.length) {
                   <div class="cart-item__selected-options">
                     @for (opt of item.selectedOptions; track opt.optionId) {
                       <span class="cart-item__option-tag">
@@ -61,7 +61,7 @@
                 @if (item.customize) {
                   <p class="cart-item__customize">{{ item.customize }}</p>
                 }
-                @if (item.imageUrls?.length) {
+                @if (item.imageUrls.length) {
                   <div class="cart-item__customize-images">
                     @for (url of item.imageUrls; track url) {
                       <img [src]="url" alt="Customização" class="cart-item__customize-thumb" />
