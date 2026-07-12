@@ -50,7 +50,8 @@ public class MercadoPagoService : IPaymentService
             Description = $"Pedido #{orderId.ToString("N")[..8].ToUpper()}",
             Payer = new PaymentPayerRequest
             {
-                Email = payerEmail
+                Email = payerEmail,
+                FirstName = "APRO" // Força aprovação automática no Sandbox do Mercado Pago
             },
             NotificationUrl = _settings.WebhookUrl
         };
