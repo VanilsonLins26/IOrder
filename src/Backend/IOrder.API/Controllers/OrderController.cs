@@ -65,12 +65,22 @@ public class OrderController : IOrderBaseController
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateOrderStatus(
+    public async Task<IActionResult> UpdateStatus(
         [FromServices] IUpdateOrderStatusUseCase useCase,
-        Guid id,
+        [FromServices] IHubContext<ChatHub> hubContext,
+        [FromRoute] Guid id,
         [FromBody] UpdateOrderStatusRequestDto request)
     {
         var response = await useCase.Execute(id, request);
+
+        await hubContext.Clients.Group(id.ToString()).SendAsync(
+            "OrderStatusChanged",
+            new
+            {
+                OrderId = response.Id,
+                Status = (int)response.Status
+            });
+
         return Ok(response);
     }
 
