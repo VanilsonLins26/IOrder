@@ -31,16 +31,15 @@
 
 .settings-container {
   background: var(--surface-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   overflow: hidden;
-
 }
 
 .settings-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   background: var(--surface-secondary);
 
   button {
@@ -109,24 +108,26 @@
 
 .btn {
   padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-lg);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);
   cursor: pointer;
   border: none;
-  transition: all var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-500-rgb), 0.2);
 
   &--primary {
-    background: var(--color-primary-500);
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
     color: white;
 
     &:hover:not(:disabled) {
-      background: var(--color-primary-600);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(var(--color-primary-500-rgb), 0.35);
     }
 
     &:disabled {
-      opacity: 0.6;
+      background: var(--color-neutral-300);
+      box-shadow: none;
       cursor: not-allowed;
     }
   }
@@ -136,21 +137,30 @@
 .hours-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .hour-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface-secondary);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
+  padding: var(--space-4);
+  background: var(--surface-primary);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
 
   &.is-closed {
     opacity: 0.6;
     background: var(--surface-hover);
+    box-shadow: none;
+    &:hover { transform: none; }
   }
 
   @media (max-width: 640px) {
