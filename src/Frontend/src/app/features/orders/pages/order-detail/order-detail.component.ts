@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -12,12 +12,13 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { PaymentBrickComponent } from '../../../../shared/components/payment-brick/payment-brick.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,7 +44,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly showCancelConfirm = signal(false);
   readonly showAcceptConfirm = signal(false);
   readonly showDeclineConfirm = signal(false);
-
+  readonly showPaymentModal = signal(false);
+  readonly userEmail = computed(() => this.currentUser()?.email ?? '');
 
   ngOnInit() {
     this.store.loadById(this.id());
@@ -88,6 +90,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.chatSignalr.onUserStoppedTyping = (orderId) => {
       if (orderId !== this.id()) return;
       this.typingUser.set(null);
+    };
+
+    this.chatSignalr.onPaymentStatusChanged = (event) => {
+      if (event.orderId !== this.id()) return;
+      this.store.loadById(this.id());
+      if (this.showPaymentModal()) {
+        this.showPaymentModal.set(false);
+      }
     };
   }
 
@@ -198,6 +208,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.chatOpen.set(true);
     this.chatApi.markAsRead(this.id()).subscribe();
     this.chatSignalr.markOrderRead(this.id());
+  }
+
+  openPaymentModal() {
+    this.showPaymentModal.set(true);
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;

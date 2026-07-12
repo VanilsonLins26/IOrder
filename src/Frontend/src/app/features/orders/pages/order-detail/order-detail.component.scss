@@ -221,6 +221,22 @@
   margin-bottom: var(--space-4);
 }
 
+.order-detail__pay-btn {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-500);
+  color: white;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--color-primary-600);
+  }
+}
+
 .order-detail__cancel-btn {
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
