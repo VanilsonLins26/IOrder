@@ -617,5 +617,77 @@ namespace IOrder.Exceptions {
                 return ResourceManager.GetString("ORDER_DELIVERY_DATE_IN_PAST", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O email do pagador é obrigatório.
+        /// </summary>
+        public static string PAYMENT_EMAIL_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_EMAIL_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O email do pagador é inválido.
+        /// </summary>
+        public static string PAYMENT_EMAIL_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_EMAIL_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O token do cartão é obrigatório para pagamento com cartão de crédito.
+        /// </summary>
+        public static string PAYMENT_CARD_TOKEN_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_CARD_TOKEN_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número de parcelas é obrigatório para pagamento com cartão de crédito.
+        /// </summary>
+        public static string PAYMENT_INSTALLMENTS_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_INSTALLMENTS_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número de parcelas deve ser maior que zero.
+        /// </summary>
+        public static string PAYMENT_INSTALLMENTS_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_INSTALLMENTS_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Pedido não está aguardando pagamento.
+        /// </summary>
+        public static string PAYMENT_ORDER_NOT_AWAITING {
+            get {
+                return ResourceManager.GetString("PAYMENT_ORDER_NOT_AWAITING", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Método de pagamento inválido.
+        /// </summary>
+        public static string PAYMENT_METHOD_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_METHOD_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O id do pedido é obrigatório.
+        /// </summary>
+        public static string PAYMENT_ORDER_ID_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_ORDER_ID_EMPTY", resourceCulture);
+            }
+        }
     }
 }

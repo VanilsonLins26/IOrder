@@ -1,16 +1,20 @@
+using IOrder.Application.Services.Payment;
 using IOrder.Domain.Repositories;
+using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Repositories.Product;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Security.Services;
 using IOrder.Domain.Services;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Repositories;
+using IOrder.infrastructure.Repositories.Payment;
 using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
 using IOrder.infrastructure.Services;
 using IOrder.infrastructure.Services.Email;
 using IOrder.infrastructure.Services.Evolution;
 using IOrder.infrastructure.Services.MessageBus;
+using IOrder.infrastructure.Services.Payment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using IOrder.Domain.Repositories.Cart;
@@ -34,7 +38,7 @@ public static class DependencyInjectionExtension
     {
         AddDbContext(services, configuration);
         AddRepositories(services);
-        AddServices(services);
+        AddServices(services, configuration);
         AddWorkers(services);
         AddRedisCache(services, configuration);
     }
@@ -87,10 +91,13 @@ public static class DependencyInjectionExtension
         services.AddScoped<ICustomizationReadOnlyRepository, CustomizationRepository>();
         services.AddScoped<ICustomizationWriteOnlyRepository, CustomizationRepository>();
 
+        services.AddScoped<IPaymentReadOnlyRepository, PaymentRepository>();
+        services.AddScoped<IPaymentWriteOnlyRepository, PaymentRepository>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
-    private static void AddServices(IServiceCollection services)
+    private static void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ILoggedUserService, LoggedUser.LoggedUserService>();
         services.AddScoped<IStorageService, CloudinaryStorageService>();
@@ -100,6 +107,8 @@ public static class DependencyInjectionExtension
         services.AddScoped<IDomainEventDispatcher, KafkaDomainEventDispatcher>();
         services.AddSingleton<IEmailService, SmtpEmailService>();
         services.AddSingleton<IEvolutionApiService, EvolutionApiService>();
+        services.Configure<MercadoPagoSettings>(configuration.GetSection(MercadoPagoSettings.SectionName));
+        services.AddScoped<IPaymentService, Services.Payment.MercadoPagoService>();
     }
 
     private static void AddWorkers(IServiceCollection services)

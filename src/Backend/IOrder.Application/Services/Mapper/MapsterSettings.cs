@@ -33,5 +33,10 @@ public static class MapsterSettings
         TypeAdapterConfig<ConversationSummary, ConversationResponseDto>
             .NewConfig()
             .TwoWays();
+
+        TypeAdapterConfig<Domain.Entities.Payment, PaymentResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.Method, src => src.Method);
     }
 }
