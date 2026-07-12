@@ -134,6 +134,14 @@
       (onAcceptProposal)="showAcceptConfirm.set(true)"
       (onDeclineProposal)="showDeclineConfirm.set(true)"
     ></app-order-chat-offcanvas>
+
+    <app-payment-brick
+      [orderId]="id()"
+      [totalAmount]="order.totalAmount"
+      [isOpen]="showPaymentModal()"
+      [payerEmail]="userEmail()"
+      (close)="showPaymentModal.set(false)"
+    ></app-payment-brick>
   }
 
   <app-confirmation-modal
@@ -168,14 +176,6 @@
     (cancel)="showDeclineConfirm.set(false)"
     (close)="showDeclineConfirm.set(false)"
   ></app-confirmation-modal>
-
-  <app-payment-brick
-    [orderId]="id()"
-    [totalAmount]="order.totalAmount"
-    [isOpen]="showPaymentModal()"
-    [payerEmail]="userEmail()"
-    (close)="showPaymentModal.set(false)"
-  ></app-payment-brick>
 
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">
