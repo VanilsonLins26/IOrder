@@ -80,8 +80,10 @@ export class PaymentBrickComponent implements OnDestroy {
       this.cardBrickInstance?.create('cardPayment', 'cardPaymentBrick_container', {
         initialization: { amount: this.totalAmount() },
         callbacks: {
-          onSubmit: ({ tokenizedCard, installments }: any) => {
-            this.processCardPayment(tokenizedCard, installments ?? 1);
+          onSubmit: (formData: any) => {
+            return new Promise<void>((resolve, reject) => {
+              this.processCardPayment(formData.token, formData.installments ?? 1, resolve, reject);
+            });
           },
           onError: (error: any) => {
             this.error.set(error?.message || 'Erro no formulário de cartão.');
@@ -94,7 +96,7 @@ export class PaymentBrickComponent implements OnDestroy {
     }
   }
 
-  private processCardPayment(token: string, installments: number): void {
+  private processCardPayment(token: string, installments: number, resolve: () => void, reject: () => void): void {
     this.cardProcessing.set(true);
     this.error.set(null);
 
@@ -110,10 +112,12 @@ export class PaymentBrickComponent implements OnDestroy {
         this.cardProcessing.set(false);
         this.paymentCreated.emit(result);
         this.toast.success('Pagamento processado com sucesso!');
+        resolve();
       },
       error: (err) => {
         this.cardProcessing.set(false);
         this.error.set(err.error?.errors?.[0] || 'Erro ao processar pagamento.');
+        reject();
       },
     });
   }
