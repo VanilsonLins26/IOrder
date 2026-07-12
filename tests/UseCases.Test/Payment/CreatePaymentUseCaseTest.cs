@@ -130,6 +130,7 @@ public class CreatePaymentUseCaseTest
         }
 
         return new CreatePaymentUseCase(
+            new CreatePaymentValidator(),
             loggedUser,
             orderReadOnly,
             paymentServiceBuilder.Build());

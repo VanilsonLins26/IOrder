@@ -1,9 +1,14 @@
+using CommomTestUtilities.Entities;
 using CommomTestUtilities.Requests.Cart;
 using CommomTestUtilities.Requests.Payment;
 using IOrder.Communication.Enums;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
+using IOrder.Domain.Entities.Enums;
 using IOrder.Exceptions;
+using IOrder.infrastructure.DataAccess;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
@@ -113,9 +118,11 @@ public class PaymentIntegrationTest : IOrderClassFixture
     {
         var orderId = await SeedAcceptedOrder();
 
-        var createRequest = CreatePaymentRequestBuilder.BuildPix();
-        createRequest.OrderId = orderId;
-        await DoPost("payment", createRequest, _userToken);
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var payment = PaymentBuilder.BuildPix(orderId);
+        await dbContext.Payments.AddAsync(payment);
+        await dbContext.SaveChangesAsync();
 
         var response = await DoGet($"payment/{orderId}", _userToken);
 

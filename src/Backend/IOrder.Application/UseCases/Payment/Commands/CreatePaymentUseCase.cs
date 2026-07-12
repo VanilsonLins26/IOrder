@@ -1,3 +1,4 @@
+using FluentValidation;
 using IOrder.Application.Services.Payment;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
@@ -11,15 +12,18 @@ namespace IOrder.Application.UseCases.Payment.Commands;
 
 public class CreatePaymentUseCase : ICreatePaymentUseCase
 {
+    private readonly IValidator<CreatePaymentRequestDto> _validator;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
     private readonly IPaymentService _paymentService;
 
     public CreatePaymentUseCase(
+        IValidator<CreatePaymentRequestDto> validator,
         ILoggedUserService loggedUserService,
         IOrderReadOnlyRepository orderReadOnlyRepository,
         IPaymentService paymentService)
     {
+        _validator = validator;
         _loggedUserService = loggedUserService;
         _orderReadOnlyRepository = orderReadOnlyRepository;
         _paymentService = paymentService;
@@ -27,6 +31,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 
     public async Task<PaymentResponseDto> Execute(CreatePaymentRequestDto request)
     {
+        await Validate(request);
+
         var userId = _loggedUserService.GetUserId();
 
         var order = await _orderReadOnlyRepository.GetByIdAsync(request.OrderId)
@@ -53,5 +59,16 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         };
 
         return paymentResponse;
+    }
+
+    private async Task Validate(CreatePaymentRequestDto request)
+    {
+        var result = await _validator.ValidateAsync(request);
+
+        if (!result.IsValid)
+        {
+            var errorMessages = result.Errors.Select(e => e.ErrorMessage).ToList();
+            throw new ErrorOnValidationException(errorMessages);
+        }
     }
 }
