@@ -2,6 +2,8 @@ using CommomTestUtilities.Entities;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.SeedWork;
+using IOrder.Application.Services.Payment;
+using IOrder.Communication.Response;
 using IOrder.Domain.Services;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Services.MessageBus;
@@ -30,6 +32,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     public IEnumerable<IOrder.Domain.Entities.Coupon> CouponList { get; private set; } = [];
     public Mock<IEmailService> EmailMock { get; } = new();
     public Mock<IEvolutionApiService> EvolutionMock { get; } = new();
+    public Mock<IPaymentService> PaymentMock { get; } = new();
 
     public CustomWebApplicationFactory()
     {
@@ -92,6 +95,67 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             EvolutionMock.Setup(e => e.SendTextAsync(It.IsAny<string>(), It.IsAny<string>()))
                          .Returns(Task.CompletedTask);
             services.AddSingleton<IEvolutionApiService>(EvolutionMock.Object);
+
+            var paymentDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IPaymentService));
+            if (paymentDesc is not null)
+                services.Remove(paymentDesc);
+            PaymentMock.Setup(s => s.CreatePixPaymentAsync(
+                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
+                .ReturnsAsync((Guid orderId, decimal amount, string email, string? ident) =>
+                    new PaymentResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = orderId,
+                        Amount = amount,
+                        Method = IOrder.Communication.Enums.PaymentMethodDto.Pix,
+                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
+                        PixQrCode = "test-qr",
+                        PixCopyPaste = "test-copy-paste",
+                        CreatedAt = DateTime.UtcNow
+                    });
+            PaymentMock.Setup(s => s.CreateCardPaymentAsync(
+                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<int>(),
+                It.IsAny<string>(), It.IsAny<string?>()))
+                .ReturnsAsync((Guid orderId, decimal amount, string token, int installments, string email, string? ident) =>
+                    new PaymentResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = orderId,
+                        Amount = amount,
+                        Method = IOrder.Communication.Enums.PaymentMethodDto.CreditCard,
+                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
+                        CardLastFourDigits = "1234",
+                        Installments = installments,
+                        CreatedAt = DateTime.UtcNow
+                    });
+            PaymentMock.Setup(s => s.CreateBoletoPaymentAsync(
+                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
+                .ReturnsAsync((Guid orderId, decimal amount, string email, string? ident) =>
+                    new PaymentResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = orderId,
+                        Amount = amount,
+                        Method = IOrder.Communication.Enums.PaymentMethodDto.Boleto,
+                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
+                        BoletoUrl = "https://test.boleto/123",
+                        BoletoBarcode = "1234567890",
+                        CreatedAt = DateTime.UtcNow
+                    });
+            PaymentMock.Setup(s => s.ProcessWebhookAsync(
+                It.IsAny<string>(), It.IsAny<string?>()))
+                .ReturnsAsync((string payload, string? signature) =>
+                    new PaymentResponseDto
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = Guid.NewGuid(),
+                        Amount = 100m,
+                        Method = IOrder.Communication.Enums.PaymentMethodDto.Pix,
+                        Status = IOrder.Communication.Enums.PaymentStatusDto.Approved,
+                        CreatedAt = DateTime.UtcNow,
+                        PaidAt = DateTime.UtcNow
+                    });
+            services.AddSingleton<IPaymentService>(PaymentMock.Object);
 
             AddStubServices(services);
         });
