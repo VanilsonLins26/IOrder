@@ -1,0 +1,110 @@
+<app-modal title="Pagamento" [isOpen]="isOpen()" (close)="close.emit()">
+  <div class="payment-brick">
+    <div class="payment-amount">
+      Total: {{ totalAmount() | currency:'BRL' }}
+    </div>
+
+    <div class="payment-methods">
+      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.Pix"
+              (click)="selectMethod(PaymentMethodDto.Pix)" [disabled]="loading() || cardProcessing()">
+        PIX
+      </button>
+      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.CreditCard"
+              (click)="selectMethod(PaymentMethodDto.CreditCard)" [disabled]="loading() || cardProcessing()">
+        Cartão de Crédito
+      </button>
+      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.Boleto"
+              (click)="selectMethod(PaymentMethodDto.Boleto)" [disabled]="loading() || cardProcessing()">
+        Boleto
+      </button>
+    </div>
+
+    @if (error(); as err) {
+      <div class="payment-error">{{ err }}</div>
+    }
+
+    @if (selectedMethod() === PaymentMethodDto.Pix) {
+      @if (paymentResult(); as result) {
+        <div class="payment-result">
+          <h3>PIX gerado com sucesso!</h3>
+          @if (result.pixQrCode) {
+            <img [src]="'data:image/png;base64,' + result.pixQrCode" alt="QR Code PIX" class="pix-qr" />
+          }
+          @if (result.pixCopyPaste) {
+            <div class="pix-key-container">
+              <code class="pix-key">{{ result.pixCopyPaste }}</code>
+              <button type="button" class="pix-copy-btn" (click)="copyPixKey()">Copiar</button>
+            </div>
+          }
+          <p class="payment-instruction">Escaneie o QR Code ou copie a chave PIX para pagar no seu banco.</p>
+          <p class="payment-instruction">Assim que o pagamento for confirmado, o status do pedido será atualizado automaticamente.</p>
+        </div>
+      } @else {
+        <div class="payment-form">
+          <label class="payment-label">
+            Seu email
+            <input type="email" class="payment-input" [ngModel]="userEmail() || payerEmail()"
+                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
+          </label>
+          <button type="button" class="payment-action-btn" (click)="processPix()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Gerando...
+            } @else {
+              Pagar com PIX
+            }
+          </button>
+        </div>
+      }
+    }
+
+    @if (selectedMethod() === PaymentMethodDto.CreditCard) {
+      @if (paymentResult(); as result) {
+        <div class="payment-result">
+          <h3>Pagamento processado!</h3>
+          @if (result.cardLastFourDigits) {
+            <p>Cartão final {{ result.cardLastFourDigits }}</p>
+          }
+          @if (result.installments && result.installmentAmount) {
+            <p>{{ result.installments }}x de {{ result.installmentAmount | currency:'BRL' }}</p>
+          }
+          <p class="payment-instruction">Aguardando confirmação do pagamento...</p>
+        </div>
+      } @else {
+        <div id="cardPaymentBrick_container" class="card-brick-container"></div>
+        @if (cardProcessing()) {
+          <div class="payment-loading">Processando pagamento...</div>
+        }
+      }
+    }
+
+    @if (selectedMethod() === PaymentMethodDto.Boleto) {
+      @if (paymentResult(); as result) {
+        <div class="payment-result">
+          <h3>Boleto gerado com sucesso!</h3>
+          @if (result.boletoUrl) {
+            <a [href]="result.boletoUrl" target="_blank" class="boleto-link" rel="noopener">Visualizar Boleto</a>
+          }
+          @if (result.boletoBarcode) {
+            <p class="boleto-barcode">{{ result.boletoBarcode }}</p>
+          }
+          <p class="payment-instruction">Pague o boleto em qualquer banco ou casa lotérica.</p>
+        </div>
+      } @else {
+        <div class="payment-form">
+          <label class="payment-label">
+            Seu email
+            <input type="email" class="payment-input" [ngModel]="userEmail() || payerEmail()"
+                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
+          </label>
+          <button type="button" class="payment-action-btn" (click)="processBoleto()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Gerando...
+            } @else {
+              Gerar Boleto
+            }
+          </button>
+        </div>
+      }
+    }
+  </div>
+</app-modal>
