@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { ChatNotificationService } from '../../../../core/services/chat-notification.service';
 import { OrdersStore } from '../../store/orders.store';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
@@ -21,6 +22,7 @@ export class MyOrdersComponent implements OnInit {
   readonly store = inject(OrdersStore);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly chatNotification = inject(ChatNotificationService);
   
   readonly currentUser = toSignal(this.auth.user$);
 
@@ -40,6 +42,26 @@ export class MyOrdersComponent implements OnInit {
     const uid = this.currentUser()?.sub;
     if (!uid || !order.messages) return 0;
     return order.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  }
+
+  hasUnreadOnPreviousPage(): boolean {
+    const orders = this.store.orders();
+    if (!orders.length) return false;
+    const firstOrderDate = new Date(orders[0].createdAt).getTime();
+    
+    return this.chatNotification.unreadConversations().some(c => 
+      new Date(c.createdAt).getTime() > firstOrderDate
+    );
+  }
+
+  hasUnreadOnNextPage(): boolean {
+    const orders = this.store.orders();
+    if (!orders.length) return false;
+    const lastOrderDate = new Date(orders[orders.length - 1].createdAt).getTime();
+    
+    return this.chatNotification.unreadConversations().some(c => 
+      new Date(c.createdAt).getTime() < lastOrderDate
+    );
   }
 
   changePage(page: number) {

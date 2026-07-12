@@ -8,6 +8,8 @@
   } @else if (store.orders().length === 0) {
     <p class="store-orders__empty">Nenhum pedido recebido ainda.</p>
   } @else {
+
+    <!-- ══ DESKTOP TABLE ══════════════════════════════════════════════════════ -->
     <div class="store-orders__table">
       <div class="store-orders__table-header">
         <span class="col--id">Pedido</span>
@@ -23,12 +25,10 @@
           <span class="col--id">
             #{{ order.id | slice:0:8 }}
             @if (getUnreadCount(order) > 0) {
-              <span style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.7rem; margin-left: 8px; vertical-align: middle;">
-                {{ getUnreadCount(order) }} nova(s)
-              </span>
+              <span class="unread-badge">{{ getUnreadCount(order) }}</span>
             }
           </span>
-          <span class="col--date">{{ order.createdAt | date:"dd/MM/yyyy" }}</span>
+          <span class="col--date">{{ order.createdAt | date:'dd/MM/yyyy' }}</span>
           <span class="col--items">{{ order.items.length }}</span>
           <span class="col--total">{{ order.totalAmount | currency:'BRL' }}</span>
           <span class="col--status">
@@ -37,9 +37,13 @@
             </span>
           </span>
           <span class="col--actions">
-            <a [routerLink]="['/admin/orders', order.id]" class="action-btn">Ver</a>
+            <a [routerLink]="['/admin/orders', order.id]" class="action-link">Ver</a>
             @for (action of getNextStatuses(order.status); track action.status) {
-              <button class="action-btn action-btn--primary" (click)="updateStatus(order.id, action.status)">
+              <button
+                class="action-btn"
+                [class.action-btn--danger]="action.status === OrderStatusDto.Cancelled || action.status === OrderStatusDto.Declined"
+                (click)="updateStatus(order.id, action.status)"
+              >
                 {{ action.label }}
               </button>
             }
@@ -54,7 +58,13 @@
           class="pagination__btn"
           [disabled]="store.currentPage() <= 1"
           (click)="changePage(store.currentPage() - 1)"
-        >← Anterior</button>
+          style="position: relative;"
+        >
+          &larr; Anterior
+          @if (hasUnreadOnPreviousPage()) {
+            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+          }
+        </button>
         <span class="pagination__info">
           Página {{ store.currentPage() }} de {{ store.totalPages() }}
         </span>
@@ -62,7 +72,13 @@
           class="pagination__btn"
           [disabled]="store.currentPage() >= store.totalPages()"
           (click)="changePage(store.currentPage() + 1)"
-        >Próxima →</button>
+          style="position: relative;"
+        >
+          Pr&oacute;xima &rarr;
+          @if (hasUnreadOnNextPage()) {
+            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+          }
+        </button>
       </div>
     }
   }

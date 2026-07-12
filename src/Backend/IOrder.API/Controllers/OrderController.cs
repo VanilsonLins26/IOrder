@@ -2,8 +2,10 @@ using IOrder.Application.UseCases.Order.Commands;
 using IOrder.Application.UseCases.Order.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
+using IOrder.infrastructure.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace IOrder.API.Controllers;
 
