@@ -26,7 +26,10 @@
 
       @if (auth.isAuthenticated$ | async) {
         @if (auth.user$ | async; as user) {
-          <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">
+          <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()" style="position: relative;">
+            @if (chatNotification.totalUnread() > 0) {
+              <span style="position: absolute; top: -2px; left: -2px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; z-index: 2;"></span>
+            }
             @if (user.picture) {
               <img [src]="user.picture" [alt]="user.name || 'Avatar'"
                    class="navbar__avatar" width="32" height="32" />

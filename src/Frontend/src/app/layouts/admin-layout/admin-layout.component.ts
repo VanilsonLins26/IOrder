@@ -36,12 +36,12 @@ import { ChatNotificationService } from '../../core/services/chat-notification.s
             @if (!sidebarCollapsed()) { 
               <span>Pedidos</span> 
               @if (chatNotification.totalUnread() > 0) {
-                <span style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.7rem; margin-left: auto;">
+                <span style="background: #ef4444; color: white; border-radius: 12px; padding: 0 6px; font-size: 0.75rem; font-weight: 600; margin-left: auto; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px;">
                   {{ chatNotification.totalUnread() }}
                 </span>
               }
             } @else if (chatNotification.totalUnread() > 0) {
-              <span style="position: absolute; top: 0; right: 0; background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.6rem;">
+              <span style="position: absolute; top: 0; right: 0; background: #ef4444; color: white; border-radius: 10px; padding: 0 4px; font-size: 0.65rem; font-weight: 600; display: flex; align-items: center; justify-content: center; min-width: 16px; height: 16px;">
                 {{ chatNotification.totalUnread() }}
               </span>
             }
