@@ -18,8 +18,10 @@
       </span>
     </header>
 
+    <app-order-timeline [status]="order.status"></app-order-timeline>
+
     <div class="order-detail__actions">
-      @if (order.status === OrderStatusDto.Pending) {
+      @if (order.status === OrderStatusDto.Pending || order.status === OrderStatusDto.Negotiating) {
         <button class="order-detail__cancel-btn" (click)="showCancelConfirm.set(true)" [disabled]="cancelling()">
           {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
         </button>
@@ -114,8 +116,13 @@
     </div>
 
     <div style="margin-top: 24px;">
-      <button class="action-btn action-btn--primary" style="width: 100%; display: block; padding: 12px; font-size: 1rem;" (click)="openChat()">
+      <button class="action-btn action-btn--primary" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; font-size: 1rem; position: relative;" (click)="openChat()">
         💬 Abrir Negociação / Chat
+        @if (unreadMessagesCount() > 0) {
+          <span style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; border: 2px solid white;">
+            {{ unreadMessagesCount() }}
+          </span>
+        }
       </button>
     </div>
 

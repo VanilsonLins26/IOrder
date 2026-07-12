@@ -13,12 +13,13 @@ import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../.
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { PaymentBrickComponent } from '../../../../shared/components/payment-brick/payment-brick.component';
+import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent, OrderTimelineComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,6 +47,13 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly showDeclineConfirm = signal(false);
   readonly showPaymentModal = signal(false);
   readonly userEmail = computed(() => this.currentUser()?.email ?? '');
+
+  readonly unreadMessagesCount = computed(() => {
+    const o = this.store.currentOrder();
+    const uid = this.currentUser()?.sub;
+    if (!o || !uid) return 0;
+    return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  });
 
   ngOnInit() {
     this.store.loadById(this.id());
@@ -98,6 +106,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       if (this.showPaymentModal()) {
         this.showPaymentModal.set(false);
       }
+    };
+
+    this.chatSignalr.onOrderStatusChanged = (event) => {
+      if (event.orderId !== this.id()) return;
+      this.store.loadById(this.id());
     };
   }
 

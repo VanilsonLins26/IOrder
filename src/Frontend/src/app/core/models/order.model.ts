@@ -84,3 +84,8 @@ export interface OrderResponseDto {
   items: OrderItemResponseDto[];
   messages: OrderMessageResponseDto[];
 }
+
+export interface OrderStatusChangedEvent {
+  orderId: string;
+  status: OrderStatusDto;
+}

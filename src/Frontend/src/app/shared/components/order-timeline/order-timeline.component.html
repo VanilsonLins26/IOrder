@@ -1,0 +1,24 @@
+<div class="timeline" [class.timeline--error]="hasError()">
+  <div class="timeline__line"></div>
+  
+  @if (hasError()) {
+    <div class="timeline__error-msg">
+      ❌ Pedido {{ status() === 7 ? 'Cancelado' : 'Recusado' }}
+    </div>
+  }
+  
+  <div class="timeline__steps">
+    @for (step of steps; track step.label; let i = $index) {
+      <div 
+        class="timeline__step"
+        [class.timeline__step--completed]="isStepCompleted(i)"
+        [class.timeline__step--active]="isStepActive(i) && !hasError()"
+      >
+        <div class="timeline__step-icon-wrapper">
+          <span class="timeline__step-icon">{{ step.icon }}</span>
+        </div>
+        <span class="timeline__step-label">{{ step.label }}</span>
+      </div>
+    }
+  </div>
+</div>

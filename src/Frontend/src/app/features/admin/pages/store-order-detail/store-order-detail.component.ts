@@ -12,12 +12,13 @@ import { CurrencyInputDirective } from '../../../../shared/directives/currency-i
 import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
 import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
+import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent, OrderTimelineComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +44,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly shopkeeperNotes = signal('');
   readonly currentUser = toSignal(this.auth.user$);
 
+  readonly unreadMessagesCount = computed(() => {
+    const o = this.order();
+    const uid = this.currentUser()?.sub;
+    if (!o || !uid) return 0;
+    return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  });
 
   ngOnInit() {
     this.loadOrder();
@@ -110,6 +117,11 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     };
 
     this.chatSignalr.onPaymentStatusChanged = (event) => {
+      if (event.orderId !== this.id()) return;
+      this.loadOrder();
+    };
+
+    this.chatSignalr.onOrderStatusChanged = (event) => {
       if (event.orderId !== this.id()) return;
       this.loadOrder();
     };
