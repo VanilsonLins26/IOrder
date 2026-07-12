@@ -108,6 +108,11 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       if (orderId !== this.id()) return;
       this.typingUser.set(null);
     };
+
+    this.chatSignalr.onPaymentStatusChanged = (event) => {
+      if (event.orderId !== this.id()) return;
+      this.loadOrder();
+    };
   }
 
   private loadOrder() {
