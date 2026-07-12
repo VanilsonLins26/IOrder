@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Confluent.Kafka;
 using IOrder.Domain.SeedWork;
 using IOrder.Domain.Services;
@@ -39,7 +40,8 @@ public class KafkaDomainEventDispatcher : IDomainEventDispatcher
                 }, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = false
+                    WriteIndented = false,
+                    Converters = { new JsonStringEnumConverter() }
                 });
 
                 var result = await producer.ProduceAsync(_topic, new Message<string, string>

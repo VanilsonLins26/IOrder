@@ -52,10 +52,15 @@ public class MercadoPagoService : IPaymentService
             {
                 Email = payerEmail
             },
-            NotificationUrl = _settings.FailureUrl.Replace("/orders", "/api/payments/webhook")
+            NotificationUrl = _settings.WebhookUrl
         };
 
         var mpPayment = await _paymentClient.CreateAsync(request);
+
+        if (mpPayment.PointOfInteraction?.TransactionData is null && mpPayment.Id.HasValue)
+        {
+            mpPayment = await _paymentClient.GetAsync(mpPayment.Id.Value);
+        }
 
         var payment = new Domain.Entities.Payment
         {
@@ -65,8 +70,8 @@ public class MercadoPagoService : IPaymentService
 
         payment.SetPixPayment(
             mpPayment.Id.ToString(),
-            mpPayment.PointOfInteraction?.TransactionData?.QrCode ?? "",
-            mpPayment.PointOfInteraction?.TransactionData?.QrCodeBase64 ?? "");
+            mpPayment.PointOfInteraction?.TransactionData?.QrCodeBase64 ?? "",
+            mpPayment.PointOfInteraction?.TransactionData?.QrCode ?? "");
 
         await _paymentWriteRepo.CreateAsync(payment);
         await _unitOfWork.Commit();
@@ -88,7 +93,7 @@ public class MercadoPagoService : IPaymentService
             {
                 Email = payerEmail
             },
-            NotificationUrl = _settings.FailureUrl.Replace("/orders", "/api/payments/webhook")
+            NotificationUrl = _settings.WebhookUrl
         };
 
         var requestOptions = new MercadoPago.Client.RequestOptions();
@@ -126,7 +131,7 @@ public class MercadoPagoService : IPaymentService
             {
                 Email = payerEmail
             },
-            NotificationUrl = _settings.FailureUrl.Replace("/orders", "/api/payments/webhook")
+            NotificationUrl = _settings.WebhookUrl
         };
 
         var mpPayment = await _paymentClient.CreateAsync(request);
