@@ -3,11 +3,13 @@ using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Security.Services;
 using IOrder.Domain.Services;
 using IOrder.Exceptions;
+using IOrder.Exceptions.ExceptionBase;
 
 namespace IOrder.Application.UseCases.Payment.Commands;
 

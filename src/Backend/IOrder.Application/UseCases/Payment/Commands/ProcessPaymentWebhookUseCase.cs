@@ -1,6 +1,7 @@
 using IOrder.Application.Services.Payment;
 using IOrder.Communication.Response;
 using IOrder.Domain.Events;
+using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Services;
