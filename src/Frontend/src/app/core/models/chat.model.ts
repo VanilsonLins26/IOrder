@@ -12,6 +12,7 @@ export interface ConversationResponseDto {
   lastMessageAt: string | null;
   lastMessageByRole: string | null;
   unreadCount: number;
+  createdAt: string;
 }
 
 export interface MarkAsReadResponse {

@@ -1,7 +1,7 @@
 @let order = store.currentOrder();
 
 <div class="order-detail">
-  <a routerLink="/orders" class="order-detail__back">← Voltar para Meus Pedidos</a>
+  <a routerLink="/orders" class="order-detail__back">Voltar para Meus Pedidos</a>
 
   @if (store.orderLoading()) {
     <div class="order-detail__loading">Carregando...</div>
@@ -18,15 +18,17 @@
       </span>
     </header>
 
+    <app-order-timeline [status]="order.status"></app-order-timeline>
+
     <div class="order-detail__actions">
-      @if (order.status === OrderStatusDto.Pending) {
+      @if (order.status === OrderStatusDto.Pending || order.status === OrderStatusDto.Negotiating) {
         <button class="order-detail__cancel-btn" (click)="showCancelConfirm.set(true)" [disabled]="cancelling()">
-          {{ cancelling() ? 'Cancelando...' : 'Cancelar Pedido' }}
+          {{ cancelling() ? 'Cancelando...' : '✕ Cancelar Pedido' }}
         </button>
       }
       @if (order.status === OrderStatusDto.AwaitingPayment) {
         <button class="order-detail__pay-btn" (click)="openPaymentModal()">
-          Pagar Agora
+          💳 Pagar Agora
         </button>
       }
     </div>
@@ -72,16 +74,16 @@
             <div class="order-item">
               <div class="order-item__image">
                 @if (item.productImageUrl) {
-                  <img [src]="item.productImageUrl" alt="Foto do produto" class="order-item__img" (click)="openImage(item.productImageUrl)" style="cursor: pointer" />
+                  <img [src]="item.productImageUrl" [alt]="item.productName" class="order-item__img" (click)="openImage(item.productImageUrl)" />
                 } @else if (item.imageUrls[0]) {
-                  <img [src]="item.imageUrls[0]" alt="Imagem do produto" class="order-item__img" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" />
+                  <img [src]="item.imageUrls[0]" [alt]="item.productName" class="order-item__img" (click)="openImage(item.imageUrls[0])" />
                 } @else {
                   <div class="order-item__img-placeholder">📦</div>
                 }
               </div>
               <div class="order-item__info">
                 <p class="order-item__name">{{ item.productName }}</p>
-                @if (item.selectedOptions?.length) {
+                @if (item.selectedOptions.length) {
                   <div class="order-item__selected-options">
                     @for (opt of item.selectedOptions; track opt.optionId) {
                       <span class="order-item__option-tag">
@@ -96,10 +98,10 @@
                 @if (item.customize) {
                   <p class="order-item__customize">{{ item.customize }}</p>
                 }
-                @if (item.imageUrls?.length) {
+                @if (item.imageUrls.length) {
                   <div class="order-item__customize-images">
                     @for (url of item.imageUrls; track url) {
-                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
+                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" (click)="openImage(url)" />
                     }
                   </div>
                 }
@@ -113,36 +115,42 @@
       </section>
     </div>
 
-    <div style="margin-top: 24px;">
-      <button class="action-btn action-btn--primary" style="width: 100%; display: block; padding: 12px; font-size: 1rem;" (click)="openChat()">
-        💬 Abrir Negociação / Chat
+    <div class="order-detail__chat-cta">
+      <button class="order-detail__chat-btn" (click)="openChat()">
+        💬 Negociação / Chat
+        @if (unreadMessagesCount() > 0) {
+          <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
+        }
       </button>
     </div>
-
-    <app-order-chat-offcanvas
-      [isOpen]="chatOpen()"
-      [messages]="order.messages"
-      [orderStatus]="order.status"
-      userRole="Client"
-      [typingUser]="typingUser()"
-      [sendingMessage]="sendingMessage()"
-      [updatingStatus]="updatingStatus()"
-      (closeOffcanvas)="chatOpen.set(false)"
-      (onSendMessage)="sendMessage($event)"
-      (typingNotify)="chatSignalr.userTyping(id())"
-      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
-      (onAcceptProposal)="showAcceptConfirm.set(true)"
-      (onDeclineProposal)="showDeclineConfirm.set(true)"
-    ></app-order-chat-offcanvas>
-
-    <app-payment-brick
-      [orderId]="id()"
-      [totalAmount]="order.totalAmount"
-      [isOpen]="showPaymentModal()"
-      [payerEmail]="userEmail()"
-      (close)="showPaymentModal.set(false)"
-    ></app-payment-brick>
   }
+</div>
+
+@if (order) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="order.messages"
+    [orderStatus]="order.status"
+    userRole="Client"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    [updatingStatus]="updatingStatus()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+    (onAcceptProposal)="showAcceptConfirm.set(true)"
+    (onDeclineProposal)="showDeclineConfirm.set(true)"
+  ></app-order-chat-offcanvas>
+
+  <app-payment-brick
+    [orderId]="id()"
+    [totalAmount]="order.totalAmount"
+    [isOpen]="showPaymentModal()"
+    [payerEmail]="userEmail()"
+    (close)="showPaymentModal.set(false)"
+  ></app-payment-brick>
+}
 
   <app-confirmation-modal
     title="Cancelar Pedido"
@@ -180,9 +188,8 @@
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">
       <div class="image-modal__content" (click)="$event.stopPropagation()">
-        <button class="image-modal__close" (click)="closeImage()">&times;</button>
+        <button class="image-modal__close" (click)="closeImage()">✕</button>
         <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
       </div>
     </div>
   }
-</div>

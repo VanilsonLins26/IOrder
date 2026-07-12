@@ -31,16 +31,15 @@
 
 .settings-container {
   background: var(--surface-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   overflow: hidden;
-
 }
 
 .settings-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   background: var(--surface-secondary);
 
   button {
@@ -107,50 +106,36 @@
   border-top: 1px solid var(--border-color);
 }
 
-.btn {
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-lg);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  border: none;
-  transition: all var(--transition-fast);
 
-  &--primary {
-    background: var(--color-primary-500);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: var(--color-primary-600);
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-}
 
 // HORÁRIOS
 .hours-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .hour-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface-secondary);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
+  padding: var(--space-4);
+  background: var(--surface-primary);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
 
   &.is-closed {
     opacity: 0.6;
     background: var(--surface-hover);
+    box-shadow: none;
+    &:hover { transform: none; }
   }
 
   @media (max-width: 640px) {

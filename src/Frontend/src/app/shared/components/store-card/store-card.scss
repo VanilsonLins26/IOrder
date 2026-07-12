@@ -1,20 +1,21 @@
 .store-card {
   display: flex;
   flex-direction: column;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-color);
+  background: var(--surface-primary);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-2xl);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-fast);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  animation: fadeInUp 500ms ease forwards;
+  animation: fadeInUp 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary-300);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(var(--color-primary-500-rgb), 0.2);
   }
 
   &--skeleton {
@@ -58,12 +59,14 @@
   position: absolute;
   top: var(--space-3);
   right: var(--space-3);
-  padding: 2px var(--space-2);
+  padding: 4px var(--space-3);
   border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
   background: var(--color-error-light);
   color: var(--color-error-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
 
   &--open {
     background: var(--color-success-light);

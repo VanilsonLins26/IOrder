@@ -1,10 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { ChatNotificationService } from '../../../../core/services/chat-notification.service';
 import { OrdersStore } from '../../store/orders.store';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
+import type { OrderResponseDto } from '../../../../core/models';
 
 @Component({
   selector: 'app-my-orders',
@@ -17,6 +21,10 @@ import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/uti
 export class MyOrdersComponent implements OnInit {
   readonly store = inject(OrdersStore);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly chatNotification = inject(ChatNotificationService);
+  
+  readonly currentUser = toSignal(this.auth.user$);
 
   ngOnInit() {
     this.store.loadUserOrders({ page: 1 });
@@ -28,6 +36,34 @@ export class MyOrdersComponent implements OnInit {
 
   getStatusClass(status: number): string {
     return getOrderStatusClass(status);
+  }
+
+  getUnreadCount(order: OrderResponseDto): number {
+    const uid = this.currentUser()?.sub;
+    if (!uid || !order.messages) return 0;
+    return order.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  }
+
+  hasUnreadOnPreviousPage(): boolean {
+    const orders = this.store.orders();
+    if (!orders.length) return false;
+    const firstOrderDate = new Date(orders[0].createdAt).getTime();
+    
+    const unread = this.chatNotification.unreadConversations();
+    const result = unread.some(c => new Date(c.createdAt).getTime() > firstOrderDate);
+    console.log('hasUnreadOnPreviousPage:', { firstOrderDate, unread, result });
+    return result;
+  }
+
+  hasUnreadOnNextPage(): boolean {
+    const orders = this.store.orders();
+    if (!orders.length) return false;
+    const lastOrderDate = new Date(orders[orders.length - 1].createdAt).getTime();
+    
+    const unread = this.chatNotification.unreadConversations();
+    const result = unread.some(c => new Date(c.createdAt).getTime() < lastOrderDate);
+    console.log('hasUnreadOnNextPage:', { lastOrderDate, unread, result });
+    return result;
   }
 
   changePage(page: number) {

@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
-import type { OrderMessageResponseDto, PaymentStatusChangedEvent } from '../models';
+import type { OrderMessageResponseDto, PaymentStatusChangedEvent, OrderStatusChangedEvent } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ChatSignalRService {
@@ -18,6 +18,7 @@ export class ChatSignalRService {
   onUserTyping: ((orderId: string) => void) | null = null;
   onUserStoppedTyping: ((orderId: string) => void) | null = null;
   onPaymentStatusChanged: ((event: PaymentStatusChangedEvent) => void) | null = null;
+  onOrderStatusChanged: ((event: OrderStatusChangedEvent) => void) | null = null;
 
   async start(): Promise<void> {
     if (this.hubConnection?.state === 'Connected') return;
@@ -54,6 +55,10 @@ export class ChatSignalRService {
 
     this.hubConnection.on('PaymentStatusChanged', (event: PaymentStatusChangedEvent) => {
       this.onPaymentStatusChanged?.(event);
+    });
+
+    this.hubConnection.on('OrderStatusChanged', (event: OrderStatusChangedEvent) => {
+      this.onOrderStatusChanged?.(event);
     });
 
     this.hubConnection.onreconnecting(() => this.connected.set(false));

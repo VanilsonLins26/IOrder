@@ -1,0 +1,62 @@
+<div class="tl" [class.tl--error]="hasError()" role="list" aria-label="Status do pedido">
+
+  <!-- ══ ERROR BANNER ══════════════════════════════════════════════ -->
+  @if (hasError()) {
+    <div class="tl__error-banner" role="alert">
+      <span class="tl__error-icon">🚫</span>
+      <div class="tl__error-text">
+        <strong>Pedido {{ errorLabel() }}</strong>
+        <span>Entre em contato se precisar de ajuda</span>
+      </div>
+    </div>
+  }
+
+  <!-- ══ TRACK ═════════════════════════════════════════════════════ -->
+  <div class="tl__track" aria-hidden="true">
+    <div
+      class="tl__track-fill"
+      [style.width.%]="progressPercent()"
+    ></div>
+  </div>
+
+  <!-- ══ STEPS ═════════════════════════════════════════════════════ -->
+  <div class="tl__steps">
+    @for (step of steps; track step.label; let i = $index) {
+      <div
+        class="tl__step"
+        [class.tl__step--done]="isCompleted(i)"
+        [class.tl__step--active]="isActive(i)"
+        role="listitem"
+        [attr.aria-label]="step.label + (isCompleted(i) ? ' — concluído' : isActive(i) ? ' — em andamento' : ' — pendente')"
+      >
+        <!-- Node -->
+        <div class="tl__node">
+          <!-- Glow ring (active only) -->
+          @if (isActive(i)) {
+            <span class="tl__node-glow" aria-hidden="true"></span>
+          }
+
+          <!-- Check icon for done steps -->
+          @if (isCompleted(i)) {
+            <span class="tl__node-check" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          } @else {
+            <span class="tl__node-icon" aria-hidden="true">{{ step.icon }}</span>
+          }
+        </div>
+
+        <!-- Label -->
+        <div class="tl__label">
+          <span class="tl__label-main">{{ step.label }}</span>
+          @if (isActive(i)) {
+            <span class="tl__label-sub">{{ step.sublabel }}</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

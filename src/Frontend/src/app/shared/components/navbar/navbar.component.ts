@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 import { CartStore } from '../../../features/cart/store/cart.store';
+import { ChatNotificationService } from '../../../core/services/chat-notification.service';
 
 @Component({
   selector: 'app-navbar',
@@ -15,6 +16,7 @@ import { CartStore } from '../../../features/cart/store/cart.store';
 export class NavbarComponent {
   protected readonly auth      = inject(AuthService);
   protected readonly cartStore = inject(CartStore);
+  protected readonly chatNotification = inject(ChatNotificationService);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly dropdownOpen = signal(false);
 

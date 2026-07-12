@@ -17,21 +17,32 @@
 .store-products-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-12);
   margin-top: var(--space-8);
 
   .category-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-6);
 
     .category-title {
       font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
+      font-weight: var(--font-weight-extrabold);
       color: var(--text-primary);
       margin: 0;
-      padding-bottom: var(--space-2);
-      border-bottom: 2px solid var(--border-color);
+      padding-bottom: var(--space-3);
+      border-bottom: 2px solid rgba(var(--color-primary-500-rgb), 0.1);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      
+      &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, rgba(var(--color-primary-500-rgb), 0.1), transparent);
+        margin-left: var(--space-4);
+      }
     }
   }
 }

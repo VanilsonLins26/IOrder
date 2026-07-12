@@ -18,6 +18,8 @@
       </span>
     </header>
 
+    <app-order-timeline [status]="o.status"></app-order-timeline>
+
     <div class="store-order-detail__actions">
       @for (action of getNextStatuses(o.status); track action.status) {
         <button class="action-btn action-btn--primary" (click)="updateStatus(action.status)">
@@ -84,7 +86,7 @@
             </div>
             <div class="item-row__info">
               <p class="item-row__name">{{ item.productName }}</p>
-              @if (item.selectedOptions?.length) {
+              @if (item.selectedOptions.length) {
                 <div class="item-row__selected-options">
                   @for (opt of item.selectedOptions; track opt.optionId) {
                     <span class="item-row__option-tag">
@@ -95,7 +97,7 @@
                 </div>
               }
               @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
-              @if (item.imageUrls?.length) {
+              @if (item.imageUrls.length) {
                 <div class="item-row__customize-images">
                   @for (url of item.imageUrls; track url) {
                     <img [src]="url" alt="Customização" class="item-row__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
@@ -112,24 +114,32 @@
     </section>
     
     <div style="margin-top: 24px;">
-      <button class="action-btn action-btn--primary" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; font-size: 1rem;" (click)="openChat()">
+      <button class="action-btn action-btn--primary" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; font-size: 1rem; position: relative;" (click)="openChat()">
         💬 Abrir Negociação / Chat
+        @if (unreadMessagesCount() > 0) {
+          <span style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; border: 2px solid white;">
+            {{ unreadMessagesCount() }}
+          </span>
+        }
       </button>
     </div>
-
-    <app-order-chat-offcanvas
-      [isOpen]="chatOpen()"
-      [messages]="o.messages"
-      [orderStatus]="o.status"
-      userRole="ShopKeeper"
-      [typingUser]="typingUser()"
-      [sendingMessage]="sendingMessage()"
-      (closeOffcanvas)="chatOpen.set(false)"
-      (onSendMessage)="sendMessage($event)"
-      (typingNotify)="chatSignalr.userTyping(id())"
-      (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
-    ></app-order-chat-offcanvas>
   }
+</div>
+
+@if (o) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="o.messages"
+    [orderStatus]="o.status"
+    userRole="ShopKeeper"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+  ></app-order-chat-offcanvas>
+}
 
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">
@@ -139,4 +149,3 @@
       </div>
     </div>
   }
-</div>

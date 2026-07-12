@@ -243,9 +243,7 @@ export class StoreDetailComponent {
   }
 
   private addItemToCart(product: ProductResponse, customize?: string, imageUrls?: string[], selectedOptionIds?: string[]) {
-    const urls = imageUrls?.length
-      ? imageUrls
-      : (product.imageUrl ? [product.imageUrl] : []);
+    const urls = imageUrls?.length ? imageUrls : [];
     this.cartStore.addItem({
       productId: product.id,
       quantity: 1,

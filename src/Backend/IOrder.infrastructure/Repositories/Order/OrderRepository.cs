@@ -116,7 +116,8 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
                 LastMessage = o.Messages.OrderByDescending(m => m.SentAt).Select(m => m.Message).FirstOrDefault(),
                 LastMessageAt = o.Messages.Max(m => m.SentAt),
                 LastMessageByRole = o.Messages.OrderByDescending(m => m.SentAt).Select(m => m.UserRole).FirstOrDefault(),
-                UnreadCount = o.Messages.Count(m => m.UserId != userId && m.ReadAt == null)
+                UnreadCount = o.Messages.Count(m => m.UserId != userId && m.ReadAt == null),
+                CreatedAt = o.CreatedAt
             })
             .OrderByDescending(c => c.LastMessageAt);
 

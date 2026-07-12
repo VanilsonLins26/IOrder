@@ -11,4 +11,5 @@ public class ConversationSummary
     public DateTime? LastMessageAt { get; set; }
     public string? LastMessageByRole { get; set; }
     public int UnreadCount { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
