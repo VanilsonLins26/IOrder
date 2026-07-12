@@ -31,7 +31,6 @@ const NEXT_STATUSES: Record<number, { status: OrderStatusDto; label: string }[]>
   ],
   [OrderStatusDto.Negotiating]: [],
   [OrderStatusDto.AwaitingPayment]: [
-    { status: OrderStatusDto.Paid, label: 'Confirmar Pagamento' },
     { status: OrderStatusDto.Cancelled, label: 'Cancelar' },
   ],
   [OrderStatusDto.Paid]: [
