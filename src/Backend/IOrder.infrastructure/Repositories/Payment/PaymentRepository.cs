@@ -39,6 +39,12 @@ internal class PaymentRepository : IPaymentReadOnlyRepository, IPaymentWriteOnly
         return payment;
     }
 
+    async Task<Domain.Entities.Payment?> IPaymentWriteOnlyRepository.GetById(Guid id)
+    {
+        return await _context.Payments
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     async Task<Domain.Entities.Payment?> IPaymentWriteOnlyRepository.GetByMercadoPagoId(string mercadoPagoPaymentId)
     {
         return await _context.Payments

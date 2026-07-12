@@ -35,7 +35,7 @@ public class ProcessPaymentWebhookUseCase : IProcessPaymentWebhookUseCase
         var response = await _paymentService.ProcessWebhookAsync(payload, signature);
         if (response is null) return null;
 
-        var payment = await _paymentWriteOnlyRepository.GetByMercadoPagoId(response.Id.ToString());
+        var payment = await _paymentWriteOnlyRepository.GetById(response.Id);
         if (payment is null) return response;
 
         var order = await _orderWriteOnlyRepository.GetByIdTracking(payment.OrderId);

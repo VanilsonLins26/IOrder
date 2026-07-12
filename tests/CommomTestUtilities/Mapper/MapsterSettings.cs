@@ -19,5 +19,10 @@ public class MapsterSettings
 
         TypeAdapterConfig<ConversationSummary, ConversationResponseDto>
             .NewConfig();
+
+        TypeAdapterConfig<Payment, PaymentResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.Method, src => src.Method);
     }
 }

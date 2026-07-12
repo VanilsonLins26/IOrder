@@ -303,4 +303,28 @@
   <data name="ORDER_DELIVERY_DATE_IN_PAST" xml:space="preserve">
     <value>A data de entrega deve ser futura</value>
   </data>
+  <data name="PAYMENT_EMAIL_EMPTY" xml:space="preserve">
+    <value>O email do pagador é obrigatório</value>
+  </data>
+  <data name="PAYMENT_EMAIL_INVALID" xml:space="preserve">
+    <value>O email do pagador é inválido</value>
+  </data>
+  <data name="PAYMENT_CARD_TOKEN_EMPTY" xml:space="preserve">
+    <value>O token do cartão é obrigatório para pagamento com cartão de crédito</value>
+  </data>
+  <data name="PAYMENT_INSTALLMENTS_EMPTY" xml:space="preserve">
+    <value>O número de parcelas é obrigatório para pagamento com cartão de crédito</value>
+  </data>
+  <data name="PAYMENT_INSTALLMENTS_INVALID" xml:space="preserve">
+    <value>O número de parcelas deve ser maior que zero</value>
+  </data>
+  <data name="PAYMENT_ORDER_NOT_AWAITING" xml:space="preserve">
+    <value>Pedido não está aguardando pagamento</value>
+  </data>
+  <data name="PAYMENT_METHOD_INVALID" xml:space="preserve">
+    <value>Método de pagamento inválido</value>
+  </data>
+  <data name="PAYMENT_ORDER_ID_EMPTY" xml:space="preserve">
+    <value>O id do pedido é obrigatório</value>
+  </data>
 </root>

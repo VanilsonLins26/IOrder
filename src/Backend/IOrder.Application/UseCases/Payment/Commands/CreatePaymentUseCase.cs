@@ -1,13 +1,9 @@
 using IOrder.Application.Services.Payment;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
-using IOrder.Domain.Entities;
 using IOrder.Domain.Entities.Enums;
-using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
-using IOrder.Domain.Repositories.Payment;
 using IOrder.Domain.Security.Services;
-using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 
@@ -17,24 +13,15 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 {
     private readonly ILoggedUserService _loggedUserService;
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
-    private readonly IPaymentWriteOnlyRepository _paymentWriteOnlyRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventDispatcher _domainEventDispatcher;
     private readonly IPaymentService _paymentService;
 
     public CreatePaymentUseCase(
         ILoggedUserService loggedUserService,
         IOrderReadOnlyRepository orderReadOnlyRepository,
-        IPaymentWriteOnlyRepository paymentWriteOnlyRepository,
-        IUnitOfWork unitOfWork,
-        IDomainEventDispatcher domainEventDispatcher,
         IPaymentService paymentService)
     {
         _loggedUserService = loggedUserService;
         _orderReadOnlyRepository = orderReadOnlyRepository;
-        _paymentWriteOnlyRepository = paymentWriteOnlyRepository;
-        _unitOfWork = unitOfWork;
-        _domainEventDispatcher = domainEventDispatcher;
         _paymentService = paymentService;
     }
 
@@ -49,7 +36,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
             throw new UnauthorizedStoreException([ResourceMessagesException.ORDER_NOT_FOUND]);
 
         if (order.Status != OrderStatus.AwaitingPayment)
-            throw new ErrorOnValidationException(["Pedido não está aguardando pagamento."]);
+            throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING]);
 
         var paymentResponse = request.Method switch
         {
@@ -62,7 +49,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
             Communication.Enums.PaymentMethodDto.Boleto => await _paymentService.CreateBoletoPaymentAsync(
                 order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
 
-            _ => throw new ErrorOnValidationException(["Método de pagamento inválido."])
+            _ => throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_METHOD_INVALID])
         };
 
         return paymentResponse;
