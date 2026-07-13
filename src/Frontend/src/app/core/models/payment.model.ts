@@ -31,15 +31,12 @@ export interface PaymentResponseDto {
 
 export interface CreatePaymentRequestDto {
   orderId: string;
-  method: PaymentMethodDto;
-  cardToken?: string | null;
-  savedCardId?: string | null;
-  installments?: number | null;
-  payerEmail: string;
-  payerIdentificationType?: string | null;
-  payerIdentificationNumber?: string | null;
-  cardPaymentMethodId?: string | null;
-  issuerId?: string | null;
+}
+
+export interface PaymentIntentResponseDto {
+  clientSecret: string;
+  paymentIntentId: string;
+  customerId: string;
 }
 
 export interface PublicKeyResponseDto {
