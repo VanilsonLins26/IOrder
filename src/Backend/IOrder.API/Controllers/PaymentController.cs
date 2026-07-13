@@ -1,5 +1,8 @@
 using IOrder.Application.UseCases.Payment.Commands;
 using IOrder.Application.UseCases.Payment.Queries;
+using IOrder.Application.UseCases.UserCard.Commands;
+using IOrder.Application.UseCases.UserCard.Queries;
+using IOrder.Application.UseCases.Payment.Queries;
 using IOrder.Communication.Enums;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
@@ -81,5 +84,25 @@ public class PaymentController : IOrderBaseController
         }
 
         return Ok();
+    }
+
+    [HttpGet("cards")]
+    [ProducesResponseType(typeof(IList<UserCardResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCards(
+        [FromServices] IGetUserCardsUseCase useCase)
+    {
+        var response = await useCase.Execute();
+        return Ok(response);
+    }
+
+    [HttpDelete("cards/{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCard(
+        [FromServices] IDeleteUserCardUseCase useCase,
+        [FromRoute] string id)
+    {
+        await useCase.Execute(id);
+        return NoContent();
     }
 }
