@@ -139,8 +139,13 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     if (this.saveNewCard()) {
       try {
         const savedCard = await firstValueFrom(this.userCardApi.save({ cardToken: token }));
-        savedCardId = savedCard.id;
-        actualToken = null; // Token was consumed, use savedCardId instead
+        const { publicKey } = await firstValueFrom(this.paymentApi.getPublicKey());
+        await this.loadMpSdk();
+        const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR' });
+        const tokenResponse = await mp.createCardToken({ cardId: savedCard.gatewayCardId });
+        if (!tokenResponse?.id) throw new Error('Falha ao tokenizar cartão salvo.');
+        actualToken = tokenResponse.id;
+        savedCardId = null;
       } catch (err: any) {
         this.error.set(err.error?.errors?.[0] || 'Erro ao salvar o cartão.');
         this.cardProcessing.set(false);
