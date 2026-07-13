@@ -47,7 +47,8 @@
         <div class="payment-form">
           <label class="payment-label">
             Seu email para recibo
-            <input type="email" class="payment-input" [ngModel]="userEmail() || payerEmail()"
+            <input type="email" id="payment-email" class="payment-input"
+                   [ngModel]="userEmail() || payerEmail()"
                    (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
           </label>
           <button type="button" class="payment-action-btn" (click)="processPix()" [disabled]="loading()">
@@ -74,6 +75,19 @@
           <p class="payment-instruction">Seu pedido já foi atualizado e está em processamento.</p>
         </div>
       } @else {
+        <div class="payment-form">
+          <label class="payment-label">
+            Seu email para recibo
+            <input type="email" id="payment-email" class="payment-input"
+                   [ngModel]="userEmail() || payerEmail()"
+                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
+          </label>
+          <label class="payment-label">
+            CPF do titular
+            <input type="text" id="payment-cpf" class="payment-input"
+                   (input)="userCpf.set($any($event).target.value)" placeholder="000.000.000-00" />
+          </label>
+        </div>
         
         @if (savedCards().length > 0) {
           <div class="saved-cards">
@@ -160,7 +174,8 @@
         <div class="payment-form">
           <label class="payment-label">
             Seu email para receber o boleto
-            <input type="email" class="payment-input" [ngModel]="userEmail() || payerEmail()"
+            <input type="email" id="payment-email" class="payment-input"
+                   [ngModel]="userEmail() || payerEmail()"
                    (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
           </label>
           <button type="button" class="payment-action-btn" (click)="processBoleto()" [disabled]="loading()">

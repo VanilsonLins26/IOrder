@@ -38,6 +38,8 @@ export interface CreatePaymentRequestDto {
   payerEmail: string;
   payerIdentificationType?: string | null;
   payerIdentificationNumber?: string | null;
+  cardPaymentMethodId?: string | null;
+  issuerId?: string | null;
 }
 
 export interface PublicKeyResponseDto {
@@ -62,4 +64,5 @@ export interface UserCardResponseDto {
 
 export interface SaveCardRequestDto {
   cardToken: string;
+  payerEmail?: string;
 }

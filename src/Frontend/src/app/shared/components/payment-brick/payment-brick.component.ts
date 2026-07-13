@@ -34,6 +34,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
   readonly paymentResult = signal<PaymentResponseDto | null>(null);
   readonly error = signal<string | null>(null);
   readonly userEmail = signal('');
+  readonly userCpf = signal('');
   readonly cardProcessing = signal(false);
   readonly mpReady = signal(false);
 
@@ -92,11 +93,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       const { publicKey } = await firstValueFrom(this.paymentApi.getPublicKey());
       await this.loadMpSdk();
 
-      const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR', advancedFraudPrevention: false });
-      // In development/test mode, passing x-test-token headers helps prevent live credential block.
-      // We don't have direct access to set testToken here via the global JS SDK cleanly if not in standard config, 
-      // but let's pass it anyway if supported by V2 SDK.
-      // Wait, let's just make sure we do it if needed. The backend is the main actor.
+      const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR' });
       this.cardBrickInstance = mp.bricks();
       this.mpInitialized = true;
       this.mountCardBrick();
@@ -118,8 +115,22 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
         initialization: { amount: this.totalAmount() },
         callbacks: {
           onSubmit: (formData: any) => {
+            const email = formData.payer?.email || this.userEmail() || this.payerEmail();
+            const identType = formData.payer?.identification?.type || 'CPF';
+            const identNumber = formData.payer?.identification?.number || this.userCpf() || '';
+
             return new Promise<void>((resolve, reject) => {
-              this.processNewCardPayment(formData.token, formData.installments ?? 1, resolve, reject);
+              this.processNewCardPayment(
+                formData.token,
+                formData.installments ?? 1,
+                formData.payment_method_id ?? formData.paymentMethodId,
+                formData.issuer_id?.toString() ?? formData.issuerId?.toString(),
+                identType,
+                identNumber,
+                email,
+                resolve,
+                reject
+              );
             });
           },
           onError: (error: any) => {
@@ -133,7 +144,17 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async processNewCardPayment(token: string, installments: number, resolve: () => void, reject: () => void): Promise<void> {
+  private async processNewCardPayment(
+    token: string,
+    installments: number,
+    cardPaymentMethodId: string | undefined,
+    issuerId: string | undefined,
+    identType: string | undefined,
+    identNumber: string | undefined,
+    email: string,
+    resolve: () => void,
+    reject: () => void
+  ): Promise<void> {
     this.cardProcessing.set(true);
     this.error.set(null);
 
@@ -142,14 +163,10 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
 
     if (this.saveNewCard()) {
       try {
-        const savedCard = await firstValueFrom(this.userCardApi.save({ cardToken: token }));
+        const savedCard = await firstValueFrom(this.userCardApi.save({ cardToken: token, payerEmail: email }));
         const { publicKey } = await firstValueFrom(this.paymentApi.getPublicKey());
         await this.loadMpSdk();
-        const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR', advancedFraudPrevention: false });
-      // In development/test mode, passing x-test-token headers helps prevent live credential block.
-      // We don't have direct access to set testToken here via the global JS SDK cleanly if not in standard config, 
-      // but let's pass it anyway if supported by V2 SDK.
-      // Wait, let's just make sure we do it if needed. The backend is the main actor.
+        const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR' });
         const tokenResponse = await mp.createCardToken({ cardId: savedCard.gatewayCardId });
         if (!tokenResponse?.id) throw new Error('Falha ao tokenizar cartão salvo.');
         actualToken = tokenResponse.id;
@@ -168,7 +185,11 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       cardToken: actualToken,
       savedCardId: savedCardId,
       installments,
-      payerEmail: this.userEmail() || this.payerEmail(),
+      payerEmail: email,
+      cardPaymentMethodId,
+      issuerId,
+      payerIdentificationType: identType,
+      payerIdentificationNumber: identNumber,
     }).subscribe({
       next: (result) => {
         this.paymentResult.set(result);
@@ -176,7 +197,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
         this.paymentCreated.emit(result);
         this.toast.success('Pagamento processado com sucesso!');
         if (this.saveNewCard()) {
-          this.loadSavedCards(); // Refresh list if card was saved
+          this.loadSavedCards();
         }
         resolve();
       },
@@ -202,13 +223,8 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       // We need to fetch the public key again to use the SDK
       const { publicKey } = await firstValueFrom(this.paymentApi.getPublicKey());
       await this.loadMpSdk();
-      const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR', advancedFraudPrevention: false });
-      // In development/test mode, passing x-test-token headers helps prevent live credential block.
-      // We don't have direct access to set testToken here via the global JS SDK cleanly if not in standard config, 
-      // but let's pass it anyway if supported by V2 SDK.
-      // Wait, let's just make sure we do it if needed. The backend is the main actor.
+      const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR' });
       
-      // Tokenize the saved card without CVV
       const tokenResponse = await mp.createCardToken({
         cardId: userCard.gatewayCardId
       });
@@ -217,12 +233,18 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
           throw new Error('Falha ao tokenizar cartão salvo.');
       }
 
+      const savedEmailEl = document.getElementById('payment-email') as HTMLInputElement;
+      const savedCpfEl = document.getElementById('payment-cpf') as HTMLInputElement;
+      const savedEmail = savedEmailEl?.value || this.userEmail() || this.payerEmail();
+      const savedCpf = savedCpfEl?.value || this.userCpf() || '';
       const payment = await firstValueFrom(this.paymentApi.create({
         orderId: this.orderId(),
         method: PaymentMethodDto.CreditCard,
         cardToken: tokenResponse.id,
         installments: this.installmentsForSavedCard(),
-        payerEmail: this.userEmail() || this.payerEmail(),
+        payerEmail: savedEmail,
+        payerIdentificationType: 'CPF',
+        payerIdentificationNumber: savedCpf,
       }));
 
       this.paymentResult.set(payment);
@@ -239,10 +261,12 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.error.set(null);
 
+    const pixEmailEl = document.getElementById('payment-email') as HTMLInputElement;
+    const pixEmail = pixEmailEl?.value || this.userEmail() || this.payerEmail();
     this.paymentApi.create({
       orderId: this.orderId(),
       method: PaymentMethodDto.Pix,
-      payerEmail: this.userEmail() || this.payerEmail(),
+      payerEmail: pixEmail,
     }).subscribe({
       next: (result) => {
         this.paymentResult.set(result);
@@ -260,10 +284,12 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.error.set(null);
 
+    const boletoEmailEl = document.getElementById('payment-email') as HTMLInputElement;
+    const boletoEmail = boletoEmailEl?.value || this.userEmail() || this.payerEmail();
     this.paymentApi.create({
       orderId: this.orderId(),
       method: PaymentMethodDto.Boleto,
-      payerEmail: this.userEmail() || this.payerEmail(),
+      payerEmail: boletoEmail,
     }).subscribe({
       next: (result) => {
         this.paymentResult.set(result);
