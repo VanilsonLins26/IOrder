@@ -113,26 +113,40 @@ public class MercadoPagoService : IPaymentService
         var requestOptions = new MercadoPago.Client.RequestOptions();
         requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
 
-        var mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
+        _logger.LogInformation(
+            "Creating card payment: amount={Amount}, installments={Installments}, hasToken={HasToken}, hasCustomer={HasCustomer}",
+            amount, installments, !string.IsNullOrEmpty(cardToken), !string.IsNullOrEmpty(customerId));
 
-        var payment = new Domain.Entities.Payment
+        try
         {
-            OrderId = orderId,
-            Amount = amount
-        };
+            var mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
 
-        payment.SetCardPayment(
-            mpPayment.Id.ToString(),
-            mpPayment.Card?.LastFourDigits ?? "",
-            mpPayment.Installments ?? installments,
-            mpPayment.TransactionDetails?.InstallmentAmount?.ToString() ?? "");
+            var payment = new Domain.Entities.Payment
+            {
+                OrderId = orderId,
+                Amount = amount
+            };
 
-        UpdatePaymentStatus(payment, mpPayment.Status);
+            payment.SetCardPayment(
+                mpPayment.Id.ToString(),
+                mpPayment.Card?.LastFourDigits ?? "",
+                mpPayment.Installments ?? installments,
+                mpPayment.TransactionDetails?.InstallmentAmount?.ToString() ?? "");
 
-        await _paymentWriteRepo.CreateAsync(payment);
-        await _unitOfWork.Commit();
+            UpdatePaymentStatus(payment, mpPayment.Status);
 
-        return payment.Adapt<PaymentResponseDto>();
+            await _paymentWriteRepo.CreateAsync(payment);
+            await _unitOfWork.Commit();
+
+            return payment.Adapt<PaymentResponseDto>();
+        }
+        catch (MercadoPagoApiException ex)
+        {
+            _logger.LogError(ex,
+                "Mercado Pago API error creating card payment. StatusCode={StatusCode}, ApiError={ApiError}",
+                ex.StatusCode, ex.ApiError?.Message);
+            throw;
+        }
     }
 
     public async Task<PaymentResponseDto> CreateBoletoPaymentAsync(
@@ -277,12 +291,28 @@ public class MercadoPagoService : IPaymentService
 
     public async Task<UserCardDto> SaveCardAsync(string customerId, string cardToken)
     {
+        _logger.LogInformation(
+            "Saving card for customer={CustomerId}, hasToken={HasToken}",
+            customerId, !string.IsNullOrEmpty(cardToken));
+
         var cardRequest = new MercadoPago.Client.Customer.CustomerCardCreateRequest
         {
             Token = cardToken
         };
 
-        var card = await _customerCardClient.CreateAsync(customerId, cardRequest);
+        MercadoPago.Resource.Customer.CustomerCard card;
+
+        try
+        {
+            card = await _customerCardClient.CreateAsync(customerId, cardRequest);
+        }
+        catch (MercadoPagoApiException ex)
+        {
+            _logger.LogError(ex,
+                "Mercado Pago API error saving card. StatusCode={StatusCode}, CustomerId={CustomerId}",
+                ex.StatusCode, customerId);
+            throw;
+        }
 
         return new UserCardDto
         {
