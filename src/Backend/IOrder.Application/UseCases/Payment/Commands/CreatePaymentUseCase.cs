@@ -100,7 +100,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private async Task<PaymentResponseDto> HandleCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
     {
         return await _paymentService.CreateCardPaymentAsync(
-            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, null);
+            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, null, request.CardPaymentMethodId, request.IssuerId, request.PayerIdentificationType);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)
