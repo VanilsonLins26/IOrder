@@ -33,6 +33,7 @@ export interface CreatePaymentRequestDto {
   orderId: string;
   method: PaymentMethodDto;
   cardToken?: string | null;
+  savedCardId?: string | null;
   installments?: number | null;
   payerEmail: string;
   payerIdentificationType?: string | null;
@@ -48,4 +49,16 @@ export interface PaymentStatusChangedEvent {
   paymentId: string;
   status: PaymentStatusDto;
   paidAt: string | null;
+}
+
+export interface UserCardResponseDto {
+  id: string;
+  lastFourDigits: string;
+  brand: string;
+  expirationMonth: number;
+  expirationYear: number;
+}
+
+export interface SaveCardRequestDto {
+  cardToken: string;
 }

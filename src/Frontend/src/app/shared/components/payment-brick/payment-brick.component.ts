@@ -1,21 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, inject, input, output, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, output, signal } from '@angular/core';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ModalComponent } from '../modal/modal.component';
 import { PaymentApiService } from '../../../core/services/api/payment-api.service';
+import { UserCardApiService } from '../../../core/services/api/user-card-api.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { PaymentMethodDto, PaymentStatusDto, type PaymentResponseDto } from '../../../core/models';
+import { PaymentMethodDto, PaymentStatusDto, type PaymentResponseDto, type UserCardResponseDto } from '../../../core/models';
 
 @Component({
   selector: 'app-payment-brick',
   standalone: true,
-  imports: [ModalComponent, CurrencyPipe, FormsModule],
+  imports: [ModalComponent, CurrencyPipe, DecimalPipe, FormsModule],
   templateUrl: './payment-brick.component.html',
   styleUrl: './payment-brick.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PaymentBrickComponent implements OnDestroy {
+export class PaymentBrickComponent implements OnInit, OnDestroy {
   readonly orderId = input.required<string>();
   readonly totalAmount = input.required<number>();
   readonly isOpen = input.required<boolean>();
@@ -25,6 +26,7 @@ export class PaymentBrickComponent implements OnDestroy {
   readonly paymentCreated = output<PaymentResponseDto>();
 
   private readonly paymentApi = inject(PaymentApiService);
+  private readonly userCardApi = inject(UserCardApiService);
   private readonly toast = inject(ToastService);
 
   readonly selectedMethod = signal<PaymentMethodDto>(PaymentMethodDto.Pix);
@@ -35,8 +37,29 @@ export class PaymentBrickComponent implements OnDestroy {
   readonly cardProcessing = signal(false);
   readonly mpReady = signal(false);
 
+  readonly savedCards = signal<UserCardResponseDto[]>([]);
+  readonly selectedCardId = signal<string | null>('new');
+  readonly saveNewCard = signal<boolean>(false);
+  readonly installmentsForSavedCard = signal<number>(1);
+
   private cardBrickInstance: any = null;
   private mpInitialized = false;
+
+  ngOnInit(): void {
+    this.loadSavedCards();
+  }
+
+  private loadSavedCards(): void {
+    this.userCardApi.getAll().subscribe({
+      next: (cards) => {
+        this.savedCards.set(cards);
+        if (cards.length > 0) {
+          this.selectedCardId.set(cards[0].id);
+        }
+      },
+      error: () => console.error('Failed to load saved cards'),
+    });
+  }
 
   async selectMethod(method: PaymentMethodDto): Promise<void> {
     this.cleanupCardBrick();
@@ -44,8 +67,18 @@ export class PaymentBrickComponent implements OnDestroy {
     this.paymentResult.set(null);
     this.error.set(null);
 
-    if (method === PaymentMethodDto.CreditCard) {
+    if (method === PaymentMethodDto.CreditCard && this.selectedCardId() === 'new') {
       await this.initCardBrick();
+    }
+  }
+
+  async onCardSelectionChange(id: string): Promise<void> {
+    this.selectedCardId.set(id);
+    this.error.set(null);
+    if (id === 'new') {
+      await this.initCardBrick();
+    } else {
+      this.cleanupCardBrick();
     }
   }
 
@@ -82,7 +115,7 @@ export class PaymentBrickComponent implements OnDestroy {
         callbacks: {
           onSubmit: (formData: any) => {
             return new Promise<void>((resolve, reject) => {
-              this.processCardPayment(formData.token, formData.installments ?? 1, resolve, reject);
+              this.processNewCardPayment(formData.token, formData.installments ?? 1, resolve, reject);
             });
           },
           onError: (error: any) => {
@@ -96,14 +129,31 @@ export class PaymentBrickComponent implements OnDestroy {
     }
   }
 
-  private processCardPayment(token: string, installments: number, resolve: () => void, reject: () => void): void {
+  private async processNewCardPayment(token: string, installments: number, resolve: () => void, reject: () => void): Promise<void> {
     this.cardProcessing.set(true);
     this.error.set(null);
+
+    let savedCardId: string | null = null;
+    let actualToken: string | null = token;
+
+    if (this.saveNewCard()) {
+      try {
+        const savedCard = await firstValueFrom(this.userCardApi.save({ cardToken: token }));
+        savedCardId = savedCard.id;
+        actualToken = null; // Token was consumed, use savedCardId instead
+      } catch (err: any) {
+        this.error.set(err.error?.errors?.[0] || 'Erro ao salvar o cartão.');
+        this.cardProcessing.set(false);
+        reject();
+        return;
+      }
+    }
 
     this.paymentApi.create({
       orderId: this.orderId(),
       method: PaymentMethodDto.CreditCard,
-      cardToken: token,
+      cardToken: actualToken,
+      savedCardId: savedCardId,
       installments,
       payerEmail: this.userEmail() || this.payerEmail(),
     }).subscribe({
@@ -112,12 +162,42 @@ export class PaymentBrickComponent implements OnDestroy {
         this.cardProcessing.set(false);
         this.paymentCreated.emit(result);
         this.toast.success('Pagamento processado com sucesso!');
+        if (this.saveNewCard()) {
+          this.loadSavedCards(); // Refresh list if card was saved
+        }
         resolve();
       },
       error: (err) => {
         this.cardProcessing.set(false);
         this.error.set(err.error?.errors?.[0] || 'Erro ao processar pagamento.');
         reject();
+      },
+    });
+  }
+
+  processSavedCardPayment(): void {
+    const cardId = this.selectedCardId();
+    if (!cardId || cardId === 'new') return;
+
+    this.cardProcessing.set(true);
+    this.error.set(null);
+
+    this.paymentApi.create({
+      orderId: this.orderId(),
+      method: PaymentMethodDto.CreditCard,
+      savedCardId: cardId,
+      installments: this.installmentsForSavedCard(),
+      payerEmail: this.userEmail() || this.payerEmail(),
+    }).subscribe({
+      next: (result) => {
+        this.paymentResult.set(result);
+        this.cardProcessing.set(false);
+        this.paymentCreated.emit(result);
+        this.toast.success('Pagamento processado com sucesso!');
+      },
+      error: (err) => {
+        this.cardProcessing.set(false);
+        this.error.set(err.error?.errors?.[0] || 'Erro ao processar pagamento com cartão salvo.');
       },
     });
   }
