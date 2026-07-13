@@ -111,8 +111,8 @@ public static class DependencyInjectionExtension
         services.AddScoped<IDomainEventDispatcher, KafkaDomainEventDispatcher>();
         services.AddSingleton<IEmailService, SmtpEmailService>();
         services.AddSingleton<IEvolutionApiService, EvolutionApiService>();
-        services.Configure<MercadoPagoSettings>(configuration.GetSection(MercadoPagoSettings.SectionName));
-        services.AddScoped<IPaymentService, Services.Payment.MercadoPagoService>();
+        services.Configure<StripeSettings>(configuration.GetSection(StripeSettings.SectionName));
+        services.AddScoped<IPaymentService, StripePaymentService>();
     }
 
     private static void AddWorkers(IServiceCollection services)

@@ -1,15 +1,14 @@
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories.Payment;
-using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
 namespace IOrder.infrastructure.Repositories.Payment;
 
 internal class PaymentRepository : IPaymentReadOnlyRepository, IPaymentWriteOnlyRepository
 {
-    private readonly AppDbContext _context;
+    private readonly DataAccess.AppDbContext _context;
 
-    public PaymentRepository(AppDbContext context)
+    public PaymentRepository(DataAccess.AppDbContext context)
     {
         _context = context;
     }
@@ -21,11 +20,11 @@ internal class PaymentRepository : IPaymentReadOnlyRepository, IPaymentWriteOnly
             .FirstOrDefaultAsync(p => p.OrderId == orderId);
     }
 
-    public async Task<Domain.Entities.Payment?> GetByMercadoPagoIdAsync(string mercadoPagoPaymentId)
+    public async Task<Domain.Entities.Payment?> GetByStripeIdAsync(string stripePaymentIntentId)
     {
         return await _context.Payments
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.MercadoPagoPaymentId == mercadoPagoPaymentId);
+            .FirstOrDefaultAsync(p => p.StripePaymentIntentId == stripePaymentIntentId);
     }
 
     public async Task CreateAsync(Domain.Entities.Payment payment)
@@ -39,15 +38,8 @@ internal class PaymentRepository : IPaymentReadOnlyRepository, IPaymentWriteOnly
         return payment;
     }
 
-    async Task<Domain.Entities.Payment?> IPaymentWriteOnlyRepository.GetById(Guid id)
+    public async Task<Domain.Entities.Payment?> GetByIdTracking(Guid id)
     {
-        return await _context.Payments
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    async Task<Domain.Entities.Payment?> IPaymentWriteOnlyRepository.GetByMercadoPagoId(string mercadoPagoPaymentId)
-    {
-        return await _context.Payments
-            .FirstOrDefaultAsync(p => p.MercadoPagoPaymentId == mercadoPagoPaymentId);
+        return await _context.Payments.FirstOrDefaultAsync(p => p.Id == id);
     }
 }
