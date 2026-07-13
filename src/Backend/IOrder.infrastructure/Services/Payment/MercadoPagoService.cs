@@ -6,6 +6,7 @@ using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Payment;
 using IOrder.infrastructure.DataAccess;
 using Mapster;
+using MercadoPago.Client.Customer;
 using MercadoPago.Client.Payment;
 using MercadoPago.Error;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,8 @@ public class MercadoPagoService : IPaymentService
     private readonly ILogger<MercadoPagoService> _logger;
     private readonly MercadoPagoSettings _settings;
     private readonly PaymentClient _paymentClient;
+    private readonly CustomerClient _customerClient;
+    private readonly CustomerCardClient _customerCardClient;
 
     public MercadoPagoService(
         IPaymentWriteOnlyRepository paymentWriteRepo,
@@ -38,6 +41,8 @@ public class MercadoPagoService : IPaymentService
 
         MercadoPago.Config.MercadoPagoConfig.AccessToken = _settings.AccessToken;
         _paymentClient = new PaymentClient();
+        _customerClient = new CustomerClient();
+        _customerCardClient = new CustomerCardClient();
     }
 
     public async Task<PaymentResponseDto> CreatePixPaymentAsync(
@@ -235,5 +240,95 @@ public class MercadoPagoService : IPaymentService
                 payment.Cancel();
                 break;
         }
+    }
+
+    public async Task<string> GetOrCreateCustomerAsync(string email)
+    {
+        var searchRequest = new MercadoPago.Client.SearchRequest
+        {
+            Filters = new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "email", email }
+            }
+        };
+
+        var searchResult = await _customerClient.SearchAsync(searchRequest);
+        if (searchResult.Results.Any())
+        {
+            return searchResult.Results.First().Id;
+        }
+
+        var customerRequest = new MercadoPago.Client.Customer.CustomerRequest
+        {
+            Email = email
+        };
+
+        var newCustomer = await _customerClient.CreateAsync(customerRequest);
+        return newCustomer.Id;
+    }
+
+    public async Task<UserCardDto> SaveCardAsync(string customerId, string cardToken)
+    {
+        var cardRequest = new MercadoPago.Client.Customer.CustomerCardCreateRequest
+        {
+            Token = cardToken
+        };
+
+        var card = await _customerCardClient.CreateAsync(customerId, cardRequest);
+
+        return new UserCardDto
+        {
+            GatewayCardId = card.Id,
+            LastFourDigits = card.LastFourDigits,
+            Brand = card.PaymentMethod.Name,
+            ExpirationMonth = card.ExpirationMonth ?? 0,
+            ExpirationYear = card.ExpirationYear ?? 0
+        };
+    }
+
+    public async Task<PaymentResponseDto> CreateSavedCardPaymentAsync(
+        Guid orderId, decimal amount, string customerId, string cardId, int installments)
+    {
+        var request = new PaymentCreateRequest
+        {
+            TransactionAmount = amount,
+            Token = cardId,
+            Description = $"Pedido #{orderId.ToString("N")[..8].ToUpper()}",
+            Installments = installments,
+            Payer = new PaymentPayerRequest
+            {
+                Type = "customer",
+                Id = customerId
+            },
+            NotificationUrl = _settings.WebhookUrl
+        };
+
+        var requestOptions = new MercadoPago.Client.RequestOptions();
+        requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
+
+        var mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
+
+        if (mpPayment.Status == "rejected")
+        {
+            throw new IOrder.Exceptions.ExceptionBase.ErrorOnValidationException(new System.Collections.Generic.List<string> { "Pagamento rejeitado pelo Mercado Pago." });
+        }
+
+        var payment = new Domain.Entities.Payment
+        {
+            OrderId = orderId,
+            Amount = amount
+        };
+
+        payment.SetCardPayment(mpPayment.Id.ToString()!, "****", installments, amount.ToString());
+
+        if (mpPayment.Status == "approved")
+        {
+            payment.Approve();
+        }
+
+        await _paymentWriteRepo.CreateAsync(payment);
+        await _unitOfWork.Commit();
+
+        return payment.Adapt<PaymentResponseDto>();
     }
 }

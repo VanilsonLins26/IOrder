@@ -9,4 +9,16 @@ public interface IPaymentService
     Task<PaymentResponseDto> CreateBoletoPaymentAsync(Guid orderId, decimal amount, string payerEmail, string? payerIdentification);
     Task<PaymentResponseDto?> ProcessWebhookAsync(string payload, string? signature);
     Task<PaymentResponseDto?> GetPaymentByMercadoPagoIdAsync(string mercadoPagoPaymentId);
+    Task<string> GetOrCreateCustomerAsync(string email);
+    Task<UserCardDto> SaveCardAsync(string customerId, string cardToken);
+    Task<PaymentResponseDto> CreateSavedCardPaymentAsync(Guid orderId, decimal amount, string customerId, string cardId, int installments);
+}
+
+public class UserCardDto
+{
+    public string GatewayCardId { get; set; } = string.Empty;
+    public string LastFourDigits { get; set; } = string.Empty;
+    public string Brand { get; set; } = string.Empty;
+    public int ExpirationMonth { get; set; }
+    public int ExpirationYear { get; set; }
 }
