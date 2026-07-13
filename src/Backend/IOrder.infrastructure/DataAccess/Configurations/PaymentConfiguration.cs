@@ -1,74 +1,64 @@
-using IOrder.Domain.Entities.Enums;
+using IOrder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace IOrder.infrastructure.DataAccess.Configurations;
 
-public class PaymentConfiguration : BaseEntityConfiguration<Domain.Entities.Payment>
+public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
-    public override void Configure(EntityTypeBuilder<Domain.Entities.Payment> builder)
+    public void Configure(EntityTypeBuilder<Payment> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("Payments");
 
-        builder.Property(x => x.OrderId)
-               .IsRequired();
+        builder.HasKey(p => p.Id);
 
-        builder.Property(x => x.Amount)
-               .HasColumnType("decimal(10,2)")
-               .IsRequired();
+        builder.Property(p => p.OrderId)
+            .IsRequired();
 
-        builder.Property(x => x.Method)
-               .HasConversion<string>()
-               .HasMaxLength(20)
-               .IsRequired();
+        builder.Property(p => p.Amount)
+            .HasColumnType("decimal(18,2)")
+            .IsRequired();
 
-        builder.Property(x => x.Status)
-               .HasConversion<string>()
-               .HasMaxLength(20)
-               .IsRequired()
-               .HasDefaultValue(PaymentStatus.Pending);
+        builder.Property(p => p.Method)
+            .IsRequired()
+            .HasConversion<string>();
 
-        builder.Property(x => x.MercadoPagoPaymentId)
-               .HasMaxLength(100);
+        builder.Property(p => p.Status)
+            .IsRequired()
+            .HasConversion<string>();
 
-        builder.Property(x => x.MercadoPagoPreferenceId)
-               .HasMaxLength(100);
+        builder.Property(p => p.StripePaymentIntentId)
+            .HasMaxLength(200);
 
-        builder.Property(x => x.PixQrCode)
-               .HasColumnType("text");
+        builder.Property(p => p.PixQrCode);
 
-        builder.Property(x => x.PixCopyPaste)
-               .HasColumnType("text");
+        builder.Property(p => p.PixCopyPaste);
 
-        builder.Property(x => x.BoletoUrl)
-               .HasMaxLength(500);
+        builder.Property(p => p.BoletoUrl)
+            .HasMaxLength(1000);
 
-        builder.Property(x => x.BoletoBarcode)
-               .HasMaxLength(100);
+        builder.Property(p => p.BoletoBarcode)
+            .HasMaxLength(100);
 
-        builder.Property(x => x.CardLastFourDigits)
-               .HasMaxLength(4);
+        builder.Property(p => p.CardLastFourDigits)
+            .HasMaxLength(4);
 
-        builder.Property(x => x.Installments);
+        builder.Property(p => p.Installments);
 
-        builder.Property(x => x.InstallmentAmount)
-               .HasMaxLength(20);
+        builder.Property(p => p.InstallmentAmount)
+            .HasMaxLength(50);
 
-        builder.Property(x => x.CreatedAt)
-               .IsRequired();
+        builder.Property(p => p.CreatedAt)
+            .IsRequired();
 
-        builder.Property(x => x.PaidAt);
+        builder.Property(p => p.PaidAt);
 
-        builder.HasOne(x => x.Order)
-               .WithMany()
-               .HasForeignKey(x => x.OrderId)
-               .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(p => p.Order)
+            .WithMany()
+            .HasForeignKey(p => p.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => x.OrderId)
-               .IsUnique();
-
-        builder.HasIndex(x => x.MercadoPagoPaymentId);
+        builder.HasIndex(p => p.OrderId);
+        builder.HasIndex(p => p.StripePaymentIntentId);
     }
 }
