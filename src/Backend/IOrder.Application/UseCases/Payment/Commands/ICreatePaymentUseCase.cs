@@ -5,5 +5,5 @@ namespace IOrder.Application.UseCases.Payment.Commands;
 
 public interface ICreatePaymentUseCase
 {
-    Task<PaymentResponseDto> Execute(CreatePaymentRequestDto request);
+    Task<PaymentIntentResponseDto> Execute(CreatePaymentRequestDto request);
 }

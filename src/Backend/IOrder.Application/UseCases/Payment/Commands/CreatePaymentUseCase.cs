@@ -23,7 +23,6 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
     private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
-    private readonly IUserCardReadOnlyRepository _userCardReadOnlyRepository;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -34,7 +33,6 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IPaymentReadOnlyRepository paymentReadOnlyRepository,
         IProfileReadOnlyRepository profileReadOnlyRepository,
-        IUserCardReadOnlyRepository userCardReadOnlyRepository,
         IPaymentService paymentService,
         IUnitOfWork unitOfWork)
     {
@@ -44,12 +42,11 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _paymentReadOnlyRepository = paymentReadOnlyRepository;
         _profileReadOnlyRepository = profileReadOnlyRepository;
-        _userCardReadOnlyRepository = userCardReadOnlyRepository;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PaymentResponseDto> Execute(CreatePaymentRequestDto request)
+    public async Task<PaymentIntentResponseDto> Execute(CreatePaymentRequestDto request)
     {
         await Validate(request);
 
@@ -64,46 +61,10 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         if (order.Status != OrderStatus.AwaitingPayment)
             throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING]);
 
-        var existingPayment = await _paymentReadOnlyRepository.GetByOrderIdAsync(order.Id);
-        if (existingPayment is not null && existingPayment.Status == Domain.Entities.Enums.PaymentStatus.Pending)
-            return existingPayment.Adapt<PaymentResponseDto>();
-
-        var paymentResponse = request.Method switch
-        {
-            Communication.Enums.PaymentMethodDto.Pix => await _paymentService.CreatePixPaymentAsync(
-                order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
-
-            Communication.Enums.PaymentMethodDto.CreditCard => 
-                await HandleCardPaymentAsync(order.Id, order.TotalAmount, request, userId),
-
-            Communication.Enums.PaymentMethodDto.Boleto => await _paymentService.CreateBoletoPaymentAsync(
-                order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
-
-            _ => throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_METHOD_INVALID])
-        };
-
-        if (paymentResponse.Status == Communication.Enums.PaymentStatusDto.Approved)
-        {
-            var trackedOrder = await _orderWriteOnlyRepository.GetByIdTracking(order.Id);
-            if (trackedOrder != null)
-            {
-                trackedOrder.MarkAsPaid();
-                trackedOrder.AddDomainEvent(new PaymentApprovedEvent(trackedOrder.Id, paymentResponse.Id, paymentResponse.Amount));
-                _orderWriteOnlyRepository.Update(trackedOrder);
-                await _unitOfWork.Commit();
-            }
-        }
-
-        return paymentResponse;
-    }
-
-    private async Task<PaymentResponseDto> HandleCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
-    {
         var profile = await _profileReadOnlyRepository.GetByUserId(userId);
-        var customerId = profile?.MercadoPagoCustomerId;
+        var customerId = profile?.StripeCustomerId;
 
-        return await _paymentService.CreateCardPaymentAsync(
-            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, customerId, request.CardPaymentMethodId, request.IssuerId, request.PayerIdentificationType);
+        return await _paymentService.CreatePaymentIntentAsync(order.Id, order.TotalAmount, customerId);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)

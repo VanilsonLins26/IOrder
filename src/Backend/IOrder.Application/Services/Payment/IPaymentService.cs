@@ -4,13 +4,11 @@ namespace IOrder.Application.Services.Payment;
 
 public interface IPaymentService
 {
-    Task<PaymentResponseDto> CreatePixPaymentAsync(Guid orderId, decimal amount, string payerEmail, string? payerIdentification);
-    Task<PaymentResponseDto> CreateCardPaymentAsync(Guid orderId, decimal amount, string cardToken, int installments, string payerEmail, string? payerIdentification, string? customerId);
-    Task<PaymentResponseDto> CreateBoletoPaymentAsync(Guid orderId, decimal amount, string payerEmail, string? payerIdentification);
+    Task<PaymentIntentResponseDto> CreatePaymentIntentAsync(Guid orderId, decimal amount, string? customerId);
     Task<PaymentResponseDto?> ProcessWebhookAsync(string payload, string? signature);
-    Task<PaymentResponseDto?> GetPaymentByMercadoPagoIdAsync(string mercadoPagoPaymentId);
-    Task<string> GetOrCreateCustomerAsync(string email);
-    Task<UserCardDto> SaveCardAsync(string customerId, string cardToken);
+    Task<PaymentResponseDto?> GetPaymentByStripeIdAsync(string stripePaymentIntentId);
+    Task<string> GetOrCreateCustomerAsync(string email, string name);
+    Task DeleteCardAsync(string customerId, string paymentMethodId);
 }
 
 public class UserCardDto
