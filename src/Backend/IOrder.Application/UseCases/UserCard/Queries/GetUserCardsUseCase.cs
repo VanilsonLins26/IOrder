@@ -1,30 +1,41 @@
+using IOrder.Application.Services.Payment;
 using IOrder.Communication.Response;
-using IOrder.Domain.Repositories.Payment;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 
 namespace IOrder.Application.UseCases.UserCard.Queries;
 
 public class GetUserCardsUseCase : IGetUserCardsUseCase
 {
-    private readonly IUserCardReadOnlyRepository _userCardReadOnlyRepository;
+    private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IPaymentService _paymentService;
     private readonly ILoggedUserService _loggedUserService;
 
     public GetUserCardsUseCase(
-        IUserCardReadOnlyRepository userCardReadOnlyRepository,
+        IProfileReadOnlyRepository profileReadOnlyRepository,
+        IPaymentService paymentService,
         ILoggedUserService loggedUserService)
     {
-        _userCardReadOnlyRepository = userCardReadOnlyRepository;
+        _profileReadOnlyRepository = profileReadOnlyRepository;
+        _paymentService = paymentService;
         _loggedUserService = loggedUserService;
     }
 
     public async Task<IList<UserCardResponseDto>> Execute()
     {
         var userId = _loggedUserService.GetUserId();
-        var cards = await _userCardReadOnlyRepository.GetByUserIdAsync(userId);
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        
+        if (profile == null || string.IsNullOrEmpty(profile.StripeCustomerId))
+        {
+            return new List<UserCardResponseDto>();
+        }
+
+        var cards = await _paymentService.ListCardsAsync(profile.StripeCustomerId);
 
         return cards.Select(card => new UserCardResponseDto
         {
-            Id = card.Id,
+            Id = card.GatewayCardId,
             LastFourDigits = card.LastFourDigits,
             Brand = card.Brand,
             ExpirationMonth = card.ExpirationMonth,

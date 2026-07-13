@@ -9,6 +9,7 @@ public interface IPaymentService
     Task<PaymentResponseDto?> GetPaymentByStripeIdAsync(string stripePaymentIntentId);
     Task<string> GetOrCreateCustomerAsync(string email, string name);
     Task DeleteCardAsync(string customerId, string paymentMethodId);
+    Task<List<UserCardDto>> ListCardsAsync(string customerId);
 }
 
 public class UserCardDto

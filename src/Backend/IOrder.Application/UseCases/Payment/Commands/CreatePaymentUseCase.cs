@@ -23,6 +23,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
     private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IProfileWriteOnlyRepository _profileWriteOnlyRepository;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -33,6 +34,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IPaymentReadOnlyRepository paymentReadOnlyRepository,
         IProfileReadOnlyRepository profileReadOnlyRepository,
+        IProfileWriteOnlyRepository profileWriteOnlyRepository,
         IPaymentService paymentService,
         IUnitOfWork unitOfWork)
     {
@@ -42,6 +44,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _paymentReadOnlyRepository = paymentReadOnlyRepository;
         _profileReadOnlyRepository = profileReadOnlyRepository;
+        _profileWriteOnlyRepository = profileWriteOnlyRepository;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
     }
@@ -63,6 +66,23 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 
         var profile = await _profileReadOnlyRepository.GetByUserId(userId);
         var customerId = profile?.StripeCustomerId;
+
+        if (string.IsNullOrEmpty(customerId))
+        {
+            var email = _loggedUserService.GetUserEmail();
+            customerId = await _paymentService.GetOrCreateCustomerAsync(email, "Cliente IOrder");
+
+            if (profile != null)
+            {
+                var profileToUpdate = await _profileWriteOnlyRepository.GetByUserIdTracking(userId);
+                if (profileToUpdate != null)
+                {
+                    profileToUpdate.StripeCustomerId = customerId;
+                    _profileWriteOnlyRepository.Update(profileToUpdate);
+                    await _unitOfWork.Commit();
+                }
+            }
+        }
 
         return await _paymentService.CreatePaymentIntentAsync(order.Id, order.TotalAmount, customerId);
     }

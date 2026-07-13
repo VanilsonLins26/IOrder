@@ -1,5 +1,5 @@
-using IOrder.Domain.Repositories;
-using IOrder.Domain.Repositories.Payment;
+using IOrder.Application.Services.Payment;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 using IOrder.Exceptions.ExceptionBase;
 
@@ -7,34 +7,29 @@ namespace IOrder.Application.UseCases.UserCard.Commands;
 
 public class DeleteUserCardUseCase : IDeleteUserCardUseCase
 {
-    private readonly IUserCardReadOnlyRepository _userCardReadOnlyRepository;
-    private readonly IUserCardWriteOnlyRepository _userCardWriteOnlyRepository;
+    private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IPaymentService _paymentService;
     private readonly ILoggedUserService _loggedUserService;
-    private readonly IUnitOfWork _unitOfWork;
 
     public DeleteUserCardUseCase(
-        IUserCardReadOnlyRepository userCardReadOnlyRepository,
-        IUserCardWriteOnlyRepository userCardWriteOnlyRepository,
-        ILoggedUserService loggedUserService,
-        IUnitOfWork unitOfWork)
+        IProfileReadOnlyRepository profileReadOnlyRepository,
+        IPaymentService paymentService,
+        ILoggedUserService loggedUserService)
     {
-        _userCardReadOnlyRepository = userCardReadOnlyRepository;
-        _userCardWriteOnlyRepository = userCardWriteOnlyRepository;
+        _profileReadOnlyRepository = profileReadOnlyRepository;
+        _paymentService = paymentService;
         _loggedUserService = loggedUserService;
-        _unitOfWork = unitOfWork;
     }
 
-    public async Task Execute(Guid id)
+    public async Task Execute(string id)
     {
         var userId = _loggedUserService.GetUserId();
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId)
+            ?? throw new NotFoundException(["Perfil não encontrado."]);
 
-        var card = await _userCardReadOnlyRepository.GetByIdAsync(id)
-            ?? throw new NotFoundException(["Cartão não encontrado."]);
+        if (string.IsNullOrEmpty(profile.StripeCustomerId))
+            throw new NotFoundException(["Cliente Stripe não encontrado."]);
 
-        if (card.UserId != userId)
-            throw new UnauthorizedStoreException(["Cartão inválido."]);
-
-        _userCardWriteOnlyRepository.Delete(card);
-        await _unitOfWork.Commit();
+        await _paymentService.DeleteCardAsync(profile.StripeCustomerId, id);
     }
 }
