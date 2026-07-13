@@ -119,6 +119,11 @@ public class MercadoPagoService : IPaymentService
             Email = payerEmail
         };
 
+        if (!string.IsNullOrEmpty(customerId))
+        {
+            payerRequest.Id = customerId;
+        }
+
         if (!string.IsNullOrEmpty(payerIdentification))
         {
             payerRequest.Identification = new IdentificationRequest
