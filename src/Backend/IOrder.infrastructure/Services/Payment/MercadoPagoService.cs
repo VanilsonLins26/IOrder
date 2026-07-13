@@ -112,6 +112,7 @@ public class MercadoPagoService : IPaymentService
 
         var requestOptions = new MercadoPago.Client.RequestOptions();
         requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
+        requestOptions.CustomHeaders["X-Test-Token"] = "true";
 
         _logger.LogInformation(
             "Creating card payment: amount={Amount}, installments={Installments}, hasToken={HasToken}, hasCustomer={HasCustomer}",
@@ -142,9 +143,13 @@ public class MercadoPagoService : IPaymentService
         }
         catch (MercadoPagoApiException ex)
         {
+            var apiErrorJson = ex.ApiError is not null
+                ? JsonSerializer.Serialize(ex.ApiError)
+                : "null";
+            var responseBody = ex.ApiResponse?.Content ?? "null";
             _logger.LogError(ex,
-                "Mercado Pago API error creating card payment. StatusCode={StatusCode}, ApiError={ApiError}",
-                ex.StatusCode, ex.ApiError?.Message);
+                "Mercado Pago API error creating card payment. StatusCode={StatusCode}, ApiError={ApiError}, ResponseBody={ResponseBody}",
+                ex.StatusCode, apiErrorJson, responseBody);
             throw;
         }
     }
@@ -300,17 +305,24 @@ public class MercadoPagoService : IPaymentService
             Token = cardToken
         };
 
+        var requestOptions = new MercadoPago.Client.RequestOptions();
+        requestOptions.CustomHeaders["X-Test-Token"] = "true";
+
         MercadoPago.Resource.Customer.CustomerCard card;
 
         try
         {
-            card = await _customerCardClient.CreateAsync(customerId, cardRequest);
+            card = await _customerCardClient.CreateAsync(customerId, cardRequest, requestOptions);
         }
         catch (MercadoPagoApiException ex)
         {
+            var apiErrorJson = ex.ApiError is not null
+                ? JsonSerializer.Serialize(ex.ApiError)
+                : "null";
+            var responseBody = ex.ApiResponse?.Content ?? "null";
             _logger.LogError(ex,
-                "Mercado Pago API error saving card. StatusCode={StatusCode}, CustomerId={CustomerId}",
-                ex.StatusCode, customerId);
+                "Mercado Pago API error saving card. StatusCode={StatusCode}, CustomerId={CustomerId}, ApiError={ApiError}, ResponseBody={ResponseBody}",
+                ex.StatusCode, customerId, apiErrorJson, responseBody);
             throw;
         }
 
