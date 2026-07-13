@@ -10,6 +10,7 @@ using IOrder.infrastructure.Repositories;
 using IOrder.infrastructure.Repositories.Payment;
 using IOrder.infrastructure.Repositories.Product;
 using IOrder.infrastructure.Repositories.Store;
+using IOrder.infrastructure.DataAccess.Repositories;
 using IOrder.infrastructure.Services;
 using IOrder.infrastructure.Services.Email;
 using IOrder.infrastructure.Services.Evolution;
@@ -93,6 +94,9 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IPaymentReadOnlyRepository, PaymentRepository>();
         services.AddScoped<IPaymentWriteOnlyRepository, PaymentRepository>();
+
+        services.AddScoped<IUserCardReadOnlyRepository, UserCardRepository>();
+        services.AddScoped<IUserCardWriteOnlyRepository, UserCardRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }

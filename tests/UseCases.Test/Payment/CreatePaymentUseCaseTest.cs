@@ -169,8 +169,10 @@ public class CreatePaymentUseCaseTest
             new CreatePaymentValidator(),
             loggedUser,
             orderReadOnly,
+            new OrderWriteOnlyRepositoryBuilder().Build(),
             paymentReadOnly,
-            paymentServiceBuilder.Build());
+            paymentServiceBuilder.Build(),
+            UnitOfWorkBuilder.Build());
     }
 
     private static PaymentResponseDto BuildPaymentResponse(PaymentMethodDto method)
