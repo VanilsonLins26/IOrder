@@ -10,17 +10,6 @@ namespace IOrder.API.Controllers;
 [Authorize]
 public class UserCardController : IOrderBaseController
 {
-    [HttpPost]
-    [ProducesResponseType(typeof(UserCardResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SaveCard(
-        [FromServices] ISaveUserCardUseCase useCase,
-        [FromBody] SaveCardRequestDto request)
-    {
-        var response = await useCase.Execute(request);
-        return Created(string.Empty, response);
-    }
-
     [HttpGet]
     [ProducesResponseType(typeof(IList<UserCardResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCards(

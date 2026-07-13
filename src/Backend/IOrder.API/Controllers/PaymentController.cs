@@ -16,29 +16,16 @@ namespace IOrder.API.Controllers;
 public class PaymentController : IOrderBaseController
 {
     [HttpPost]
-    [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(PaymentIntentResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreatePayment(
         [FromServices] ICreatePaymentUseCase useCase,
-        [FromServices] IHubContext<ChatHub> hubContext,
         [FromBody] CreatePaymentRequestDto request)
     {
         var response = await useCase.Execute(request);
-
-        if (response?.Status is PaymentStatusDto.Approved or PaymentStatusDto.Rejected)
-        {
-            await hubContext.Clients.Group(response.OrderId.ToString()).SendAsync(
-                "PaymentStatusChanged",
-                new
-                {
-                    OrderId = response.OrderId,
-                    PaymentId = response.Id,
-                    Status = response.Status
-                });
-        }
 
         return Created(string.Empty, response);
     }
@@ -62,9 +49,9 @@ public class PaymentController : IOrderBaseController
     [AllowAnonymous]
     [ProducesResponseType(typeof(PublicKeyResponseDto), StatusCodes.Status200OK)]
     public IActionResult GetPublicKey(
-        [FromServices] IOptions<MercadoPagoSettings> settings)
+        [FromServices] IOptions<StripeSettings> settings)
     {
-        return Ok(new PublicKeyResponseDto { PublicKey = settings.Value.PublicKey });
+        return Ok(new PublicKeyResponseDto { PublicKey = settings.Value.PublishableKey });
     }
 
     [HttpPost("webhook")]
@@ -76,8 +63,7 @@ public class PaymentController : IOrderBaseController
     {
         using var reader = new StreamReader(Request.Body);
         var payload = await reader.ReadToEndAsync();
-        var signature = Request.Headers["X-Signature"].FirstOrDefault()
-            ?? Request.Headers["x-signature"].FirstOrDefault();
+        var signature = Request.Headers["Stripe-Signature"].FirstOrDefault();
 
         var response = await useCase.Execute(payload, signature);
 
