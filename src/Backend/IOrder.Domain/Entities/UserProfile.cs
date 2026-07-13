@@ -8,5 +8,5 @@ public class UserProfile : EntityBase, IAggregateRoot
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public bool EmailManuallySet { get; set; }
-    public string? MercadoPagoCustomerId { get; set; }
+    public string? StripeCustomerId { get; set; }
 }
