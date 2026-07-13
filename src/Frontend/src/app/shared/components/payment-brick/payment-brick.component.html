@@ -5,188 +5,61 @@
       <span class="payment-amount__value">{{ totalAmount() | currency:'BRL' }}</span>
     </div>
 
-    <div class="payment-methods">
-      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.Pix"
-              (click)="selectMethod(PaymentMethodDto.Pix)" [disabled]="loading() || cardProcessing()">
-        <span class="payment-method__icon">⚡</span> PIX
-      </button>
-      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.CreditCard"
-              (click)="selectMethod(PaymentMethodDto.CreditCard)" [disabled]="loading() || cardProcessing()">
-        <span class="payment-method__icon">💳</span> Cartão
-      </button>
-      <button type="button" class="payment-method" [class.active]="selectedMethod() === PaymentMethodDto.Boleto"
-              (click)="selectMethod(PaymentMethodDto.Boleto)" [disabled]="loading() || cardProcessing()">
-        <span class="payment-method__icon">📄</span> Boleto
-      </button>
-    </div>
-
     @if (error(); as err) {
       <div class="payment-error">
         <span class="payment-error__icon">⚠️</span> {{ err }}
       </div>
     }
 
-    @if (selectedMethod() === PaymentMethodDto.Pix) {
-      @if (paymentResult(); as result) {
-        <div class="payment-result payment-result--success">
-          <h3>PIX gerado com sucesso!</h3>
-          @if (result.pixQrCode) {
-            <div class="pix-qr-wrapper">
-              <img [src]="'data:image/png;base64,' + result.pixQrCode" alt="QR Code PIX" class="pix-qr" />
+    <!-- Manage Saved Cards -->
+    @if (savedCards().length > 0) {
+      <div class="saved-cards">
+        <h4 class="saved-cards__title">Meus cartões salvos</h4>
+        <div class="saved-cards__list">
+          @for (card of savedCards(); track card.id) {
+            <div class="saved-card-item">
+              <span class="saved-card-item__details">
+                <span class="saved-card-item__brand">{{ card.brand }}</span>
+                <span class="saved-card-item__number">**** {{ card.lastFourDigits }}</span>
+                <span class="saved-card-item__expiry">Exp {{ card.expirationMonth | number:'2.0' }}/{{ card.expirationYear }}</span>
+              </span>
+              <button class="saved-card-item__delete" (click)="deleteCard(card.id)" title="Remover cartão">🗑️</button>
             </div>
           }
-          @if (result.pixCopyPaste) {
-            <div class="pix-key-container">
-              <code class="pix-key">{{ result.pixCopyPaste }}</code>
-              <button type="button" class="pix-copy-btn" (click)="copyPixKey()">Copiar</button>
-            </div>
-          }
-          <p class="payment-instruction">Escaneie o QR Code ou copie a chave PIX para pagar no seu banco.</p>
         </div>
-      } @else {
-        <div class="payment-form">
-          <label class="payment-label">
-            Seu email para recibo
-            <input type="email" id="payment-email" class="payment-input"
-                   [ngModel]="userEmail() || payerEmail()"
-                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
-          </label>
-          <button type="button" class="payment-action-btn" (click)="processPix()" [disabled]="loading()">
-            @if (loading()) {
-              <span class="spinner"></span> Gerando PIX...
-            } @else {
-              Gerar PIX de {{ totalAmount() | currency:'BRL' }}
-            }
-          </button>
-        </div>
-      }
+      </div>
     }
 
-    @if (selectedMethod() === PaymentMethodDto.CreditCard) {
-      @if (paymentResult(); as result) {
-        <div class="payment-result payment-result--success">
-          <h3>Pagamento Aprovado!</h3>
-          @if (result.cardLastFourDigits) {
-            <p>Cartão final {{ result.cardLastFourDigits }}</p>
-          }
-          @if (result.installments && result.installmentAmount) {
-            <p>{{ result.installments }}x de {{ result.installmentAmount | currency:'BRL' }}</p>
-          }
-          <p class="payment-instruction">Seu pedido já foi atualizado e está em processamento.</p>
-        </div>
-      } @else {
-        <div class="payment-form">
-          <label class="payment-label">
-            Seu email para recibo
-            <input type="email" id="payment-email" class="payment-input"
-                   [ngModel]="userEmail() || payerEmail()"
-                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
-          </label>
-          <label class="payment-label">
-            CPF do titular
-            <input type="text" id="payment-cpf" class="payment-input"
-                   (input)="userCpf.set($any($event).target.value)" placeholder="000.000.000-00" />
-          </label>
-        </div>
-        
-        @if (savedCards().length > 0) {
-          <div class="saved-cards">
-            <h4 class="saved-cards__title">Meus cartões salvos</h4>
-            <div class="saved-cards__list">
-              @for (card of savedCards(); track card.id) {
-                <label class="saved-card-option" [class.selected]="selectedCardId() === card.id">
-                  <input type="radio" name="selectedCard" [value]="card.id"
-                         [ngModel]="selectedCardId()" (ngModelChange)="onCardSelectionChange($event)" />
-                  <span class="saved-card-option__details">
-                    <span class="saved-card-option__brand">{{ card.brand }}</span>
-                    <span class="saved-card-option__number">**** {{ card.lastFourDigits }}</span>
-                    <span class="saved-card-option__expiry">Exp {{ card.expirationMonth | number:'2.0' }}/{{ card.expirationYear }}</span>
-                  </span>
-                </label>
-              }
-              <label class="saved-card-option" [class.selected]="selectedCardId() === 'new'">
-                <input type="radio" name="selectedCard" value="new"
-                       [ngModel]="selectedCardId()" (ngModelChange)="onCardSelectionChange($event)" />
-                <span class="saved-card-option__details">
-                  <span class="saved-card-option__new-text">+ Usar um novo cartão</span>
-                </span>
-              </label>
-            </div>
-          </div>
-        }
+    <!-- Stripe Element -->
+    <div class="payment-form">
+      <label class="payment-label">
+        Seu email para recibo
+        <input type="email" id="payment-email" class="payment-input"
+               [ngModel]="userEmail() || payerEmail()"
+               (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
+      </label>
 
-        @if (selectedCardId() === 'new') {
-          <div id="cardPaymentBrick_container" class="card-brick-container" [class.loading]="!mpReady()"></div>
-          
-          @if (mpReady()) {
-            <div class="save-card-toggle">
-              <label class="save-card-toggle__label">
-                <input type="checkbox" [ngModel]="saveNewCard()" (ngModelChange)="saveNewCard.set($event)" />
-                <span class="save-card-toggle__text">Salvar este cartão para próximas compras</span>
-              </label>
-            </div>
-          }
+      <!-- Container for Stripe Elements -->
+      <div #paymentElementContainer id="payment-element" class="payment-element-container"></div>
+      
+      @if (!stripeReady()) {
+        <div class="payment-loading">
+          <span class="spinner"></span> Carregando opções de pagamento...
+        </div>
+      }
+    </div>
 
-          @if (cardProcessing() || !mpReady()) {
-            <div class="payment-loading">
-              <span class="spinner"></span> {{ !mpReady() ? 'Carregando cartão seguro...' : 'Processando pagamento...' }}
-            </div>
-          }
+    <!-- Actions -->
+    <div class="payment-actions">
+      <button type="button" class="payment-action-btn" 
+              (click)="processPayment()" 
+              [disabled]="!stripeReady() || processingPayment()">
+        @if (processingPayment()) {
+          <span class="spinner"></span> Processando...
         } @else {
-          <div class="saved-card-payment">
-            <label class="payment-label">
-              Parcelamento
-              <select class="payment-select" [ngModel]="installmentsForSavedCard()" (ngModelChange)="installmentsForSavedCard.set(+$event)">
-                <option [value]="1">1x de {{ totalAmount() | currency:'BRL' }}</option>
-                <option [value]="2">2x de {{ (totalAmount() / 2) | currency:'BRL' }}</option>
-                <option [value]="3">3x de {{ (totalAmount() / 3) | currency:'BRL' }}</option>
-                <option [value]="4">4x de {{ (totalAmount() / 4) | currency:'BRL' }}</option>
-                <option [value]="5">5x de {{ (totalAmount() / 5) | currency:'BRL' }}</option>
-                <option [value]="6">6x de {{ (totalAmount() / 6) | currency:'BRL' }}</option>
-              </select>
-            </label>
-
-            <button type="button" class="payment-action-btn" (click)="processSavedCardPayment()" [disabled]="cardProcessing()">
-              @if (cardProcessing()) {
-                <span class="spinner"></span> Processando...
-              } @else {
-                Pagar {{ totalAmount() | currency:'BRL' }}
-              }
-            </button>
-          </div>
+          Pagar {{ totalAmount() | currency:'BRL' }}
         }
-      }
-    }
-
-    @if (selectedMethod() === PaymentMethodDto.Boleto) {
-      @if (paymentResult(); as result) {
-        <div class="payment-result payment-result--success">
-          <h3>Boleto gerado com sucesso!</h3>
-          @if (result.boletoUrl) {
-            <a [href]="result.boletoUrl" target="_blank" class="boleto-link" rel="noopener">Visualizar Boleto</a>
-          }
-          @if (result.boletoBarcode) {
-            <p class="boleto-barcode">{{ result.boletoBarcode }}</p>
-          }
-          <p class="payment-instruction">Pague o boleto em qualquer banco ou lotérica. A confirmação leva até 2 dias úteis.</p>
-        </div>
-      } @else {
-        <div class="payment-form">
-          <label class="payment-label">
-            Seu email para receber o boleto
-            <input type="email" id="payment-email" class="payment-input"
-                   [ngModel]="userEmail() || payerEmail()"
-                   (ngModelChange)="userEmail.set($event)" placeholder="email@exemplo.com" />
-          </label>
-          <button type="button" class="payment-action-btn" (click)="processBoleto()" [disabled]="loading()">
-            @if (loading()) {
-              <span class="spinner"></span> Gerando Boleto...
-            } @else {
-              Gerar Boleto de {{ totalAmount() | currency:'BRL' }}
-            }
-          </button>
-        </div>
-      }
-    }
+      </button>
+    </div>
   </div>
 </app-modal>
