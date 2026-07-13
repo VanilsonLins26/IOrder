@@ -19,8 +19,9 @@ public class CreatePaymentValidator : AbstractValidator<CreatePaymentRequestDto>
             .NotEmpty().WithMessage(ResourceMessagesException.PAYMENT_EMAIL_EMPTY)
             .EmailAddress().WithMessage(ResourceMessagesException.PAYMENT_EMAIL_INVALID);
 
-        RuleFor(x => x.CardToken)
-            .NotEmpty().WithMessage(ResourceMessagesException.PAYMENT_CARD_TOKEN_EMPTY)
+        RuleFor(x => x)
+            .Must(x => !string.IsNullOrEmpty(x.CardToken) || x.SavedCardId.HasValue)
+            .WithMessage(ResourceMessagesException.PAYMENT_CARD_TOKEN_EMPTY)
             .When(x => x.Method == PaymentMethodDto.CreditCard);
 
         RuleFor(x => x.Installments)

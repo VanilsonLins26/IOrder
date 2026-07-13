@@ -7,7 +7,9 @@ using IOrder.Communication.Enums;
 using IOrder.Communication.Response;
 using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Repositories.Payment;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Exceptions;
+using Moq;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
 using Shouldly;
@@ -171,6 +173,8 @@ public class CreatePaymentUseCaseTest
             orderReadOnly,
             new OrderWriteOnlyRepositoryBuilder().Build(),
             paymentReadOnly,
+            new Mock<IProfileReadOnlyRepository>().Object,
+            new Mock<IUserCardReadOnlyRepository>().Object,
             paymentServiceBuilder.Build(),
             UnitOfWorkBuilder.Build());
     }

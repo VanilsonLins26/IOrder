@@ -20,6 +20,12 @@ internal class ProfileRepository : IProfileReadOnlyRepository, IProfileWriteOnly
             .FirstOrDefaultAsync(p => p.UserId == userId);
     }
 
+    public async Task<UserProfile?> GetByUserIdTracking(string userId)
+    {
+        return await _context.UserProfiles
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+    }
+
     public async Task Create(UserProfile profile)
     {
         await _context.UserProfiles.AddAsync(profile);

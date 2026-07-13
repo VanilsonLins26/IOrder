@@ -6,6 +6,7 @@ using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Payment;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 using IOrder.Domain.Events;
 using IOrder.Exceptions;
@@ -21,6 +22,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
+    private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IUserCardReadOnlyRepository _userCardReadOnlyRepository;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -30,6 +33,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         IOrderReadOnlyRepository orderReadOnlyRepository,
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IPaymentReadOnlyRepository paymentReadOnlyRepository,
+        IProfileReadOnlyRepository profileReadOnlyRepository,
+        IUserCardReadOnlyRepository userCardReadOnlyRepository,
         IPaymentService paymentService,
         IUnitOfWork unitOfWork)
     {
@@ -38,6 +43,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         _orderReadOnlyRepository = orderReadOnlyRepository;
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _paymentReadOnlyRepository = paymentReadOnlyRepository;
+        _profileReadOnlyRepository = profileReadOnlyRepository;
+        _userCardReadOnlyRepository = userCardReadOnlyRepository;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
     }
@@ -66,8 +73,10 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
             Communication.Enums.PaymentMethodDto.Pix => await _paymentService.CreatePixPaymentAsync(
                 order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
 
-            Communication.Enums.PaymentMethodDto.CreditCard => await _paymentService.CreateCardPaymentAsync(
-                order.Id, order.TotalAmount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber),
+            Communication.Enums.PaymentMethodDto.CreditCard => 
+                request.SavedCardId.HasValue ?
+                await HandleSavedCardPaymentAsync(order.Id, order.TotalAmount, request, userId) :
+                await _paymentService.CreateCardPaymentAsync(order.Id, order.TotalAmount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber),
 
             Communication.Enums.PaymentMethodDto.Boleto => await _paymentService.CreateBoletoPaymentAsync(
                 order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
@@ -88,6 +97,24 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         }
 
         return paymentResponse;
+    }
+
+    private async Task<PaymentResponseDto> HandleSavedCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
+    {
+        var userCard = await _userCardReadOnlyRepository.GetByIdAsync(request.SavedCardId!.Value)
+            ?? throw new NotFoundException(["Cartão não encontrado."]);
+
+        if (userCard.UserId != userId)
+            throw new UnauthorizedStoreException(["Cartão inválido."]);
+
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId)
+            ?? throw new NotFoundException(["Perfil não encontrado."]);
+
+        if (string.IsNullOrEmpty(profile.MercadoPagoCustomerId))
+            throw new ErrorOnValidationException(["Cliente não cadastrado no gateway de pagamento."]);
+
+        return await _paymentService.CreateSavedCardPaymentAsync(
+            orderId, amount, profile.MercadoPagoCustomerId, userCard.GatewayCardId, request.Installments ?? 1);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)
