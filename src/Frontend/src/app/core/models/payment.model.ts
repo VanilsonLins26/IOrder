@@ -57,6 +57,7 @@ export interface UserCardResponseDto {
   brand: string;
   expirationMonth: number;
   expirationYear: number;
+  gatewayCardId: string;
 }
 
 export interface SaveCardRequestDto {

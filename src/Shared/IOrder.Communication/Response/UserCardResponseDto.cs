@@ -7,4 +7,5 @@ public class UserCardResponseDto
     public string Brand { get; set; } = string.Empty;
     public int ExpirationMonth { get; set; }
     public int ExpirationYear { get; set; }
+    public string GatewayCardId { get; set; } = string.Empty;
 }

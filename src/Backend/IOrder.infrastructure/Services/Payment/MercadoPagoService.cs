@@ -87,18 +87,26 @@ public class MercadoPagoService : IPaymentService
 
     public async Task<PaymentResponseDto> CreateCardPaymentAsync(
         Guid orderId, decimal amount, string cardToken, int installments,
-        string payerEmail, string? payerIdentification)
+        string payerEmail, string? payerIdentification, string? customerId)
     {
+        var payerRequest = new PaymentPayerRequest
+        {
+            Email = payerEmail
+        };
+
+        if (!string.IsNullOrEmpty(customerId))
+        {
+            payerRequest.Type = "customer";
+            payerRequest.Id = customerId;
+        }
+
         var request = new PaymentCreateRequest
         {
             TransactionAmount = amount,
             Token = cardToken,
             Description = $"Pedido #{orderId.ToString("N")[..8].ToUpper()}",
             Installments = installments,
-            Payer = new PaymentPayerRequest
-            {
-                Email = payerEmail
-            },
+            Payer = payerRequest,
             NotificationUrl = _settings.WebhookUrl
         };
 
@@ -286,49 +294,4 @@ public class MercadoPagoService : IPaymentService
         };
     }
 
-    public async Task<PaymentResponseDto> CreateSavedCardPaymentAsync(
-        Guid orderId, decimal amount, string customerId, string cardId, int installments)
-    {
-        var request = new PaymentCreateRequest
-        {
-            TransactionAmount = amount,
-            Token = cardId,
-            Description = $"Pedido #{orderId.ToString("N")[..8].ToUpper()}",
-            Installments = installments,
-            Payer = new PaymentPayerRequest
-            {
-                Type = "customer",
-                Id = customerId
-            },
-            NotificationUrl = _settings.WebhookUrl
-        };
-
-        var requestOptions = new MercadoPago.Client.RequestOptions();
-        requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
-
-        var mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
-
-        if (mpPayment.Status == "rejected")
-        {
-            throw new IOrder.Exceptions.ExceptionBase.ErrorOnValidationException(new System.Collections.Generic.List<string> { "Pagamento rejeitado pelo Mercado Pago." });
-        }
-
-        var payment = new Domain.Entities.Payment
-        {
-            OrderId = orderId,
-            Amount = amount
-        };
-
-        payment.SetCardPayment(mpPayment.Id.ToString()!, "****", installments, amount.ToString());
-
-        if (mpPayment.Status == "approved")
-        {
-            payment.Approve();
-        }
-
-        await _paymentWriteRepo.CreateAsync(payment);
-        await _unitOfWork.Commit();
-
-        return payment.Adapt<PaymentResponseDto>();
-    }
 }

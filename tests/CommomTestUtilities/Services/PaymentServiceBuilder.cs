@@ -25,7 +25,7 @@ public class PaymentServiceBuilder
     {
         _mock.Setup(s => s.CreateCardPaymentAsync(
             It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<int>(),
-            It.IsAny<string>(), It.IsAny<string?>()))
+            It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
         return this;
     }

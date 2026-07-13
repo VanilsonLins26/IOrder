@@ -28,7 +28,8 @@ public class GetUserCardsUseCase : IGetUserCardsUseCase
             LastFourDigits = card.LastFourDigits,
             Brand = card.Brand,
             ExpirationMonth = card.ExpirationMonth,
-            ExpirationYear = card.ExpirationYear
+            ExpirationYear = card.ExpirationYear,
+            GatewayCardId = card.GatewayCardId
         }).ToList();
     }
 }

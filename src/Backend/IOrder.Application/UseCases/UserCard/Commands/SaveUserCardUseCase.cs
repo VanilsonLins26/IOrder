@@ -79,7 +79,8 @@ public class SaveUserCardUseCase : ISaveUserCardUseCase
             LastFourDigits = userCard.LastFourDigits,
             Brand = userCard.Brand,
             ExpirationMonth = userCard.ExpirationMonth,
-            ExpirationYear = userCard.ExpirationYear
+            ExpirationYear = userCard.ExpirationYear,
+            GatewayCardId = userCard.GatewayCardId
         };
     }
 }

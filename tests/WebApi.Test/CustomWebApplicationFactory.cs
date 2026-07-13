@@ -115,8 +115,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                     });
             PaymentMock.Setup(s => s.CreateCardPaymentAsync(
                 It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<int>(),
-                It.IsAny<string>(), It.IsAny<string?>()))
-                .ReturnsAsync((Guid orderId, decimal amount, string token, int installments, string email, string? ident) =>
+                It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
+                .ReturnsAsync((Guid orderId, decimal amount, string token, int installments, string email, string? ident, string? cardHolder) =>
                     new PaymentResponseDto
                     {
                         Id = Guid.NewGuid(),

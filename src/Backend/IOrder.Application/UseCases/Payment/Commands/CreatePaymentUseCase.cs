@@ -74,9 +74,7 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
                 order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
 
             Communication.Enums.PaymentMethodDto.CreditCard => 
-                request.SavedCardId.HasValue ?
-                await HandleSavedCardPaymentAsync(order.Id, order.TotalAmount, request, userId) :
-                await _paymentService.CreateCardPaymentAsync(order.Id, order.TotalAmount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber),
+                await HandleCardPaymentAsync(order.Id, order.TotalAmount, request, userId),
 
             Communication.Enums.PaymentMethodDto.Boleto => await _paymentService.CreateBoletoPaymentAsync(
                 order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
@@ -99,22 +97,12 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         return paymentResponse;
     }
 
-    private async Task<PaymentResponseDto> HandleSavedCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
+    private async Task<PaymentResponseDto> HandleCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
     {
-        var userCard = await _userCardReadOnlyRepository.GetByIdAsync(request.SavedCardId!.Value)
-            ?? throw new NotFoundException(["Cartão não encontrado."]);
-
-        if (userCard.UserId != userId)
-            throw new UnauthorizedStoreException(["Cartão inválido."]);
-
-        var profile = await _profileReadOnlyRepository.GetByUserId(userId)
-            ?? throw new NotFoundException(["Perfil não encontrado."]);
-
-        if (string.IsNullOrEmpty(profile.MercadoPagoCustomerId))
-            throw new ErrorOnValidationException(["Cliente não cadastrado no gateway de pagamento."]);
-
-        return await _paymentService.CreateSavedCardPaymentAsync(
-            orderId, amount, profile.MercadoPagoCustomerId, userCard.GatewayCardId, request.Installments ?? 1);
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        
+        return await _paymentService.CreateCardPaymentAsync(
+            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, profile?.MercadoPagoCustomerId);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)

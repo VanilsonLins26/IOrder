@@ -175,31 +175,47 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     });
   }
 
-  processSavedCardPayment(): void {
+  async processSavedCardPayment(): Promise<void> {
     const cardId = this.selectedCardId();
     if (!cardId || cardId === 'new') return;
 
     this.cardProcessing.set(true);
     this.error.set(null);
 
-    this.paymentApi.create({
-      orderId: this.orderId(),
-      method: PaymentMethodDto.CreditCard,
-      savedCardId: cardId,
-      installments: this.installmentsForSavedCard(),
-      payerEmail: this.userEmail() || this.payerEmail(),
-    }).subscribe({
-      next: (result) => {
-        this.paymentResult.set(result);
-        this.cardProcessing.set(false);
-        this.paymentCreated.emit(result);
-        this.toast.success('Pagamento processado com sucesso!');
-      },
-      error: (err) => {
-        this.cardProcessing.set(false);
-        this.error.set(err.error?.errors?.[0] || 'Erro ao processar pagamento com cartão salvo.');
-      },
-    });
+    try {
+      const userCard = this.savedCards().find(c => c.id === cardId);
+      if (!userCard) throw new Error('Cartão não encontrado.');
+
+      // We need to fetch the public key again to use the SDK
+      const { publicKey } = await firstValueFrom(this.paymentApi.getPublicKey());
+      await this.loadMpSdk();
+      const mp = new (window as any).MercadoPago(publicKey, { locale: 'pt-BR' });
+      
+      // Tokenize the saved card without CVV
+      const tokenResponse = await mp.createCardToken({
+        cardId: userCard.gatewayCardId
+      });
+
+      if (!tokenResponse || !tokenResponse.id) {
+          throw new Error('Falha ao tokenizar cartão salvo.');
+      }
+
+      const payment = await firstValueFrom(this.paymentApi.create({
+        orderId: this.orderId(),
+        method: PaymentMethodDto.CreditCard,
+        cardToken: tokenResponse.id,
+        installments: this.installmentsForSavedCard(),
+        payerEmail: this.userEmail() || this.payerEmail(),
+      }));
+
+      this.paymentResult.set(payment);
+      this.cardProcessing.set(false);
+      this.paymentCreated.emit(payment);
+      this.toast.success('Pagamento processado com sucesso!');
+    } catch (err: any) {
+      this.cardProcessing.set(false);
+      this.error.set(err.error?.errors?.[0] || err.message || 'Erro ao processar pagamento com cartão salvo.');
+    }
   }
 
   processPix(): void {
