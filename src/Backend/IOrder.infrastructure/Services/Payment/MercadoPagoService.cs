@@ -6,6 +6,7 @@ using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Payment;
 using IOrder.infrastructure.DataAccess;
 using Mapster;
+using MercadoPago.Client.Common;
 using MercadoPago.Client.Customer;
 using MercadoPago.Client.Payment;
 using MercadoPago.Error;
@@ -56,12 +57,35 @@ public class MercadoPagoService : IPaymentService
             Payer = new PaymentPayerRequest
             {
                 Email = payerEmail,
-                FirstName = "APRO" // Força aprovação automática no Sandbox do Mercado Pago
+                FirstName = "APRO"
             },
             NotificationUrl = _settings.WebhookUrl
         };
 
-        var mpPayment = await _paymentClient.CreateAsync(request);
+        _logger.LogInformation(
+            "Creating PIX payment: amount={Amount}, payer={Email}",
+            amount, payerEmail);
+
+        MercadoPago.Resource.Payment.Payment mpPayment;
+
+        var requestOptions = new MercadoPago.Client.RequestOptions();
+        requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
+
+        try
+        {
+            mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
+        }
+        catch (MercadoPagoApiException ex)
+        {
+            var apiErrorJson = ex.ApiError is not null
+                ? JsonSerializer.Serialize(ex.ApiError)
+                : "null";
+            var responseBody = ex.ApiResponse?.Content ?? "null";
+            _logger.LogError(ex,
+                "Mercado Pago API error creating PIX payment. StatusCode={StatusCode}, ApiError={ApiError}, ResponseBody={ResponseBody}",
+                ex.StatusCode, apiErrorJson, responseBody);
+            throw;
+        }
 
         if (mpPayment.PointOfInteraction?.TransactionData is null && mpPayment.Id.HasValue)
         {
@@ -87,17 +111,21 @@ public class MercadoPagoService : IPaymentService
 
     public async Task<PaymentResponseDto> CreateCardPaymentAsync(
         Guid orderId, decimal amount, string cardToken, int installments,
-        string payerEmail, string? payerIdentification, string? customerId)
+        string payerEmail, string? payerIdentification, string? customerId,
+        string? cardPaymentMethodId = null, string? issuerId = null, string? payerIdentificationType = "CPF")
     {
         var payerRequest = new PaymentPayerRequest
         {
             Email = payerEmail
         };
 
-        if (!string.IsNullOrEmpty(customerId))
+        if (!string.IsNullOrEmpty(payerIdentification))
         {
-            payerRequest.Type = "customer";
-            payerRequest.Id = customerId;
+            payerRequest.Identification = new IdentificationRequest
+            {
+                Type = payerIdentificationType ?? "CPF",
+                Number = payerIdentification
+            };
         }
 
         var request = new PaymentCreateRequest
@@ -110,16 +138,46 @@ public class MercadoPagoService : IPaymentService
             NotificationUrl = _settings.WebhookUrl
         };
 
+        if (!string.IsNullOrEmpty(cardPaymentMethodId))
+            request.PaymentMethodId = cardPaymentMethodId;
+
+        if (!string.IsNullOrEmpty(issuerId))
+            request.IssuerId = issuerId;
+
         var requestOptions = new MercadoPago.Client.RequestOptions();
         requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
-        requestOptions.CustomHeaders["X-Test-Token"] = "true";
 
         _logger.LogInformation(
-            "Creating card payment: amount={Amount}, installments={Installments}, hasToken={HasToken}, hasCustomer={HasCustomer}",
-            amount, installments, !string.IsNullOrEmpty(cardToken), !string.IsNullOrEmpty(customerId));
+            "Creating card payment: amount={Amount}, installments={Installments}, methodId={MethodId}, issuerId={IssuerId}, hasCustomer={HasCustomer}, hasIdent={HasIdent}, email={Email}, tokenLen={TokenLen}",
+            amount, installments, cardPaymentMethodId, issuerId,
+            !string.IsNullOrEmpty(customerId), !string.IsNullOrEmpty(payerIdentification),
+            payerEmail, cardToken?.Length);
 
         try
         {
+            var requestJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                transaction_amount = amount,
+                token = cardToken?[..Math.Min(20, cardToken.Length)],
+                description = request.Description,
+                installments = request.Installments,
+                payment_method_id = request.PaymentMethodId,
+                issuer_id = request.IssuerId,
+                payer = new
+                {
+                    email = request.Payer?.Email,
+                    type = request.Payer?.Type,
+                    id = request.Payer?.Id,
+                    identification = request.Payer?.Identification != null ? new
+                    {
+                        type = request.Payer.Identification.Type,
+                        number = request.Payer.Identification.Number
+                    } : null
+                },
+                notification_url = request.NotificationUrl
+            });
+            _logger.LogInformation("Card payment request payload: {Payload}", requestJson);
+
             var mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
 
             var payment = new Domain.Entities.Payment
@@ -169,7 +227,30 @@ public class MercadoPagoService : IPaymentService
             NotificationUrl = _settings.WebhookUrl
         };
 
-        var mpPayment = await _paymentClient.CreateAsync(request);
+        _logger.LogInformation(
+            "Creating boleto payment: amount={Amount}, payer={Email}",
+            amount, payerEmail);
+
+        MercadoPago.Resource.Payment.Payment mpPayment;
+
+        var requestOptions = new MercadoPago.Client.RequestOptions();
+        requestOptions.CustomHeaders["X-Idempotency-Key"] = Guid.NewGuid().ToString("N");
+
+        try
+        {
+            mpPayment = await _paymentClient.CreateAsync(request, requestOptions);
+        }
+        catch (MercadoPagoApiException ex)
+        {
+            var apiErrorJson = ex.ApiError is not null
+                ? JsonSerializer.Serialize(ex.ApiError)
+                : "null";
+            var responseBody = ex.ApiResponse?.Content ?? "null";
+            _logger.LogError(ex,
+                "Mercado Pago API error creating boleto payment. StatusCode={StatusCode}, ApiError={ApiError}, ResponseBody={ResponseBody}",
+                ex.StatusCode, apiErrorJson, responseBody);
+            throw;
+        }
 
         var payment = new Domain.Entities.Payment
         {
@@ -271,27 +352,43 @@ public class MercadoPagoService : IPaymentService
 
     public async Task<string> GetOrCreateCustomerAsync(string email)
     {
-        var searchRequest = new MercadoPago.Client.SearchRequest
+        _logger.LogInformation("Searching or creating customer: email={Email}", email);
+
+        try
         {
-            Filters = new System.Collections.Generic.Dictionary<string, object>
+            var searchRequest = new MercadoPago.Client.SearchRequest
             {
-                { "email", email }
+                Filters = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "email", email }
+                }
+            };
+
+            var searchResult = await _customerClient.SearchAsync(searchRequest);
+            if (searchResult.Results.Any())
+            {
+                return searchResult.Results.First().Id;
             }
-        };
 
-        var searchResult = await _customerClient.SearchAsync(searchRequest);
-        if (searchResult.Results.Any())
-        {
-            return searchResult.Results.First().Id;
+            var customerRequest = new MercadoPago.Client.Customer.CustomerRequest
+            {
+                Email = email
+            };
+
+            var newCustomer = await _customerClient.CreateAsync(customerRequest);
+            return newCustomer.Id;
         }
-
-        var customerRequest = new MercadoPago.Client.Customer.CustomerRequest
+        catch (MercadoPagoApiException ex)
         {
-            Email = email
-        };
-
-        var newCustomer = await _customerClient.CreateAsync(customerRequest);
-        return newCustomer.Id;
+            var apiErrorJson = ex.ApiError is not null
+                ? JsonSerializer.Serialize(ex.ApiError)
+                : "null";
+            var responseBody = ex.ApiResponse?.Content ?? "null";
+            _logger.LogError(ex,
+                "Mercado Pago API error in GetOrCreateCustomerAsync. StatusCode={StatusCode}, Email={Email}, ApiError={ApiError}, ResponseBody={ResponseBody}",
+                ex.StatusCode, email, apiErrorJson, responseBody);
+            throw;
+        }
     }
 
     public async Task<UserCardDto> SaveCardAsync(string customerId, string cardToken)
@@ -305,14 +402,11 @@ public class MercadoPagoService : IPaymentService
             Token = cardToken
         };
 
-        var requestOptions = new MercadoPago.Client.RequestOptions();
-        requestOptions.CustomHeaders["X-Test-Token"] = "true";
-
         MercadoPago.Resource.Customer.CustomerCard card;
 
         try
         {
-            card = await _customerCardClient.CreateAsync(customerId, cardRequest, requestOptions);
+            card = await _customerCardClient.CreateAsync(customerId, cardRequest);
         }
         catch (MercadoPagoApiException ex)
         {
