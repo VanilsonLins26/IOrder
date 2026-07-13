@@ -99,8 +99,11 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
 
     private async Task<PaymentResponseDto> HandleCardPaymentAsync(Guid orderId, decimal amount, CreatePaymentRequestDto request, string userId)
     {
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        var customerId = profile?.MercadoPagoCustomerId;
+
         return await _paymentService.CreateCardPaymentAsync(
-            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, null, request.CardPaymentMethodId, request.IssuerId, request.PayerIdentificationType);
+            orderId, amount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber, customerId, request.CardPaymentMethodId, request.IssuerId, request.PayerIdentificationType);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)
