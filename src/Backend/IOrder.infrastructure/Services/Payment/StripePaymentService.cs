@@ -142,6 +142,26 @@ public class StripePaymentService : IPaymentService
         await service.DetachAsync(paymentMethodId);
     }
 
+    public async Task<List<UserCardDto>> ListCardsAsync(string customerId)
+    {
+        var options = new PaymentMethodListOptions
+        {
+            Customer = customerId,
+            Type = "card",
+        };
+        var service = new PaymentMethodService();
+        var paymentMethods = await service.ListAsync(options);
+
+        return paymentMethods.Data.Select(pm => new UserCardDto
+        {
+            GatewayCardId = pm.Id,
+            LastFourDigits = pm.Card.Last4,
+            Brand = pm.Card.Brand,
+            ExpirationMonth = (int)pm.Card.ExpMonth,
+            ExpirationYear = (int)pm.Card.ExpYear
+        }).ToList();
+    }
+
     private PaymentResponseDto MapToDto(Domain.Entities.Payment payment)
     {
         return new PaymentResponseDto
