@@ -39,10 +39,7 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-            {
-                Enabled = true,
-            }
+            PaymentMethodTypes = new List<string> { "card", "boleto" }
         };
 
         var service = new PaymentIntentService();
