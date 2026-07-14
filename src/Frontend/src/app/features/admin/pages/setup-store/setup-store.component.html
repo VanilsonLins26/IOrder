@@ -36,8 +36,8 @@
       <div class="form-group">
         <label class="form-label" for="imageUrl">Logo da Loja</label>
         <app-image-upload
-          [currentImageUrl]="form.get('imageUrl')?.value || ''"
-          (imageUploaded)="form.patchValue({ imageUrl: $event })">
+          [currentUrl]="form.get('imageUrl')?.value || ''"
+          (fileSelected)="onImageSelected($event)">
         </app-image-upload>
       </div>
 
