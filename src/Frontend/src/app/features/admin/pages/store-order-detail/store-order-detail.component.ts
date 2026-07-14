@@ -252,7 +252,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     const dateStr = this.proposedDateString();
     const timeStr = this.proposedTimeString();
     if (dateStr && timeStr) {
-      proposedDeliveryDate = `${dateStr}T${timeStr}:00`;
+      const [yyyy, mm, dd] = dateStr.split('-').map(Number);
+      const [hh, min] = timeStr.split(':').map(Number);
+      const d = new Date(yyyy, mm - 1, dd, hh, min);
+      proposedDeliveryDate = d.toISOString();
     }
 
     this.orderApi.negotiate(this.id(), {

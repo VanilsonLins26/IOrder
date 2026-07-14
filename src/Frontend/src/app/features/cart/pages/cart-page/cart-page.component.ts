@@ -100,8 +100,11 @@ export class CartPageComponent implements OnInit {
     let deliveryDate: string | null = null;
     const dateVal = this.deliveryDate();
     const timeVal = this.deliveryTime();
-    if (dateVal) {
-      deliveryDate = timeVal ? `${dateVal}T${timeVal}:00` : `${dateVal}T00:00:00`;
+    if (dateVal && timeVal) {
+      const [yyyy, mm, dd] = dateVal.split('-').map(Number);
+      const [hh, min] = timeVal.split(':').map(Number);
+      const d = new Date(yyyy, mm - 1, dd, hh, min);
+      deliveryDate = d.toISOString();
     }
 
     this.orderApi.create({
