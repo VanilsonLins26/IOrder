@@ -150,23 +150,25 @@
           <div class="cart-summary__section">
             <h3 class="cart-summary__subtitle">Data de Entrega</h3>
               <div class="form-row">
-                <input
-                  type="date"
+                <select
                   class="form-control"
                   [ngModel]="deliveryDate()"
                   (ngModelChange)="deliveryDate.set($event)"
-                  [min]="today()"
-                />
-                <input
-                  type="time"
+                >
+                  @for (date of availableDates(); track date.date) {
+                    <option [value]="date.date">{{ date.label }}</option>
+                  }
+                </select>
+                <select
                   class="form-control"
                   [ngModel]="deliveryTime()"
                   (ngModelChange)="deliveryTime.set($event)"
-                />
+                >
+                  @for (time of availableTimes(); track time) {
+                    <option [value]="time">{{ time }}</option>
+                  }
+                </select>
               </div>
-              @if (deliveryTimeError()) {
-                <div class="cart-summary__error-message">{{ deliveryTimeError() }}</div>
-              }
             </div>
 
           <div class="cart-summary__section">
@@ -188,7 +190,7 @@
           <div class="cart-summary__checkout-wrapper">
               <button
                 class="cart-summary__checkout-btn"
-                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || deliveryTimeError() !== null"
+                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || !deliveryDate() || !deliveryTime()"
                 (click)="createOrder()"
               >
               @if (creatingOrder()) {

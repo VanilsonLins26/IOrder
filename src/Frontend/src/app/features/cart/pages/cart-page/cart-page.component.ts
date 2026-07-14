@@ -8,7 +8,7 @@ import { StoreApiService } from '../../../../core/services/api/store-api.service
 import { ToastService } from '../../../../core/services/toast.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
-import { isDateTimeWithinOpeningHours } from '../../../../core/utils/opening-hours.utils';
+import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
 import type { OpeningHourResponse } from '../../../../core/models';
 import { effect, untracked, computed } from '@angular/core';
 
@@ -34,34 +34,29 @@ export class CartPageComponent implements OnInit {
   readonly creatingOrder = signal(false);
   readonly storeHours = signal<OpeningHourResponse[]>([]);
 
-  readonly deliveryTimeError = computed(() => {
-    const dateStr = this.deliveryDate();
-    const timeStr = this.deliveryTime();
+  readonly availableDates = computed(() => {
+    return generateAvailableDates(this.storeHours(), 7);
+  });
 
-    if (!dateStr || !timeStr) return null;
-
-    const parts = dateStr.split('-');
-    if (parts.length !== 3) return null;
-
-    const timeParts = timeStr.split(':');
-    if (timeParts.length !== 2) return null;
-
-    const d = new Date(
-      parseInt(parts[0], 10),
-      parseInt(parts[1], 10) - 1,
-      parseInt(parts[2], 10),
-      parseInt(timeParts[0], 10),
-      parseInt(timeParts[1], 10)
-    );
-
-    if (!isDateTimeWithinOpeningHours(d, this.storeHours())) {
-      return "A loja não está aberta neste horário.";
-    }
-
-    return null;
+  readonly availableTimes = computed(() => {
+    return generateTimeSlots(this.deliveryDate(), this.storeHours(), 30);
   });
 
   constructor() {
+    effect(() => {
+      const dates = this.availableDates();
+      if (dates.length > 0 && !this.deliveryDate()) {
+        untracked(() => this.deliveryDate.set(dates[0].date));
+      }
+    });
+
+    effect(() => {
+      const times = this.availableTimes();
+      if (times.length > 0 && !times.includes(this.deliveryTime())) {
+        untracked(() => this.deliveryTime.set(times[0]));
+      }
+    });
+
     effect(() => {
       const items = this.cartStore.items();
       if (items && items.length > 0) {
