@@ -24,4 +24,8 @@ export class PaymentApiService {
   updateSaveCard(orderId: string, saveCard: boolean): Observable<void> {
     return this.http.patch<void>(`${this.baseUrl}/${orderId}/save-card`, { saveCard });
   }
+
+  syncPaymentStatus(orderId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${orderId}/sync`, {});
+  }
 }

@@ -187,8 +187,16 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
         });
 
         if (error) {
-          this.error.set(error.message || 'Falha ao processar o pagamento com o cartão salvo.');
+          if (error.type === 'card_error' || error.type === 'validation_error') {
+            this.error.set(error.message || 'Erro no cartão');
+          } else {
+            this.error.set('Ocorreu um erro inesperado.');
+          }
           this.processingPayment.set(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+          this.toast.success('Pagamento confirmado!');
+          this.paymentCreated.emit({ id: paymentIntent?.id || '' } as any);
+          this.close.emit();
         }
         return;
       }
@@ -244,7 +252,6 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       this.processingPayment.set(false);
     }
   }
-
   private cleanupStripe(): void {
     if (this.paymentElement) {
       this.paymentElement.destroy();
@@ -253,3 +260,5 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     this.elements = null;
   }
 }
+
+
