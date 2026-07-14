@@ -47,3 +47,95 @@ export function parseTimeStringToMinutes(timeString: string): number {
   const minutes = parseInt(parts[1] || '0', 10);
   return hours * 60 + minutes;
 }
+
+export function generateAvailableDates(openingHours: OpeningHourResponse[], daysAhead: number = 7): { date: string, label: string }[] {
+  const dates: { date: string, label: string }[] = [];
+  const today = new Date();
+  
+  const daysOfWeekNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  for (let i = 0; i < daysAhead; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+    const dayOfWeek = d.getDay();
+    
+    // Check if store is open on this day
+    if (!openingHours || openingHours.length === 0 || openingHours.some(h => h.dayOfWeek === dayOfWeek)) {
+      const dateStr = d.toISOString().split('T')[0];
+      
+      let label = ``;
+      if (i === 0) {
+        label = `Hoje - ` + daysOfWeekNames[dayOfWeek];
+      } else if (i === 1) {
+        label = `Amanhã - ` + daysOfWeekNames[dayOfWeek];
+      } else {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        label = `${dd}/${mm} - ` + daysOfWeekNames[dayOfWeek];
+      }
+
+      dates.push({ date: dateStr, label });
+    }
+  }
+
+  return dates;
+}
+
+export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResponse[], intervalMin: number = 30): string[] {
+  if (!dateStr) return [];
+
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return [];
+  const selectedDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  const dayOfWeek = selectedDate.getDay();
+
+  const hoursForDay = (!openingHours || openingHours.length === 0) 
+    ? [{ openHour: '08:00', closeHour: '22:00', dayOfWeek }] // default fallback if no config
+    : openingHours.filter(h => h.dayOfWeek === dayOfWeek);
+
+  if (hoursForDay.length === 0) return [];
+
+  const slots: string[] = [];
+  const now = new Date();
+  const isToday = now.toISOString().split('T')[0] === dateStr;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const bufferMinutes = 30; // Min time to prepare an order
+
+  for (const range of hoursForDay) {
+    const openMinutes = parseTimeStringToMinutes(range.openHour);
+    let closeMinutes = parseTimeStringToMinutes(range.closeHour);
+
+    if (closeMinutes <= openMinutes) {
+      closeMinutes += 24 * 60; // Next day
+    }
+
+    let start = openMinutes;
+    // Align start to the next interval (e.g. 08:00, 08:30)
+    if (start % intervalMin !== 0) {
+      start += intervalMin - (start % intervalMin);
+    }
+
+    for (let m = start; m <= closeMinutes; m += intervalMin) {
+      const mInDay = m % (24 * 60);
+      
+      if (isToday) {
+        // If it's today, the slot must be in the future (+ buffer)
+        // Note: if the slot crossed midnight, m is > 1440, so m > currentMinutes is always true.
+        if (m < currentMinutes + bufferMinutes) {
+          continue;
+        }
+      }
+
+      const hh = String(Math.floor(mInDay / 60)).padStart(2, '0');
+      const mm = String(mInDay % 60).padStart(2, '0');
+      
+      // Avoid duplicate slots if ranges overlap
+      const slotStr = `${hh}:${mm}`;
+      if (!slots.includes(slotStr)) {
+        slots.push(slotStr);
+      }
+    }
+  }
+
+  // Sort slots in case of overlapping or unordered ranges
+  return slots.sort((a, b) => parseTimeStringToMinutes(a) - parseTimeStringToMinutes(b));
+}
