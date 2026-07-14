@@ -74,7 +74,7 @@ public class NegotiateOrderUseCase : INegotiateOrderUseCase
         order.ClearDomainEvents();
         await _domainEventDispatcher.DispatchAsync(events);
 
-        await _messagePublisher.PublishMessageAsync(id, order.Adapt<OrderResponseDto>());
+        await _messagePublisher.PublishMessageAsync(id, message.Adapt<OrderMessageResponseDto>());
         return order.Adapt<OrderResponseDto>();
     }
 
