@@ -44,7 +44,7 @@ public class StripePaymentService : IPaymentService
             {
                 Card = new PaymentIntentPaymentMethodOptionsCardOptions
                 {
-                    SetupFutureUsage = "off_session"
+                    SetupFutureUsage = "" // We will set it later via UpdatePaymentIntentSetupFutureUsageAsync
                 }
             }
         };
@@ -136,6 +136,22 @@ public class StripePaymentService : IPaymentService
     {
         var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(stripePaymentIntentId);
         return payment != null ? MapToDto(payment) : null;
+    }
+
+    public async Task UpdatePaymentIntentSetupFutureUsageAsync(string paymentIntentId, bool saveCard)
+    {
+        var service = new PaymentIntentService();
+        var options = new PaymentIntentUpdateOptions
+        {
+            PaymentMethodOptions = new PaymentIntentPaymentMethodOptionsOptions
+            {
+                Card = new PaymentIntentPaymentMethodOptionsCardOptions
+                {
+                    SetupFutureUsage = saveCard ? "off_session" : ""
+                }
+            }
+        };
+        await service.UpdateAsync(paymentIntentId, options);
     }
 
     public async Task<string> GetOrCreateCustomerAsync(string email, string name)

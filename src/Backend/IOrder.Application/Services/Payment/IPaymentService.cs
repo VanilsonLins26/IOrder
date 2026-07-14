@@ -10,6 +10,7 @@ public interface IPaymentService
     Task<string> GetOrCreateCustomerAsync(string email, string name);
     Task DeleteCardAsync(string customerId, string paymentMethodId);
     Task<List<UserCardDto>> ListCardsAsync(string customerId);
+    Task UpdatePaymentIntentSetupFutureUsageAsync(string paymentIntentId, bool saveCard);
 }
 
 public class UserCardDto

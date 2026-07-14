@@ -36,6 +36,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
 
   readonly savedCards = signal<UserCardResponseDto[]>([]);
   readonly loadingCards = signal(false);
+  readonly saveCardForFuture = signal(false);
 
   // Stripe
   private stripe: Stripe | null = null;
@@ -190,6 +191,16 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
           this.processingPayment.set(false);
         }
         return;
+      }
+
+      // Update intent with setup_future_usage if requested
+      if (this.saveCardForFuture()) {
+        try {
+          await firstValueFrom(this.paymentApi.updateSaveCard(this.orderId(), true));
+        } catch (e) {
+          console.error('Failed to update intent for future usage', e);
+          // Proceed anyway to not block payment
+        }
       }
 
       const { error, paymentIntent } = await this.stripe.confirmPayment({

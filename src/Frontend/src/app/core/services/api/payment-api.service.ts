@@ -20,4 +20,8 @@ export class PaymentApiService {
   getPublicKey(): Observable<PublicKeyResponseDto> {
     return this.http.get<PublicKeyResponseDto>(`${this.baseUrl}/public-key`);
   }
+
+  updateSaveCard(orderId: string, saveCard: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${orderId}/save-card`, { saveCard });
+  }
 }
