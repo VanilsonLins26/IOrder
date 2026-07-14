@@ -39,7 +39,14 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            PaymentMethodTypes = new List<string> { "card", "boleto" }
+            PaymentMethodTypes = new List<string> { "card", "boleto" },
+            PaymentMethodOptions = new PaymentIntentPaymentMethodOptionsOptions
+            {
+                Card = new PaymentIntentPaymentMethodOptionsCardOptions
+                {
+                    SetupFutureUsage = "off_session"
+                }
+            }
         };
 
         var service = new PaymentIntentService();

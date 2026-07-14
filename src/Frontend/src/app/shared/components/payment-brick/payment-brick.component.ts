@@ -36,7 +36,6 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
 
   readonly savedCards = signal<UserCardResponseDto[]>([]);
   readonly loadingCards = signal(false);
-  readonly saveCardForFuture = signal(false);
 
   // Stripe
   private stripe: Stripe | null = null;
@@ -200,8 +199,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
             billing_details: {
               email: finalEmail
             }
-          },
-          setup_future_usage: this.saveCardForFuture() ? 'off_session' : undefined
+          }
         },
         redirect: 'if_required',
       });
