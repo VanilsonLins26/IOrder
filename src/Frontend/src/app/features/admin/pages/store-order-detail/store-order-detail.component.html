@@ -44,12 +44,19 @@
           <label>
             Data de entrega
             <input type="datetime-local" [ngModel]="proposedDate()" (ngModelChange)="proposedDate.set($event)" />
+            @if (proposalTimeError()) {
+              <div class="store-order-detail__error-message">{{ proposalTimeError() }}</div>
+            }
           </label>
           <label>
             Observações
             <textarea [ngModel]="shopkeeperNotes()" (ngModelChange)="shopkeeperNotes.set($event)" rows="3" placeholder="Observações para o cliente..."></textarea>
           </label>
-          <button class="action-btn action-btn--primary" (click)="sendProposal()">Enviar Proposta</button>
+          <button class="action-btn action-btn--primary" 
+                  (click)="sendProposal()" 
+                  [disabled]="proposalTimeError() !== null">
+            Enviar Proposta
+          </button>
         </div>
       </div>
     }

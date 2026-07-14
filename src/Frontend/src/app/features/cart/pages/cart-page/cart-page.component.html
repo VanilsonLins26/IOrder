@@ -149,22 +149,25 @@
 
           <div class="cart-summary__section">
             <h3 class="cart-summary__subtitle">Data de Entrega</h3>
-            <div class="cart-summary__row">
-              <input
-                type="date"
-                class="form-control"
-                [ngModel]="deliveryDate()"
-                (ngModelChange)="deliveryDate.set($event)"
-                [min]="today()"
-              />
-              <input
-                type="time"
-                class="form-control"
-                [ngModel]="deliveryTime()"
-                (ngModelChange)="deliveryTime.set($event)"
-              />
+              <div class="form-row">
+                <input
+                  type="date"
+                  class="form-control"
+                  [ngModel]="deliveryDate()"
+                  (ngModelChange)="deliveryDate.set($event)"
+                  [min]="today()"
+                />
+                <input
+                  type="time"
+                  class="form-control"
+                  [ngModel]="deliveryTime()"
+                  (ngModelChange)="deliveryTime.set($event)"
+                />
+              </div>
+              @if (deliveryTimeError()) {
+                <div class="cart-summary__error-message">{{ deliveryTimeError() }}</div>
+              }
             </div>
-          </div>
 
           <div class="cart-summary__section">
             <h3 class="cart-summary__subtitle">Observações</h3>
@@ -183,11 +186,11 @@
           </div>
 
           <div class="cart-summary__checkout-wrapper">
-            <button
-              class="cart-summary__checkout-btn"
-              [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0"
-              (click)="createOrder()"
-            >
+              <button
+                class="cart-summary__checkout-btn"
+                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || deliveryTimeError() !== null"
+                (click)="createOrder()"
+              >
               @if (creatingOrder()) {
                 <span class="spinner spinner--sm"></span>
               }

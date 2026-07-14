@@ -14,6 +14,8 @@ import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
+import { AdminStore } from '../../store/admin.store';
+import { isDateTimeWithinOpeningHours } from '../../../../core/utils/opening-hours.utils';
 
 @Component({
   selector: 'app-store-order-detail',
@@ -43,6 +45,22 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly proposedDate = signal('');
   readonly shopkeeperNotes = signal('');
   readonly currentUser = toSignal(this.auth.user$);
+  readonly adminStore = inject(AdminStore);
+
+  readonly proposalTimeError = computed(() => {
+    const pDate = this.proposedDate();
+    if (!pDate) return null;
+
+    const d = new Date(pDate);
+    if (isNaN(d.getTime())) return null;
+
+    const hours = this.adminStore.myStore()?.openingHours || [];
+    if (!isDateTimeWithinOpeningHours(d, hours)) {
+      return "O horário proposto está fora do horário de funcionamento da loja.";
+    }
+
+    return null;
+  });
 
   readonly unreadMessagesCount = computed(() => {
     const o = this.order();
