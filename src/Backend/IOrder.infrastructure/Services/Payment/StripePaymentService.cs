@@ -39,8 +39,7 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            PaymentMethodTypes = new List<string> { "card" },
-            SetupFutureUsage = "off_session"
+            PaymentMethodTypes = new List<string> { "card" }
         };
 
         var service = new PaymentIntentService();
@@ -50,7 +49,8 @@ public class StripePaymentService : IPaymentService
         {
             OrderId = orderId,
             Amount = amount,
-            StripePaymentIntentId = paymentIntent.Id
+            StripePaymentIntentId = paymentIntent.Id,
+            Method = IOrder.Domain.Entities.Enums.PaymentMethod.CreditCard
         };
 
         await _paymentWriteOnlyRepository.CreateAsync(payment);
