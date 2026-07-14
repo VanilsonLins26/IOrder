@@ -43,13 +43,36 @@
           </label>
           <label>
             Data de entrega
-            <input type="datetime-local" [ngModel]="proposedDate()" (ngModelChange)="proposedDate.set($event)" />
+            <div class="store-order-detail__date-time-row" style="display: flex; gap: 8px;">
+              <select
+                class="form-control"
+                [ngModel]="proposedDateString()"
+                (ngModelChange)="proposedDateString.set($event)"
+              >
+                @for (date of availableDates(); track date.date) {
+                  <option [value]="date.date">{{ date.label }}</option>
+                }
+              </select>
+              <select
+                class="form-control"
+                [ngModel]="proposedTimeString()"
+                (ngModelChange)="proposedTimeString.set($event)"
+              >
+                @for (time of availableTimes(); track time) {
+                  <option [value]="time">{{ time }}</option>
+                }
+              </select>
+            </div>
           </label>
           <label>
             Observações
             <textarea [ngModel]="shopkeeperNotes()" (ngModelChange)="shopkeeperNotes.set($event)" rows="3" placeholder="Observações para o cliente..."></textarea>
           </label>
-          <button class="action-btn action-btn--primary" (click)="sendProposal()">Enviar Proposta</button>
+          <button class="action-btn action-btn--primary" 
+                  (click)="sendProposal()" 
+                  [disabled]="!proposedDateString() || !proposedTimeString()">
+            Enviar Proposta
+          </button>
         </div>
       </div>
     }

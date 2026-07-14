@@ -39,8 +39,14 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            PaymentMethodTypes = new List<string> { "card", "boleto", "pix" },
-            SetupFutureUsage = "off_session"
+            PaymentMethodTypes = new List<string> { "card", "boleto" },
+            PaymentMethodOptions = new PaymentIntentPaymentMethodOptionsOptions
+            {
+                Card = new PaymentIntentPaymentMethodOptionsCardOptions
+                {
+                    SetupFutureUsage = "" // We will set it later via UpdatePaymentIntentSetupFutureUsageAsync
+                }
+            }
         };
 
         var service = new PaymentIntentService();
@@ -74,9 +80,28 @@ public class StripePaymentService : IPaymentService
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
                 {
-                    var payment = await _paymentWriteOnlyRepository.GetByIdTracking(Guid.Parse(paymentIntent.Metadata["OrderId"]));
+                    var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(paymentIntent.Id);
                     if (payment != null)
                     {
+                        if (!string.IsNullOrEmpty(paymentIntent.PaymentMethodId))
+                        {
+                            try
+                            {
+                                var pmService = new PaymentMethodService();
+                                var pm = await pmService.GetAsync(paymentIntent.PaymentMethodId);
+                                if (pm.Type == "boleto")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.Boleto;
+                                else if (pm.Type == "card")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.CreditCard;
+                                else if (pm.Type == "pix")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.Pix;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to retrieve PaymentMethod type for PaymentIntent {PaymentIntentId}", paymentIntent.Id);
+                            }
+                        }
+
                         payment.Approve();
                         _paymentWriteOnlyRepository.Update(payment);
                         return MapToDto(payment);
@@ -88,7 +113,7 @@ public class StripePaymentService : IPaymentService
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
                 {
-                    var payment = await _paymentWriteOnlyRepository.GetByIdTracking(Guid.Parse(paymentIntent.Metadata["OrderId"]));
+                    var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(paymentIntent.Id);
                     if (payment != null)
                     {
                         payment.Reject();
@@ -111,6 +136,22 @@ public class StripePaymentService : IPaymentService
     {
         var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(stripePaymentIntentId);
         return payment != null ? MapToDto(payment) : null;
+    }
+
+    public async Task UpdatePaymentIntentSetupFutureUsageAsync(string paymentIntentId, bool saveCard)
+    {
+        var service = new PaymentIntentService();
+        var options = new PaymentIntentUpdateOptions
+        {
+            PaymentMethodOptions = new PaymentIntentPaymentMethodOptionsOptions
+            {
+                Card = new PaymentIntentPaymentMethodOptionsCardOptions
+                {
+                    SetupFutureUsage = saveCard ? "off_session" : ""
+                }
+            }
+        };
+        await service.UpdateAsync(paymentIntentId, options);
     }
 
     public async Task<string> GetOrCreateCustomerAsync(string email, string name)
@@ -152,7 +193,13 @@ public class StripePaymentService : IPaymentService
         var service = new PaymentMethodService();
         var paymentMethods = await service.ListAsync(options);
 
-        return paymentMethods.Data.Select(pm => new UserCardDto
+        // Deduplicate by card fingerprint
+        var uniqueMethods = paymentMethods.Data
+            .GroupBy(pm => pm.Card.Fingerprint)
+            .Select(g => g.First())
+            .ToList();
+
+        return uniqueMethods.Select(pm => new UserCardDto
         {
             GatewayCardId = pm.Id,
             LastFourDigits = pm.Card.Last4,

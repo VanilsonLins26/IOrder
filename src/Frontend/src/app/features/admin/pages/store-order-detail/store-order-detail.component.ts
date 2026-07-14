@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,9 @@ import type { OrderResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
+import { AdminStore } from '../../store/admin.store';
+import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
+import { effect, untracked } from '@angular/core';
 
 @Component({
   selector: 'app-store-order-detail',
@@ -30,6 +33,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   private readonly chatApi = inject(ChatApiService);
   protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly order = signal<OrderResponseDto | null>(null);
   readonly loading = signal(false);
@@ -40,9 +44,35 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
-  readonly proposedDate = signal('');
+  readonly proposedDateString = signal('');
+  readonly proposedTimeString = signal('');
   readonly shopkeeperNotes = signal('');
   readonly currentUser = toSignal(this.auth.user$);
+  readonly adminStore = inject(AdminStore);
+
+  readonly availableDates = computed(() => {
+    return generateAvailableDates(this.adminStore.myStore()?.openingHours || [], 7);
+  });
+
+  readonly availableTimes = computed(() => {
+    return generateTimeSlots(this.proposedDateString(), this.adminStore.myStore()?.openingHours || [], 30);
+  });
+
+  constructor() {
+    effect(() => {
+      const dates = this.availableDates();
+      if (dates.length > 0 && !this.proposedDateString()) {
+        untracked(() => this.proposedDateString.set(dates[0].date));
+      }
+    });
+
+    effect(() => {
+      const times = this.availableTimes();
+      if (times.length > 0 && !times.includes(this.proposedTimeString())) {
+        untracked(() => this.proposedTimeString.set(times[0]));
+      }
+    });
+  }
 
   readonly unreadMessagesCount = computed(() => {
     const o = this.order();
@@ -64,7 +94,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     await this.chatSignalr.start();
     await this.chatSignalr.joinOrderGroup(this.id());
 
-    this.chatSignalr.onMessageReceived = (message) => {
+    this.chatSignalr.onMessageReceived.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       const current = this.order();
       if (!current) return;
       const uid = this.currentUser()?.sub ?? '';
@@ -86,13 +116,27 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         }
       }
       if (this.chatOpen()) {
-        this.chatApi.markAsRead(this.id()).subscribe();
-        this.chatSignalr.markOrderRead(this.id());
+        this.chatApi.markAsRead(this.id()).subscribe({
+          next: () => {
+            const current = this.order();
+            if (current) {
+              const now = new Date().toISOString();
+              const updatedMessages = current.messages.map(m => {
+                if (m.userId !== this.currentUser()?.sub && !m.readAt) {
+                  return { ...m, readAt: now };
+                }
+                return m;
+              });
+              this.order.set({ ...current, messages: updatedMessages });
+            }
+            this.chatSignalr.markOrderRead(this.id());
+          }
+        });
       }
-    };
+    });
 
-    this.chatSignalr.onMessagesRead = (orderId) => {
-      if (orderId === this.id()) {
+    this.chatSignalr.onMessagesRead.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
+      if (orderId.toLowerCase() === this.id().toLowerCase()) {
         const current = this.order();
         if (!current) return;
         const now = new Date().toISOString();
@@ -104,27 +148,29 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         });
         this.order.set({ ...current, messages: updatedMessages });
       }
-    };
+    });
 
-    this.chatSignalr.onUserTyping = (orderId) => {
-      if (orderId !== this.id()) return;
+    this.chatSignalr.onUserTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set('Cliente');
-    };
+    });
 
-    this.chatSignalr.onUserStoppedTyping = (orderId) => {
-      if (orderId !== this.id()) return;
+    this.chatSignalr.onUserStoppedTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set(null);
-    };
+    });
 
-    this.chatSignalr.onPaymentStatusChanged = (event) => {
-      if (event.orderId !== this.id()) return;
+    this.chatSignalr.onPaymentStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event.orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.loadOrder();
-    };
+    });
 
-    this.chatSignalr.onOrderStatusChanged = (event) => {
-      if (event.orderId !== this.id()) return;
-      this.loadOrder();
-    };
+    this.chatSignalr.onOrderStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      const eId = event.orderId || (event as any).OrderId;
+      if (eId && eId.toLowerCase() === this.id().toLowerCase()) {
+        this.loadOrder();
+      }
+    });
   }
 
   private loadOrder() {
@@ -158,9 +204,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         if (o.deliveryDate) {
           const date = new Date(o.deliveryDate);
           date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-          this.proposedDate.set(date.toISOString().slice(0, 16));
+          const isoStr = date.toISOString();
+          this.proposedDateString.set(isoStr.slice(0, 10));
+          this.proposedTimeString.set(isoStr.slice(11, 16));
         } else {
-          this.proposedDate.set('');
+          this.proposedDateString.set('');
+          this.proposedTimeString.set('');
         }
       }
     }
@@ -216,16 +265,27 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   }
 
   sendProposal() {
+    let proposedDeliveryDate: string | null = null;
+    const dateStr = this.proposedDateString();
+    const timeStr = this.proposedTimeString();
+    if (dateStr && timeStr) {
+      const [yyyy, mm, dd] = dateStr.split('-').map(Number);
+      const [hh, min] = timeStr.split(':').map(Number);
+      const d = new Date(yyyy, mm - 1, dd, hh, min);
+      proposedDeliveryDate = d.toISOString();
+    }
+
     this.orderApi.negotiate(this.id(), {
       proposedTotalAmount: this.proposedAmount(),
-      proposedDeliveryDate: this.proposedDate() || null,
+      proposedDeliveryDate,
       shopkeeperNotes: this.shopkeeperNotes() || null,
     }).subscribe({
       next: () => {
         this.toast.success('Proposta enviada!');
         this.showNegotiate.set(false);
         this.proposedAmount.set(null);
-        this.proposedDate.set('');
+        this.proposedDateString.set('');
+        this.proposedTimeString.set('');
         this.shopkeeperNotes.set('');
         this.loadOrder();
       },
@@ -243,8 +303,22 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   openChat() {
     this.chatOpen.set(true);
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe({
+      next: () => {
+        const current = this.order();
+        if (current) {
+          const now = new Date().toISOString();
+          const updatedMessages = current.messages.map(m => {
+            if (m.userId !== this.currentUser()?.sub && !m.readAt) {
+              return { ...m, readAt: now };
+            }
+            return m;
+          });
+          this.order.set({ ...current, messages: updatedMessages });
+        }
+        this.chatSignalr.markOrderRead(this.id());
+      }
+    });
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;

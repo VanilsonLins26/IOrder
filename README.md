@@ -46,7 +46,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Notificação de novas mensagens no chat com dedup de 10min via Redis
 - ✅ Notificação de cupom criado, promoção ativada/desativada e carrinho abandonado
 - ✅ Worker de carrinhos abandonados (a cada 5min, verifica Redis, remove e notifica)
-- ⬜ Integração com Mercado Pago
+- ✅ Integração com Stripe (cartão, PIX, boleto)
 
 ### Frontend (Angular 20)
 
@@ -197,22 +197,33 @@ O frontend utiliza `@microsoft/signalr` para conexão em tempo real com o hub Si
 5. Indicadores de digitação são transmitidos via `UserTyping`/`UserStoppedTyping`
 6. Ao entrar na página, marca as mensagens como lidas via REST + SignalR
 
-### 💳 Módulo de Pagamentos (Mercado Pago)
-O sistema possui integração completa com o **Mercado Pago** através do **Checkout Bricks** no frontend (Angular) e SDK oficial no backend (.NET).
+### 💳 Módulo de Pagamentos (Stripe)
+O sistema possui integração completa com o **Stripe** via **Payment Intents API** no backend e **Stripe Elements** (Payment Element) no frontend (Angular).
 
 **Métodos suportados:**
-- PIX (com cópia e cola + QR Code)
-- Cartão de Crédito (com parcelamento)
+- PIX (gerenciado pelo Stripe — QR Code exibido na UI do Element)
+- Cartão de Crédito (com suporte a parcelamento nativo)
 - Boleto Bancário
 
-**Fluxo de Aprovação Híbrido:**
-Para garantir resiliência, a aplicação não depende 100% de Webhooks:
-1. **Aprovação Síncrona:** Se um pagamento via cartão de crédito for aprovado instantaneamente pelo banco, o `CreatePaymentUseCase` captura o status `approved` na própria resposta da criação, marcando o pedido como Pago, emitindo os eventos de domínio e notificando o frontend via SignalR (`PaymentStatusChanged`) na mesma hora.
-2. **Aprovação Assíncrona (Webhook):** Pagamentos como PIX, Boleto ou cartões em Análise de Fraude geram pagamentos no estado `Pending`. Quando o cliente paga (ou a análise conclui), o Mercado Pago aciona nosso Webhook (`POST /Payment/webhook`). O backend processa o payload, atualiza o status, notifica o cliente e emite os eventos de domínio.
+**Fluxo de Pagamento:**
+1. `POST /Payment` cria um `PaymentIntent` no servidor com `PaymentMethodTypes: ["card", "boleto"]`.
+2. O frontend monta o Stripe Payment Element com o `clientSecret` retornado.
+3. Ao submeter, `stripe.confirmPayment()` processa o pagamento:
+   - **Cartão:** aprovado/rejeitado instantaneamente; webhook `payment_intent.succeeded`/`payment_intent.payment_failed` é disparado.
+   - **PIX/Boleto:** Stripe exibe instruções de pagamento na própria UI; webhook chega quando o cliente paga.
+4. O webhook (`POST /Payment/webhook`) atualiza o status do `Payment` no banco, marca o pedido como pago, emite eventos de domínio e notifica o frontend via SignalR (`PaymentStatusChanged`).
+
+**Saved Cards (Salvar Cartão):**
+- O checkbox "Salvar cartão para compras futuras" atualiza o `PaymentIntent` com `SetupFutureUsage = off_session`.
+- Cartões são deduplicados por `fingerprint` no Stripe.
+- O usuário pode selecionar um cartão salvo para pagar sem redigitar dados.
+- `PATCH /Payment/{orderId}/save-card` define `setup_future_usage` antes da confirmação.
 
 **Configuração Local (Sandbox):**
-- É necessário utilizar o `ngrok` apontando para a porta da API para receber os webhooks do Mercado Pago localmente.
-- O campo `WebhookUrl` no `appsettings.Development.json` deve ser constantemente atualizado com o domínio gerado pelo ngrok a cada reinicialização.
+- Configure o webhook no **Stripe Dashboard** → Developers → Webhooks → Add endpoint.
+- URL: `https://{seu-ngrok}.ngrok-free.app/Payment/webhook`.
+- Eventos necessários: `payment_intent.succeeded`, `payment_intent.payment_failed`.
+- Copie o **Signing Secret** gerado e cole em `Stripe:WebhookSecret` no `appsettings.Development.json`.
 
 ---
 
@@ -242,7 +253,7 @@ Para garantir resiliência, a aplicação não depende 100% de Webhooks:
 | **Event Log** | Apache Kafka | 2.15.0 | ✅ |
 | **Email** | MailHog (SMTP) | — | ✅ |
 | **WhatsApp** | EvolutionAPI (Baileys) | — | ✅ |
-| **Payments** | Mercado Pago | Checkout Bricks | ✅ |
+| **Payments** | Stripe | Payment Intents API | ✅ |
 
 ---
 

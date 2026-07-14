@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +33,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly sendingMessage = signal(false);
   readonly cancelling = signal(false);
@@ -68,7 +69,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     await this.chatSignalr.start();
     await this.chatSignalr.joinOrderGroup(this.id());
 
-    this.chatSignalr.onMessageReceived = (message) => {
+    this.chatSignalr.onMessageReceived.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       const uid = this.currentUser()?.sub ?? '';
       if (uid && message.userId === uid) {
         const tempId = this.store.currentOrder()?.messages
@@ -78,40 +79,46 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         this.store.appendMessage(message);
       }
       if (this.chatOpen()) {
-        this.chatApi.markAsRead(this.id()).subscribe();
-        this.chatSignalr.markOrderRead(this.id());
+        this.chatApi.markAsRead(this.id()).subscribe({
+          next: () => {
+            const uid = this.currentUser()?.sub;
+            if (uid) this.store.markOtherMessagesAsRead(uid);
+            this.chatSignalr.markOrderRead(this.id());
+          }
+        });
       }
-    };
+    });
 
-    this.chatSignalr.onMessagesRead = (orderId) => {
+    this.chatSignalr.onMessagesRead.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
       const uid = this.currentUser()?.sub ?? null;
-      if (orderId === this.id() && uid) {
+      if (orderId.toLowerCase() === this.id().toLowerCase() && uid) {
         this.store.markMessagesAsRead(uid);
       }
-    };
+    });
 
-    this.chatSignalr.onUserTyping = (orderId) => {
-      if (orderId !== this.id()) return;
+    this.chatSignalr.onUserTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set('Lojista');
-    };
+    });
 
-    this.chatSignalr.onUserStoppedTyping = (orderId) => {
-      if (orderId !== this.id()) return;
+    this.chatSignalr.onUserStoppedTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set(null);
-    };
+    });
 
-    this.chatSignalr.onPaymentStatusChanged = (event) => {
-      if (event.orderId !== this.id()) return;
+    this.chatSignalr.onPaymentStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event.orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.store.loadById(this.id());
       if (this.showPaymentModal()) {
         this.showPaymentModal.set(false);
       }
-    };
+    });
 
-    this.chatSignalr.onOrderStatusChanged = (event) => {
-      if (event.orderId !== this.id()) return;
+    this.chatSignalr.onOrderStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      const eId = event.orderId || (event as any).OrderId;
+      if (!eId || eId.toLowerCase() !== this.id().toLowerCase()) return;
       this.store.loadById(this.id());
-    };
+    });
   }
 
 
@@ -219,8 +226,13 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   openChat() {
     this.chatOpen.set(true);
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe({
+      next: () => {
+        const uid = this.currentUser()?.sub;
+        if (uid) this.store.markOtherMessagesAsRead(uid);
+        this.chatSignalr.markOrderRead(this.id());
+      }
+    });
   }
 
   openPaymentModal() {

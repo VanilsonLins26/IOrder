@@ -156,6 +156,21 @@ export const OrdersStore = signalStore(
       });
     },
 
+    markOtherMessagesAsRead: (currentUserId: string) => {
+      const order = store.currentOrder();
+      if (!order) return;
+      const now = new Date().toISOString();
+      const updatedMessages = order.messages.map(m => {
+        if (m.userId !== currentUserId && !m.readAt) {
+          return { ...m, readAt: now };
+        }
+        return m;
+      });
+      patchState(store, {
+        currentOrder: { ...order, messages: updatedMessages },
+      });
+    },
+
     goToPage: (page: number) => {
       patchState(store, { currentPage: page });
     },

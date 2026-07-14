@@ -36,13 +36,16 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
 
   readonly savedCards = signal<UserCardResponseDto[]>([]);
   readonly loadingCards = signal(false);
+  readonly saveCardForFuture = signal(false);
 
   // Stripe
   private stripe: Stripe | null = null;
   private elements: StripeElements | null = null;
   private paymentElement: StripePaymentElement | null = null;
+  private clientSecret: string | null = null;
   readonly stripeReady = signal(false);
   readonly processingPayment = signal(false);
+  readonly selectedSavedCard = signal<string | null>(null);
 
   @ViewChild('paymentElementContainer') paymentElementContainer!: ElementRef;
 
@@ -79,17 +82,25 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
   }
 
   deleteCard(cardId: string): void {
-    if (confirm('Deseja realmente remover este cartão?')) {
-      this.userCardApi.delete(cardId).subscribe({
-        next: () => {
-          this.toast.success('Cartão removido com sucesso.');
-          this.loadSavedCards();
-          // To update elements cache, we need to recreate the intent/elements
-          // This ensures the deleted card is removed from Stripe Element too
-          this.initializeStripe();
-        },
-        error: () => this.toast.error('Erro ao remover cartão.')
-      });
+    if (!confirm('Deseja realmente remover este cartão?')) return;
+
+    this.userCardApi.delete(cardId).subscribe({
+      next: () => {
+        this.savedCards.update(cards => cards.filter(c => c.id !== cardId));
+        this.toast.success('Cartão removido com sucesso.');
+        if (this.selectedSavedCard() === cardId) {
+          this.selectedSavedCard.set(null);
+        }
+      },
+      error: () => this.toast.error('Erro ao remover o cartão.')
+    });
+  }
+
+  selectCard(cardId: string): void {
+    if (this.selectedSavedCard() === cardId) {
+      this.selectedSavedCard.set(null);
+    } else {
+      this.selectedSavedCard.set(cardId);
     }
   }
 
@@ -116,6 +127,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       if (!paymentIntentRes.clientSecret) {
         throw new Error('Falha ao gerar o pagamento.');
       }
+      this.clientSecret = paymentIntentRes.clientSecret;
 
       // 3. Initialize Elements
       this.elements = this.stripe.elements({
@@ -159,7 +171,7 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
   }
 
   async processPayment(): Promise<void> {
-    if (!this.stripe || !this.elements) return;
+    if (!this.stripe || (!this.elements && !this.selectedSavedCard())) return;
 
     this.processingPayment.set(true);
     this.error.set(null);
@@ -169,14 +181,44 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     const finalEmail = emailEl?.value || this.userEmail() || this.payerEmail();
 
     try {
+      if (this.selectedSavedCard() && this.clientSecret) {
+        const { error, paymentIntent } = await this.stripe.confirmCardPayment(this.clientSecret, {
+          payment_method: this.selectedSavedCard()!
+        });
+
+        if (error) {
+          if (error.type === 'card_error' || error.type === 'validation_error') {
+            this.error.set(error.message || 'Erro no cartão');
+          } else {
+            this.error.set('Ocorreu um erro inesperado.');
+          }
+          this.processingPayment.set(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+          this.toast.success('Pagamento confirmado!');
+          this.paymentCreated.emit({ id: paymentIntent?.id || '' } as any);
+          this.close.emit();
+        }
+        return;
+      }
+
+      // Update intent with setup_future_usage if requested
+      if (this.saveCardForFuture()) {
+        try {
+          await firstValueFrom(this.paymentApi.updateSaveCard(this.orderId(), true));
+        } catch (e) {
+          console.error('Failed to update intent for future usage', e);
+          // Proceed anyway to not block payment
+        }
+      }
+
       const { error, paymentIntent } = await this.stripe.confirmPayment({
-        elements: this.elements,
+        elements: this.elements!,
         confirmParams: {
           payment_method_data: {
             billing_details: {
               email: finalEmail
             }
-          },
+          }
         },
         redirect: 'if_required',
       });
@@ -210,7 +252,6 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
       this.processingPayment.set(false);
     }
   }
-
   private cleanupStripe(): void {
     if (this.paymentElement) {
       this.paymentElement.destroy();
@@ -219,3 +260,5 @@ export class PaymentBrickComponent implements OnInit, OnDestroy {
     this.elements = null;
   }
 }
+
+

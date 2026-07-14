@@ -7,7 +7,7 @@ import type { SaveCardRequestDto, UserCardResponseDto } from '../../models';
 @Injectable({ providedIn: 'root' })
 export class UserCardApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/UserCard`;
+  private readonly baseUrl = `${environment.apiUrl}/Payment/cards`;
 
   save(dto: SaveCardRequestDto): Observable<UserCardResponseDto> {
     return this.http.post<UserCardResponseDto>(this.baseUrl, dto);

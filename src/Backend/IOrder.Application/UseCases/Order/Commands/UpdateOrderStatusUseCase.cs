@@ -62,8 +62,7 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
             _ => throw new ErrorOnValidationException([ResourceMessagesException.ORDER_INVALID_STATUS])
         };
 
-        if (isClient && newStatus != Domain.Entities.Enums.OrderStatus.AwaitingPayment 
-                     && newStatus != Domain.Entities.Enums.OrderStatus.Declined
+        if (isClient && newStatus != Domain.Entities.Enums.OrderStatus.Declined
                      && newStatus != Domain.Entities.Enums.OrderStatus.Cancelled)
         {
             throw new UnauthorizedStoreException([ResourceMessagesException.UNAUTHORIZED_STORE]);

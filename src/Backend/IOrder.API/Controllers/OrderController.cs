@@ -94,10 +94,20 @@ public class OrderController : IOrderBaseController
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> NegotiateOrder(
         [FromServices] INegotiateOrderUseCase useCase,
+        [FromServices] IHubContext<ChatHub> hubContext,
         Guid id,
         [FromBody] NegotiateOrderRequestDto request)
     {
         var response = await useCase.Execute(id, request);
+
+        await hubContext.Clients.Group(id.ToString()).SendAsync(
+            "OrderStatusChanged",
+            new
+            {
+                OrderId = response.Id,
+                Status = (int)response.Status
+            });
+
         return Ok(response);
     }
 

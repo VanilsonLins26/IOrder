@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
@@ -12,13 +12,13 @@ export class ChatSignalRService {
   private hubConnection: HubConnection | null = null;
   readonly connected = signal(false);
 
-  onMessageReceived: ((message: OrderMessageResponseDto) => void) | null = null;
-  onConversationUpdated: ((message: OrderMessageResponseDto) => void) | null = null;
-  onMessagesRead: ((orderId: string) => void) | null = null;
-  onUserTyping: ((orderId: string) => void) | null = null;
-  onUserStoppedTyping: ((orderId: string) => void) | null = null;
-  onPaymentStatusChanged: ((event: PaymentStatusChangedEvent) => void) | null = null;
-  onOrderStatusChanged: ((event: OrderStatusChangedEvent) => void) | null = null;
+  readonly onMessageReceived = new Subject<OrderMessageResponseDto>();
+  readonly onConversationUpdated = new Subject<OrderMessageResponseDto>();
+  readonly onMessagesRead = new Subject<string>();
+  readonly onUserTyping = new Subject<string>();
+  readonly onUserStoppedTyping = new Subject<string>();
+  readonly onPaymentStatusChanged = new Subject<PaymentStatusChangedEvent>();
+  readonly onOrderStatusChanged = new Subject<OrderStatusChangedEvent>();
 
   async start(): Promise<void> {
     if (this.hubConnection?.state === 'Connected') return;
@@ -34,31 +34,31 @@ export class ChatSignalRService {
       .build();
 
     this.hubConnection.on('MessageReceived', (message: OrderMessageResponseDto) => {
-      this.onMessageReceived?.(message);
+      this.onMessageReceived.next(message);
     });
 
     this.hubConnection.on('ConversationUpdated', (message: OrderMessageResponseDto) => {
-      this.onConversationUpdated?.(message);
+      this.onConversationUpdated.next(message);
     });
 
     this.hubConnection.on('MessagesRead', (orderId: string) => {
-      this.onMessagesRead?.(orderId);
+      this.onMessagesRead.next(orderId);
     });
 
     this.hubConnection.on('UserTyping', (orderId: string) => {
-      this.onUserTyping?.(orderId);
+      this.onUserTyping.next(orderId);
     });
 
     this.hubConnection.on('UserStoppedTyping', (orderId: string) => {
-      this.onUserStoppedTyping?.(orderId);
+      this.onUserStoppedTyping.next(orderId);
     });
 
     this.hubConnection.on('PaymentStatusChanged', (event: PaymentStatusChangedEvent) => {
-      this.onPaymentStatusChanged?.(event);
+      this.onPaymentStatusChanged.next(event);
     });
 
     this.hubConnection.on('OrderStatusChanged', (event: OrderStatusChangedEvent) => {
-      this.onOrderStatusChanged?.(event);
+      this.onOrderStatusChanged.next(event);
     });
 
     this.hubConnection.onreconnecting(() => this.connected.set(false));
