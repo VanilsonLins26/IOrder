@@ -17,13 +17,16 @@
         <h4 class="saved-cards__title">Meus cartões salvos</h4>
         <div class="saved-cards__list">
           @for (card of savedCards(); track card.id) {
-            <div class="saved-card-item">
-              <span class="saved-card-item__details">
+            <div class="saved-card-item" 
+                 [class.selected]="selectedSavedCard() === card.id"
+                 (click)="selectCard(card.id)"
+                 style="cursor: pointer; border: 2px solid transparent; transition: all 0.2s; border-radius: 8px;">
+              <span class="saved-card-item__details" style="pointer-events: none;">
                 <span class="saved-card-item__brand">{{ card.brand }}</span>
                 <span class="saved-card-item__number">**** {{ card.lastFourDigits }}</span>
                 <span class="saved-card-item__expiry">Exp {{ card.expirationMonth | number:'2.0' }}/{{ card.expirationYear }}</span>
               </span>
-              <button class="saved-card-item__delete" (click)="deleteCard(card.id)" title="Remover cartão">🗑️</button>
+              <button class="saved-card-item__delete" (click)="$event.stopPropagation(); deleteCard(card.id)" title="Remover cartão">🗑️</button>
             </div>
           }
         </div>
@@ -31,7 +34,7 @@
     }
 
     <!-- Stripe Element -->
-    <div class="payment-form">
+    <div class="payment-form" [style.display]="selectedSavedCard() ? 'none' : 'block'">
       <label class="payment-label">
         Seu email para recibo
         <input type="email" id="payment-email" class="payment-input"

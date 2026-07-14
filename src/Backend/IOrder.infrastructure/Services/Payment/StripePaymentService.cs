@@ -170,7 +170,13 @@ public class StripePaymentService : IPaymentService
         var service = new PaymentMethodService();
         var paymentMethods = await service.ListAsync(options);
 
-        return paymentMethods.Data.Select(pm => new UserCardDto
+        // Deduplicate by card fingerprint
+        var uniqueMethods = paymentMethods.Data
+            .GroupBy(pm => pm.Card.Fingerprint)
+            .Select(g => g.First())
+            .ToList();
+
+        return uniqueMethods.Select(pm => new UserCardDto
         {
             GatewayCardId = pm.Id,
             LastFourDigits = pm.Card.Last4,
