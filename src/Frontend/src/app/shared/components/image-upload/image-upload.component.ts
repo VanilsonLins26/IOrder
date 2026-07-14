@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal, effect, untracked } from '@angular/core';
 
 @Component({
   selector: 'app-image-upload',
@@ -14,6 +14,15 @@ export class ImageUploadComponent {
   readonly fileSelected = output<File>();
 
   readonly previewUrl = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      this.currentUrl(); // track changes to currentUrl
+      untracked(() => {
+        this.previewUrl.set(null);
+      });
+    });
+  }
 
   onFilePicked(event: Event) {
     const input = event.target as HTMLInputElement;

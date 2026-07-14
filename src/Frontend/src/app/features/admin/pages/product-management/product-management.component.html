@@ -75,72 +75,74 @@
   [title]="editingProduct() ? 'Editar Produto' : 'Novo Produto'"
   (close)="closeProductModal()"
 >
-  <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="settings-form">
-    <div class="form-group">
-      <label for="prodName">Nome do Produto</label>
-      <input id="prodName" type="text" formControlName="name" class="form-control" placeholder="Ex: X-Burger"
-        [attr.aria-invalid]="productForm.get('name')?.invalid && (productForm.get('name')?.dirty || productForm.get('name')?.touched)" />
-    </div>
-
-    <div class="form-group">
-      <label>Imagem do Produto</label>
-      <app-image-upload
-        [currentUrl]="productForm.value.imageUrl"
-        [loading]="uploadingImage()"
-        (fileSelected)="onProductImageSelected($event)"
-      />
-      <input type="hidden" formControlName="imageUrl" />
-    </div>
-
-    <div class="form-group form-group--checkbox">
-      <label class="checkbox-label">
-        <input type="checkbox" formControlName="customizable" />
-        <span>Produto personalizável</span>
-      </label>
-      <p class="form-help">Se ativado, o cliente poderá adicionar instruções de personalização ao comprar.</p>
-    </div>
-
-    <div class="form-group">
-      <label for="prodDesc">Descrição</label>
-      <textarea id="prodDesc" formControlName="description" class="form-control" rows="3"></textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group flex-2">
-        <label for="prodPrice">Preço (R$)</label>
-        <input id="prodPrice" type="text" appCurrencyInput formControlName="price" class="form-control"
-          [attr.aria-invalid]="productForm.get('price')?.invalid && (productForm.get('price')?.dirty || productForm.get('price')?.touched)" />
+  @if (isProductModalOpen()) {
+    <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="settings-form">
+      <div class="form-group">
+        <label for="prodName">Nome do Produto</label>
+        <input id="prodName" type="text" formControlName="name" class="form-control" placeholder="Ex: X-Burger"
+          [attr.aria-invalid]="productForm.get('name')?.invalid && (productForm.get('name')?.dirty || productForm.get('name')?.touched)" />
       </div>
-      <div class="form-group flex-2">
-        <label for="prodUom">Unidade</label>
-        <select id="prodUom" formControlName="unitOfMeasure" class="form-control">
-          <option [value]="UnitOfMeasure.Unit">Unidade</option>
-          <option [value]="UnitOfMeasure.Kg">Kg</option>
-          <option [value]="UnitOfMeasure.Gram">Grama (g)</option>
-          <option [value]="UnitOfMeasure.Liter">Litro (L)</option>
-          <option [value]="UnitOfMeasure.Ml">Mililitro (ml)</option>
-          <option [value]="UnitOfMeasure.Meter">Metro (m)</option>
+
+      <div class="form-group">
+        <label>Imagem do Produto</label>
+        <app-image-upload
+          [currentUrl]="productForm.value.imageUrl"
+          [loading]="uploadingImage()"
+          (fileSelected)="onProductImageSelected($event)"
+        />
+        <input type="hidden" formControlName="imageUrl" />
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="customizable" />
+          <span>Produto personalizável</span>
+        </label>
+        <p class="form-help">Se ativado, o cliente poderá adicionar instruções de personalização ao comprar.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="prodDesc">Descrição</label>
+        <textarea id="prodDesc" formControlName="description" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-2">
+          <label for="prodPrice">Preço (R$)</label>
+          <input id="prodPrice" type="text" appCurrencyInput formControlName="price" class="form-control"
+            [attr.aria-invalid]="productForm.get('price')?.invalid && (productForm.get('price')?.dirty || productForm.get('price')?.touched)" />
+        </div>
+        <div class="form-group flex-2">
+          <label for="prodUom">Unidade</label>
+          <select id="prodUom" formControlName="unitOfMeasure" class="form-control">
+            <option [value]="UnitOfMeasure.Unit">Unidade</option>
+            <option [value]="UnitOfMeasure.Kg">Kg</option>
+            <option [value]="UnitOfMeasure.Gram">Grama (g)</option>
+            <option [value]="UnitOfMeasure.Liter">Litro (L)</option>
+            <option [value]="UnitOfMeasure.Ml">Mililitro (ml)</option>
+            <option [value]="UnitOfMeasure.Meter">Metro (m)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prodCategory">Categoria</label>
+        <select id="prodCategory" formControlName="categoryId" class="form-control">
+          <option value="">Nenhuma / Sem categoria</option>
+          @for (cat of adminStore.categories(); track cat.id) {
+            <option [value]="cat.id">{{ cat.name }}</option>
+          }
         </select>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label for="prodCategory">Categoria</label>
-      <select id="prodCategory" formControlName="categoryId" class="form-control">
-        <option value="">Nenhuma / Sem categoria</option>
-        @for (cat of adminStore.categories(); track cat.id) {
-          <option [value]="cat.id">{{ cat.name }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="form-actions">
-      <button type="button" class="btn btn--outline" (click)="closeProductModal()">Cancelar</button>
-      <button type="submit" class="btn btn--primary" [disabled]="productForm.invalid || isSaving()">
-        {{ isSaving() ? 'Salvando...' : 'Salvar Produto' }}
-      </button>
-    </div>
-  </form>
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" (click)="closeProductModal()">Cancelar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="productForm.invalid || isSaving()">
+          {{ isSaving() ? 'Salvando...' : 'Salvar Produto' }}
+        </button>
+      </div>
+    </form>
+  }
 </app-modal>
 
 
