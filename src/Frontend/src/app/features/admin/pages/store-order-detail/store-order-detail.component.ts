@@ -116,8 +116,11 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         }
       }
       if (this.chatOpen()) {
-        this.chatApi.markAsRead(this.id()).subscribe();
-        this.chatSignalr.markOrderRead(this.id());
+        this.chatApi.markAsRead(this.id()).subscribe({
+          next: () => {
+            this.chatSignalr.markOrderRead(this.id());
+          }
+        });
       }
     });
 
@@ -287,8 +290,11 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   openChat() {
     this.chatOpen.set(true);
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe({
+      next: () => {
+        this.chatSignalr.markOrderRead(this.id());
+      }
+    });
   }
 
   protected readonly OrderStatusDto = OrderStatusDto;

@@ -79,8 +79,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         this.store.appendMessage(message);
       }
       if (this.chatOpen()) {
-        this.chatApi.markAsRead(this.id()).subscribe();
-        this.chatSignalr.markOrderRead(this.id());
+        this.chatApi.markAsRead(this.id()).subscribe({
+          next: () => {
+            this.chatSignalr.markOrderRead(this.id());
+          }
+        });
       }
     });
 
@@ -220,8 +223,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   openChat() {
     this.chatOpen.set(true);
-    this.chatApi.markAsRead(this.id()).subscribe();
-    this.chatSignalr.markOrderRead(this.id());
+    this.chatApi.markAsRead(this.id()).subscribe({
+      next: () => {
+        this.chatSignalr.markOrderRead(this.id());
+      }
+    });
   }
 
   openPaymentModal() {
