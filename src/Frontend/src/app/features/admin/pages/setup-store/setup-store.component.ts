@@ -7,11 +7,12 @@ import { StoreCategoryApiService } from '../../../../core/services/api/store-cat
 import { ToastService } from '../../../../core/services/toast.service';
 import type { StoreCategoryResponse, StoreRequest } from '../../../../core/models';
 import { finalize } from 'rxjs';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-setup-store',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploadComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-store.component.html',
   styleUrl: './setup-store.component.scss',
