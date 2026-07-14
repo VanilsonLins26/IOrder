@@ -60,7 +60,10 @@ export function generateAvailableDates(openingHours: OpeningHourResponse[], days
     
     // Check if store is open on this day
     if (!openingHours || openingHours.length === 0 || openingHours.some(h => h.dayOfWeek === dayOfWeek)) {
-      const dateStr = d.toISOString().split('T')[0];
+      const yyyy = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mo}-${da}`;
       
       let label = ``;
       if (i === 0) {
@@ -96,7 +99,13 @@ export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResp
 
   const slots: string[] = [];
   const now = new Date();
-  const isToday = now.toISOString().split('T')[0] === dateStr;
+  
+  const yyyy = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, '0');
+  const da = String(now.getDate()).padStart(2, '0');
+  const nowStr = `${yyyy}-${mo}-${da}`;
+  
+  const isToday = nowStr === dateStr;
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const bufferMinutes = 30; // Min time to prepare an order
 
