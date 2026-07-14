@@ -47,6 +47,11 @@
           <span class="spinner"></span> Carregando opções de pagamento...
         </div>
       }
+
+      <label class="payment-label" style="display: flex; align-items: center; gap: 8px; margin-top: 16px; cursor: pointer; user-select: none;">
+        <input type="checkbox" [ngModel]="saveCardForFuture()" (ngModelChange)="saveCardForFuture.set($event)" style="width: 16px; height: 16px;" />
+        Salvar cartão para compras futuras
+      </label>
     </div>
 
     <!-- Actions -->
