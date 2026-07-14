@@ -99,48 +99,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             var paymentDesc = services.SingleOrDefault(d => d.ServiceType == typeof(IPaymentService));
             if (paymentDesc is not null)
                 services.Remove(paymentDesc);
-            PaymentMock.Setup(s => s.CreatePixPaymentAsync(
-                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
-                .ReturnsAsync((Guid orderId, decimal amount, string email, string? ident) =>
-                    new PaymentResponseDto
+            PaymentMock.Setup(s => s.CreatePaymentIntentAsync(
+                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>()))
+                .ReturnsAsync((Guid orderId, decimal amount, string currency) =>
+                    new PaymentIntentResponseDto
                     {
-                        Id = Guid.NewGuid(),
-                        OrderId = orderId,
-                        Amount = amount,
-                        Method = IOrder.Communication.Enums.PaymentMethodDto.Pix,
-                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
-                        PixQrCode = "test-qr",
-                        PixCopyPaste = "test-copy-paste",
-                        CreatedAt = DateTime.UtcNow
-                    });
-            PaymentMock.Setup(s => s.CreateCardPaymentAsync(
-                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<int>(),
-                It.IsAny<string>(), It.IsAny<string?>()))
-                .ReturnsAsync((Guid orderId, decimal amount, string token, int installments, string email, string? ident) =>
-                    new PaymentResponseDto
-                    {
-                        Id = Guid.NewGuid(),
-                        OrderId = orderId,
-                        Amount = amount,
-                        Method = IOrder.Communication.Enums.PaymentMethodDto.CreditCard,
-                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
-                        CardLastFourDigits = "1234",
-                        Installments = installments,
-                        CreatedAt = DateTime.UtcNow
-                    });
-            PaymentMock.Setup(s => s.CreateBoletoPaymentAsync(
-                It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
-                .ReturnsAsync((Guid orderId, decimal amount, string email, string? ident) =>
-                    new PaymentResponseDto
-                    {
-                        Id = Guid.NewGuid(),
-                        OrderId = orderId,
-                        Amount = amount,
-                        Method = IOrder.Communication.Enums.PaymentMethodDto.Boleto,
-                        Status = IOrder.Communication.Enums.PaymentStatusDto.Pending,
-                        BoletoUrl = "https://test.boleto/123",
-                        BoletoBarcode = "1234567890",
-                        CreatedAt = DateTime.UtcNow
+                        ClientSecret = "test_secret"
                     });
             PaymentMock.Setup(s => s.ProcessWebhookAsync(
                 It.IsAny<string>(), It.IsAny<string?>()))

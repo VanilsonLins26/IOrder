@@ -13,45 +13,19 @@ public class PaymentServiceBuilder
         _mock = new Mock<IPaymentService>();
     }
 
-    public PaymentServiceBuilder CreatePixPaymentAsync(PaymentResponseDto response)
+    public void BuildCreatePaymentIntent(PaymentIntentResponseDto response)
     {
-        _mock.Setup(s => s.CreatePixPaymentAsync(
-            It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
-            .ReturnsAsync(response);
-        return this;
+        _mock.Setup(m => m.CreatePaymentIntentAsync(It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>())).ReturnsAsync(response);
     }
 
-    public PaymentServiceBuilder CreateCardPaymentAsync(PaymentResponseDto response)
+    public void BuildProcessWebhook(PaymentResponseDto? response)
     {
-        _mock.Setup(s => s.CreateCardPaymentAsync(
-            It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<int>(),
-            It.IsAny<string>(), It.IsAny<string?>()))
-            .ReturnsAsync(response);
-        return this;
+        _mock.Setup(m => m.ProcessWebhookAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(response);
     }
 
-    public PaymentServiceBuilder CreateBoletoPaymentAsync(PaymentResponseDto response)
+    public void BuildGetPaymentByStripeId(PaymentResponseDto? response)
     {
-        _mock.Setup(s => s.CreateBoletoPaymentAsync(
-            It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string?>()))
-            .ReturnsAsync(response);
-        return this;
-    }
-
-    public PaymentServiceBuilder ProcessWebhookAsync(PaymentResponseDto? response)
-    {
-        _mock.Setup(s => s.ProcessWebhookAsync(
-            It.IsAny<string>(), It.IsAny<string?>()))
-            .ReturnsAsync(response);
-        return this;
-    }
-
-    public PaymentServiceBuilder GetPaymentByMercadoPagoIdAsync(PaymentResponseDto? response)
-    {
-        _mock.Setup(s => s.GetPaymentByMercadoPagoIdAsync(
-            It.IsAny<string>()))
-            .ReturnsAsync(response);
-        return this;
+        _mock.Setup(m => m.GetPaymentByStripeIdAsync(It.IsAny<string>())).ReturnsAsync(response);
     }
 
     public IPaymentService Build() => _mock.Object;

@@ -4,6 +4,7 @@ using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IOrder.infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713041651_AddUserCards")]
+    partial class AddUserCards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,7 +155,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 13, 16, 23, 54, 416, DateTimeKind.Utc).AddTicks(8905),
+                            ExpiresAt = new DateTime(2027, 1, 13, 4, 16, 50, 142, DateTimeKind.Utc).AddTicks(2422),
                             MaxDiscountAmount = 30m,
                             MaxUsageCount = 100,
                             MinPurchaseAmount = 50m
@@ -165,7 +168,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "FixedAmount",
                             DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 13, 16, 23, 54, 417, DateTimeKind.Utc).AddTicks(195),
+                            ExpiresAt = new DateTime(2026, 10, 13, 4, 16, 50, 142, DateTimeKind.Utc).AddTicks(8264),
                             MaxUsageCount = 50,
                             MinPurchaseAmount = 80m
                         },
@@ -177,7 +180,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 13, 16, 23, 54, 417, DateTimeKind.Utc).AddTicks(1259),
+                            ExpiresAt = new DateTime(2027, 7, 13, 4, 16, 50, 143, DateTimeKind.Utc).AddTicks(1555),
                             MaxDiscountAmount = 50m,
                             MaxUsageCount = 200
                         });
@@ -471,18 +474,20 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("BoletoBarcode")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
                     b.Property<string>("BoletoUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("CardLastFourDigits")
                         .HasMaxLength(4)
@@ -492,15 +497,24 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("InstallmentAmount")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<int?>("Installments")
                         .HasColumnType("int");
 
+                    b.Property<string>("MercadoPagoPaymentId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("MercadoPagoPreferenceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Method")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("char(36)");
@@ -509,24 +523,24 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PixCopyPaste")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("PixQrCode")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("StripePaymentIntentId")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Pending");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("MercadoPagoPaymentId");
 
-                    b.HasIndex("StripePaymentIntentId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("Payments", (string)null);
                 });
@@ -917,12 +931,12 @@ namespace IOrder.infrastructure.Migrations
                     b.Property<bool>("EmailManuallySet")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("MercadoPagoCustomerId")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
-
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -1008,7 +1022,7 @@ namespace IOrder.infrastructure.Migrations
                     b.HasOne("IOrder.Domain.Entities.Order", "Order")
                         .WithMany()
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");

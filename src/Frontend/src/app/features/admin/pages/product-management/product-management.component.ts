@@ -269,6 +269,7 @@ export class ProductManagementComponent implements OnInit {
   openCustomization(product: ProductResponse) {
     this.editingProduct.set(product);
     this.customizationGroups.set([]);
+    this.openAddGroup();
     this.loadingCustomization.set(true);
     this.isCustomizationModalOpen.set(true);
     this.customizationApi.getByProduct(product.id).subscribe({
@@ -324,7 +325,7 @@ export class ProductManagementComponent implements OnInit {
   }
 
   cancelEditGroup() {
-    this.editingCustomizationGroup.set(null);
+    this.openAddGroup();
   }
 
   saveCustomizationGroup() {
@@ -353,7 +354,7 @@ export class ProductManagementComponent implements OnInit {
     this.customizationApi.save(product.id, dto).subscribe({
       next: (saved) => {
         this.isSavingCustomization.set(false);
-        this.editingCustomizationGroup.set(null);
+        this.openAddGroup();
         // Reload groups
         this.customizationApi.getByProduct(product.id).subscribe({
           next: (groups) => this.customizationGroups.set(groups),

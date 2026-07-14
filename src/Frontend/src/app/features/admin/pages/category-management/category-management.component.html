@@ -73,32 +73,33 @@
   [title]="editingCategoryId() ? 'Editar Categoria' : 'Nova Categoria'"
   (close)="closeModal()"
 >
-  <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="settings-form">
-    <div class="form-group">
-      <label for="catName">Nome da Categoria</label>
-      <input id="catName" type="text" formControlName="name" class="form-control" placeholder="Ex: Lanches, Bebidas..."
-        [attr.aria-invalid]="categoryForm.get('name')?.invalid && (categoryForm.get('name')?.dirty || categoryForm.get('name')?.touched)" />
-    </div>
-
-    <div class="form-group">
-      <label for="catImage">URL da Imagem (Ícone)</label>
-      <input id="catImage" type="url" formControlName="imageUrl" class="form-control" placeholder="https://..." />
-    </div>
-
-    <!-- Preview -->
-    @if (categoryForm.value.imageUrl) {
-      <div class="category-img-preview">
-        <img [src]="categoryForm.value.imageUrl" alt="Preview" onerror="this.style.display='none'" />
+  @if (isModalOpen()) {
+    <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="settings-form">
+      <div class="form-group">
+        <label for="catName">Nome da Categoria</label>
+        <input id="catName" type="text" formControlName="name" class="form-control" placeholder="Ex: Lanches, Bebidas..."
+          [attr.aria-invalid]="categoryForm.get('name')?.invalid && (categoryForm.get('name')?.dirty || categoryForm.get('name')?.touched)" />
       </div>
-    }
 
-    <div class="form-actions">
-      <button type="button" class="btn btn--outline" (click)="closeModal()">Cancelar</button>
-      <button type="submit" class="btn btn--primary" [disabled]="categoryForm.invalid || isSaving()">
-        {{ isSaving() ? 'Salvando...' : 'Salvar' }}
-      </button>
-    </div>
-  </form>
+        <div class="form-group">
+          <label class="form-label" for="imageUrl">URL da Imagem (Ícone)</label>
+          <app-image-upload
+            [currentUrl]="categoryForm.get('imageUrl')?.value || ''"
+            [loading]="uploadingImage()"
+            (fileSelected)="onImageSelected($event)">
+          </app-image-upload>
+        </div>
+
+
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="categoryForm.invalid || isSaving()">
+          {{ isSaving() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  }
 </app-modal>
 
 <app-confirmation-modal

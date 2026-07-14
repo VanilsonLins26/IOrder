@@ -7,11 +7,12 @@ import { StoreCategoryApiService } from '../../../../core/services/api/store-cat
 import { ToastService } from '../../../../core/services/toast.service';
 import type { StoreCategoryResponse, StoreRequest } from '../../../../core/models';
 import { finalize } from 'rxjs';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-setup-store',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploadComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './setup-store.component.html',
   styleUrl: './setup-store.component.scss',
@@ -26,6 +27,7 @@ export class SetupStoreComponent implements OnInit {
   readonly loading = signal(false);
   readonly loadingCep = signal(false);
   readonly storeCategories = signal<StoreCategoryResponse[]>([]);
+  readonly pendingImage = signal<File | null>(null);
 
   readonly form = this.fb.group({
     name: ['', Validators.required],
@@ -78,6 +80,10 @@ export class SetupStoreComponent implements OnInit {
     }
   }
 
+  onImageSelected(file: File) {
+    this.pendingImage.set(file);
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.toast.error('Por favor, preencha todos os campos obrigatórios.');
@@ -113,8 +119,22 @@ export class SetupStoreComponent implements OnInit {
 
     this.storeApi.create(req).subscribe({
       next: () => {
-        this.toast.success('Loja criada com sucesso! Bem-vindo.');
-        this.router.navigate(['/admin/dashboard']);
+        const file = this.pendingImage();
+        if (file) {
+          this.storeApi.updateImage(file).subscribe({
+            next: () => {
+              this.toast.success('Loja criada com sucesso! Bem-vindo.');
+              this.router.navigate(['/admin/dashboard']);
+            },
+            error: () => {
+              this.toast.error('Loja criada, mas houve erro no upload da imagem.');
+              this.router.navigate(['/admin/dashboard']);
+            }
+          });
+        } else {
+          this.toast.success('Loja criada com sucesso! Bem-vindo.');
+          this.router.navigate(['/admin/dashboard']);
+        }
       },
       error: (err: any) => {
         this.toast.error(err.error?.message || 'Erro ao criar a loja.');

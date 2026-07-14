@@ -31,12 +31,12 @@ export interface PaymentResponseDto {
 
 export interface CreatePaymentRequestDto {
   orderId: string;
-  method: PaymentMethodDto;
-  cardToken?: string | null;
-  installments?: number | null;
-  payerEmail: string;
-  payerIdentificationType?: string | null;
-  payerIdentificationNumber?: string | null;
+}
+
+export interface PaymentIntentResponseDto {
+  clientSecret: string;
+  paymentIntentId: string;
+  customerId: string;
 }
 
 export interface PublicKeyResponseDto {
@@ -48,4 +48,18 @@ export interface PaymentStatusChangedEvent {
   paymentId: string;
   status: PaymentStatusDto;
   paidAt: string | null;
+}
+
+export interface UserCardResponseDto {
+  id: string;
+  lastFourDigits: string;
+  brand: string;
+  expirationMonth: number;
+  expirationYear: number;
+  gatewayCardId: string;
+}
+
+export interface SaveCardRequestDto {
+  cardToken: string;
+  payerEmail?: string;
 }

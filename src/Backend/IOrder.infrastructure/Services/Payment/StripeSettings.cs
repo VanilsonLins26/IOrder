@@ -1,13 +1,13 @@
 namespace IOrder.infrastructure.Services.Payment;
 
-public class MercadoPagoSettings
+public class StripeSettings
 {
-    public const string SectionName = "MercadoPago";
-    public string AccessToken { get; set; } = string.Empty;
-    public string PublicKey { get; set; } = string.Empty;
+    public const string SectionName = "Stripe";
+    public string SecretKey { get; set; } = string.Empty;
+    public string PublishableKey { get; set; } = string.Empty;
     public string WebhookSecret { get; set; } = string.Empty;
     public string SuccessUrl { get; set; } = string.Empty;
     public string FailureUrl { get; set; } = string.Empty;
-    public string PendingUrl { get; set; } = string.Empty;
+    public string CancelUrl { get; set; } = string.Empty;
     public string WebhookUrl { get; set; } = string.Empty;
 }

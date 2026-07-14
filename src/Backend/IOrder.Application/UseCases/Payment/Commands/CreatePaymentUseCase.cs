@@ -6,6 +6,7 @@ using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Order;
 using IOrder.Domain.Repositories.Payment;
+using IOrder.Domain.Repositories.Profile;
 using IOrder.Domain.Security.Services;
 using IOrder.Domain.Events;
 using IOrder.Exceptions;
@@ -21,6 +22,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
     private readonly IOrderReadOnlyRepository _orderReadOnlyRepository;
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
     private readonly IPaymentReadOnlyRepository _paymentReadOnlyRepository;
+    private readonly IProfileReadOnlyRepository _profileReadOnlyRepository;
+    private readonly IProfileWriteOnlyRepository _profileWriteOnlyRepository;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -30,6 +33,8 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         IOrderReadOnlyRepository orderReadOnlyRepository,
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
         IPaymentReadOnlyRepository paymentReadOnlyRepository,
+        IProfileReadOnlyRepository profileReadOnlyRepository,
+        IProfileWriteOnlyRepository profileWriteOnlyRepository,
         IPaymentService paymentService,
         IUnitOfWork unitOfWork)
     {
@@ -38,11 +43,13 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         _orderReadOnlyRepository = orderReadOnlyRepository;
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
         _paymentReadOnlyRepository = paymentReadOnlyRepository;
+        _profileReadOnlyRepository = profileReadOnlyRepository;
+        _profileWriteOnlyRepository = profileWriteOnlyRepository;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PaymentResponseDto> Execute(CreatePaymentRequestDto request)
+    public async Task<PaymentIntentResponseDto> Execute(CreatePaymentRequestDto request)
     {
         await Validate(request);
 
@@ -57,37 +64,27 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
         if (order.Status != OrderStatus.AwaitingPayment)
             throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_ORDER_NOT_AWAITING]);
 
-        var existingPayment = await _paymentReadOnlyRepository.GetByOrderIdAsync(order.Id);
-        if (existingPayment is not null && existingPayment.Status == Domain.Entities.Enums.PaymentStatus.Pending)
-            return existingPayment.Adapt<PaymentResponseDto>();
+        var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        var customerId = profile?.StripeCustomerId;
 
-        var paymentResponse = request.Method switch
+        if (string.IsNullOrEmpty(customerId))
         {
-            Communication.Enums.PaymentMethodDto.Pix => await _paymentService.CreatePixPaymentAsync(
-                order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
+            var email = _loggedUserService.GetUserEmail();
+            customerId = await _paymentService.GetOrCreateCustomerAsync(email, "Cliente IOrder");
 
-            Communication.Enums.PaymentMethodDto.CreditCard => await _paymentService.CreateCardPaymentAsync(
-                order.Id, order.TotalAmount, request.CardToken ?? "", request.Installments ?? 1, request.PayerEmail, request.PayerIdentificationNumber),
-
-            Communication.Enums.PaymentMethodDto.Boleto => await _paymentService.CreateBoletoPaymentAsync(
-                order.Id, order.TotalAmount, request.PayerEmail, request.PayerIdentificationNumber),
-
-            _ => throw new ErrorOnValidationException([ResourceMessagesException.PAYMENT_METHOD_INVALID])
-        };
-
-        if (paymentResponse.Status == Communication.Enums.PaymentStatusDto.Approved)
-        {
-            var trackedOrder = await _orderWriteOnlyRepository.GetByIdTracking(order.Id);
-            if (trackedOrder != null)
+            if (profile != null)
             {
-                trackedOrder.MarkAsPaid();
-                trackedOrder.AddDomainEvent(new PaymentApprovedEvent(trackedOrder.Id, paymentResponse.Id, paymentResponse.Amount));
-                _orderWriteOnlyRepository.Update(trackedOrder);
-                await _unitOfWork.Commit();
+                var profileToUpdate = await _profileWriteOnlyRepository.GetByUserIdTracking(userId);
+                if (profileToUpdate != null)
+                {
+                    profileToUpdate.StripeCustomerId = customerId;
+                    _profileWriteOnlyRepository.Update(profileToUpdate);
+                    await _unitOfWork.Commit();
+                }
             }
         }
 
-        return paymentResponse;
+        return await _paymentService.CreatePaymentIntentAsync(order.Id, order.TotalAmount, customerId);
     }
 
     private async Task Validate(CreatePaymentRequestDto request)

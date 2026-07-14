@@ -13,16 +13,14 @@ public class PaymentReadOnlyRepositoryBuilder
         _mock = new Mock<IPaymentReadOnlyRepository>();
     }
 
-    public PaymentReadOnlyRepositoryBuilder GetByOrderIdAsync(Payment? payment)
+    public void BuildGetByOrderIdAsync(Payment? payment)
     {
-        _mock.Setup(r => r.GetByOrderIdAsync(It.IsAny<Guid>())).ReturnsAsync(payment);
-        return this;
+        _mock.Setup(x => x.GetByOrderIdAsync(It.IsAny<Guid>())).ReturnsAsync(payment);
     }
 
-    public PaymentReadOnlyRepositoryBuilder GetByMercadoPagoIdAsync(Payment? payment)
+    public void BuildGetByStripeIdAsync(Payment? payment)
     {
-        _mock.Setup(r => r.GetByMercadoPagoIdAsync(It.IsAny<string>())).ReturnsAsync(payment);
-        return this;
+        _mock.Setup(x => x.GetByStripeIdAsync(It.IsAny<string>())).ReturnsAsync(payment);
     }
 
     public IPaymentReadOnlyRepository Build() => _mock.Object;

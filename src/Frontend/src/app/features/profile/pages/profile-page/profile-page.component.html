@@ -37,5 +37,27 @@
         {{ saving() ? 'Salvando...' : 'Salvar' }}
       </button>
     </div>
+
+    <div class="profile-page__card profile-page__card--cards">
+      <h2 class="profile-page__subtitle">Meus Cartões</h2>
+      @if (loadingCards()) {
+        <p class="profile-page__hint">Carregando cartões...</p>
+      } @else {
+        @if (savedCards().length === 0) {
+          <p class="profile-page__hint">Nenhum cartão salvo.</p>
+        } @else {
+          <div class="profile-page__card-list">
+            @for (card of savedCards(); track card.id) {
+              <div class="profile-card-item">
+                <span class="profile-card-item__brand">{{ card.brand }}</span>
+                <span class="profile-card-item__number">**** {{ card.lastFourDigits }}</span>
+                <span class="profile-card-item__expiry">Exp: {{ card.expirationMonth }}/{{ card.expirationYear }}</span>
+                <button class="profile-card-item__delete" (click)="deleteCard(card.id)" title="Remover">🗑️</button>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
   }
 </div>
