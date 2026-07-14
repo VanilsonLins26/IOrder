@@ -39,7 +39,7 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            PaymentMethodTypes = new List<string> { "card", "boleto", "pix" },
+            PaymentMethodTypes = new List<string> { "card" },
             SetupFutureUsage = "off_session"
         };
 
