@@ -26,7 +26,7 @@ public class ChatHub : Hub
 
     public async Task MarkOrderRead(string orderId)
     {
-        await Clients.OthersInGroup(orderId).SendAsync("MessagesRead", orderId);
+        await Clients.Group(orderId).SendAsync("MessagesRead", orderId);
     }
 
     public async Task UserTyping(string orderId)

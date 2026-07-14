@@ -122,7 +122,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     });
 
     this.chatSignalr.onMessagesRead.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
-      if (orderId === this.id()) {
+      if (orderId.toLowerCase() === this.id().toLowerCase()) {
         const current = this.order();
         if (!current) return;
         const now = new Date().toISOString();
@@ -137,22 +137,22 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     });
 
     this.chatSignalr.onUserTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
-      if (orderId !== this.id()) return;
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set('Cliente');
     });
 
     this.chatSignalr.onUserStoppedTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
-      if (orderId !== this.id()) return;
+      if (orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.typingUser.set(null);
     });
 
     this.chatSignalr.onPaymentStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if (event.orderId !== this.id()) return;
+      if (event.orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.loadOrder();
     });
 
     this.chatSignalr.onOrderStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if (event.orderId !== this.id()) return;
+      if (event.orderId.toLowerCase() !== this.id().toLowerCase()) return;
       this.loadOrder();
     });
   }
