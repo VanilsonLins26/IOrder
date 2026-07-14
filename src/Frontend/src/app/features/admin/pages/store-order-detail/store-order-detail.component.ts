@@ -118,6 +118,17 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       if (this.chatOpen()) {
         this.chatApi.markAsRead(this.id()).subscribe({
           next: () => {
+            const current = this.order();
+            if (current) {
+              const now = new Date().toISOString();
+              const updatedMessages = current.messages.map(m => {
+                if (m.userId !== this.currentUser()?.sub && !m.readAt) {
+                  return { ...m, readAt: now };
+                }
+                return m;
+              });
+              this.order.set({ ...current, messages: updatedMessages });
+            }
             this.chatSignalr.markOrderRead(this.id());
           }
         });
@@ -292,6 +303,17 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     this.chatOpen.set(true);
     this.chatApi.markAsRead(this.id()).subscribe({
       next: () => {
+        const current = this.order();
+        if (current) {
+          const now = new Date().toISOString();
+          const updatedMessages = current.messages.map(m => {
+            if (m.userId !== this.currentUser()?.sub && !m.readAt) {
+              return { ...m, readAt: now };
+            }
+            return m;
+          });
+          this.order.set({ ...current, messages: updatedMessages });
+        }
         this.chatSignalr.markOrderRead(this.id());
       }
     });

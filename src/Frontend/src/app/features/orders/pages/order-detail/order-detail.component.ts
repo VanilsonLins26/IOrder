@@ -81,6 +81,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       if (this.chatOpen()) {
         this.chatApi.markAsRead(this.id()).subscribe({
           next: () => {
+            const uid = this.currentUser()?.sub;
+            if (uid) this.store.markOtherMessagesAsRead(uid);
             this.chatSignalr.markOrderRead(this.id());
           }
         });
@@ -225,6 +227,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.chatOpen.set(true);
     this.chatApi.markAsRead(this.id()).subscribe({
       next: () => {
+        const uid = this.currentUser()?.sub;
+        if (uid) this.store.markOtherMessagesAsRead(uid);
         this.chatSignalr.markOrderRead(this.id());
       }
     });
