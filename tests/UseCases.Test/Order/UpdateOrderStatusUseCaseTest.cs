@@ -20,7 +20,7 @@ public class UpdateOrderStatusUseCaseTest
         var order = OrderBuilder.Build();
         var request = UpdateOrderStatusRequestBuilder.Build();
         request.Status = OrderStatusDto.AwaitingPayment;
-        var useCase = CreateUseCase(order);
+        var useCase = CreateUseCase(order, loggedUserId: "store-owner-id");
 
         var response = await useCase.Execute(order.Id, request);
 
@@ -54,7 +54,7 @@ public class UpdateOrderStatusUseCaseTest
         exception.GetErrorMessages().ShouldHaveSingleItem();
     }
 
-    private static UpdateOrderStatusUseCase CreateUseCase(IOrder.Domain.Entities.Order? order)
+    private static UpdateOrderStatusUseCase CreateUseCase(IOrder.Domain.Entities.Order? order, string? loggedUserId = null)
     {
         var writeOnly = new OrderWriteOnlyRepositoryBuilder()
             .GetByIdTracking(order)
@@ -62,7 +62,7 @@ public class UpdateOrderStatusUseCaseTest
         var uow = UnitOfWorkBuilder.Build();
         var permissionService = StorePermissionServiceBuilder.Build(order?.StoreId ?? Guid.NewGuid());
         var validator = new UpdateOrderStatusValidator();
-        var loggedUser = LoggedUserBuilder.Build(); // Store owner logic doesn't require user matching
+        var loggedUser = LoggedUserBuilder.Build(loggedUserId ?? "test-user-id");
 
         var eventDispatcher = new Mock<IDomainEventDispatcher>();
 
