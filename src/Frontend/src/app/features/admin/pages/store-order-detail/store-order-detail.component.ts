@@ -15,7 +15,8 @@ import { OrderChatOffcanvasComponent } from '../../../../shared/components/order
 import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 import { AdminStore } from '../../store/admin.store';
-import { isDateTimeWithinOpeningHours } from '../../../../core/utils/opening-hours.utils';
+import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
+import { effect, untracked } from '@angular/core';
 
 @Component({
   selector: 'app-store-order-detail',
@@ -42,25 +43,35 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
-  readonly proposedDate = signal('');
+  readonly proposedDateString = signal('');
+  readonly proposedTimeString = signal('');
   readonly shopkeeperNotes = signal('');
   readonly currentUser = toSignal(this.auth.user$);
   readonly adminStore = inject(AdminStore);
 
-  readonly proposalTimeError = computed(() => {
-    const pDate = this.proposedDate();
-    if (!pDate) return null;
-
-    const d = new Date(pDate);
-    if (isNaN(d.getTime())) return null;
-
-    const hours = this.adminStore.myStore()?.openingHours || [];
-    if (!isDateTimeWithinOpeningHours(d, hours)) {
-      return "O horário proposto está fora do horário de funcionamento da loja.";
-    }
-
-    return null;
+  readonly availableDates = computed(() => {
+    return generateAvailableDates(this.adminStore.myStore()?.openingHours || [], 7);
   });
+
+  readonly availableTimes = computed(() => {
+    return generateTimeSlots(this.proposedDateString(), this.adminStore.myStore()?.openingHours || [], 30);
+  });
+
+  constructor() {
+    effect(() => {
+      const dates = this.availableDates();
+      if (dates.length > 0 && !this.proposedDateString()) {
+        untracked(() => this.proposedDateString.set(dates[0].date));
+      }
+    });
+
+    effect(() => {
+      const times = this.availableTimes();
+      if (times.length > 0 && !times.includes(this.proposedTimeString())) {
+        untracked(() => this.proposedTimeString.set(times[0]));
+      }
+    });
+  }
 
   readonly unreadMessagesCount = computed(() => {
     const o = this.order();
@@ -176,9 +187,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         if (o.deliveryDate) {
           const date = new Date(o.deliveryDate);
           date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-          this.proposedDate.set(date.toISOString().slice(0, 16));
+          const isoStr = date.toISOString();
+          this.proposedDateString.set(isoStr.slice(0, 10));
+          this.proposedTimeString.set(isoStr.slice(11, 16));
         } else {
-          this.proposedDate.set('');
+          this.proposedDateString.set('');
+          this.proposedTimeString.set('');
         }
       }
     }
@@ -234,16 +248,24 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   }
 
   sendProposal() {
+    let proposedDeliveryDate: string | null = null;
+    const dateStr = this.proposedDateString();
+    const timeStr = this.proposedTimeString();
+    if (dateStr && timeStr) {
+      proposedDeliveryDate = `${dateStr}T${timeStr}:00`;
+    }
+
     this.orderApi.negotiate(this.id(), {
       proposedTotalAmount: this.proposedAmount(),
-      proposedDeliveryDate: this.proposedDate() || null,
+      proposedDeliveryDate,
       shopkeeperNotes: this.shopkeeperNotes() || null,
     }).subscribe({
       next: () => {
         this.toast.success('Proposta enviada!');
         this.showNegotiate.set(false);
         this.proposedAmount.set(null);
-        this.proposedDate.set('');
+        this.proposedDateString.set('');
+        this.proposedTimeString.set('');
         this.shopkeeperNotes.set('');
         this.loadOrder();
       },

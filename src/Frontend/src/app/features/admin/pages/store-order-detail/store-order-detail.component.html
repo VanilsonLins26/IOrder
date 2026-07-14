@@ -43,10 +43,26 @@
           </label>
           <label>
             Data de entrega
-            <input type="datetime-local" [ngModel]="proposedDate()" (ngModelChange)="proposedDate.set($event)" />
-            @if (proposalTimeError()) {
-              <div class="store-order-detail__error-message">{{ proposalTimeError() }}</div>
-            }
+            <div class="store-order-detail__date-time-row" style="display: flex; gap: 8px;">
+              <select
+                class="form-control"
+                [ngModel]="proposedDateString()"
+                (ngModelChange)="proposedDateString.set($event)"
+              >
+                @for (date of availableDates(); track date.date) {
+                  <option [value]="date.date">{{ date.label }}</option>
+                }
+              </select>
+              <select
+                class="form-control"
+                [ngModel]="proposedTimeString()"
+                (ngModelChange)="proposedTimeString.set($event)"
+              >
+                @for (time of availableTimes(); track time) {
+                  <option [value]="time">{{ time }}</option>
+                }
+              </select>
+            </div>
           </label>
           <label>
             Observações
@@ -54,7 +70,7 @@
           </label>
           <button class="action-btn action-btn--primary" 
                   (click)="sendProposal()" 
-                  [disabled]="proposalTimeError() !== null">
+                  [disabled]="!proposedDateString() || !proposedTimeString()">
             Enviar Proposta
           </button>
         </div>
