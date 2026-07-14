@@ -115,7 +115,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
 
     this.chatSignalr.onOrderStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if (event.orderId.toLowerCase() !== this.id().toLowerCase()) return;
+      const eId = event.orderId || (event as any).OrderId;
+      if (!eId || eId.toLowerCase() !== this.id().toLowerCase()) return;
       this.store.loadById(this.id());
     });
   }
