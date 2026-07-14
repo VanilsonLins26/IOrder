@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +33,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   private readonly chatApi = inject(ChatApiService);
   protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly order = signal<OrderResponseDto | null>(null);
   readonly loading = signal(false);
@@ -93,7 +94,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     await this.chatSignalr.start();
     await this.chatSignalr.joinOrderGroup(this.id());
 
-    this.chatSignalr.onMessageReceived = (message) => {
+    this.chatSignalr.onMessageReceived.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       const current = this.order();
       if (!current) return;
       const uid = this.currentUser()?.sub ?? '';
@@ -118,9 +119,9 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         this.chatApi.markAsRead(this.id()).subscribe();
         this.chatSignalr.markOrderRead(this.id());
       }
-    };
+    });
 
-    this.chatSignalr.onMessagesRead = (orderId) => {
+    this.chatSignalr.onMessagesRead.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
       if (orderId === this.id()) {
         const current = this.order();
         if (!current) return;
@@ -133,27 +134,27 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         });
         this.order.set({ ...current, messages: updatedMessages });
       }
-    };
+    });
 
-    this.chatSignalr.onUserTyping = (orderId) => {
+    this.chatSignalr.onUserTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
       if (orderId !== this.id()) return;
       this.typingUser.set('Cliente');
-    };
+    });
 
-    this.chatSignalr.onUserStoppedTyping = (orderId) => {
+    this.chatSignalr.onUserStoppedTyping.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
       if (orderId !== this.id()) return;
       this.typingUser.set(null);
-    };
+    });
 
-    this.chatSignalr.onPaymentStatusChanged = (event) => {
+    this.chatSignalr.onPaymentStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event.orderId !== this.id()) return;
       this.loadOrder();
-    };
+    });
 
-    this.chatSignalr.onOrderStatusChanged = (event) => {
+    this.chatSignalr.onOrderStatusChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event.orderId !== this.id()) return;
       this.loadOrder();
-    };
+    });
   }
 
   private loadOrder() {

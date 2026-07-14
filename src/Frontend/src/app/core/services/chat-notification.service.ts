@@ -35,18 +35,12 @@ export class ChatNotificationService {
   }
 
   private listenToSignalR() {
-    // If a new message is received, refetch or just add 1
-    // We will refetch to be safe and accurate
-    const originalOnMessageReceived = this.chatSignalR.onMessageReceived;
-    this.chatSignalR.onMessageReceived = (msg) => {
-      if (originalOnMessageReceived) originalOnMessageReceived(msg);
+    this.chatSignalR.onMessageReceived.subscribe(() => {
       this.fetchUnreadCount();
-    };
+    });
 
-    const originalOnMessagesRead = this.chatSignalR.onMessagesRead;
-    this.chatSignalR.onMessagesRead = (orderId) => {
-      if (originalOnMessagesRead) originalOnMessagesRead(orderId);
+    this.chatSignalR.onMessagesRead.subscribe(() => {
       this.fetchUnreadCount();
-    };
+    });
   }
 }
