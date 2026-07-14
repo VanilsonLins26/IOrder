@@ -80,17 +80,16 @@
         [attr.aria-invalid]="categoryForm.get('name')?.invalid && (categoryForm.get('name')?.dirty || categoryForm.get('name')?.touched)" />
     </div>
 
-    <div class="form-group">
-      <label for="catImage">URL da Imagem (Ícone)</label>
-      <input id="catImage" type="url" formControlName="imageUrl" class="form-control" placeholder="https://..." />
-    </div>
-
-    <!-- Preview -->
-    @if (categoryForm.value.imageUrl) {
-      <div class="category-img-preview">
-        <img [src]="categoryForm.value.imageUrl" alt="Preview" onerror="this.style.display='none'" />
+      <div class="form-group">
+        <label class="form-label" for="imageUrl">URL da Imagem (Ícone)</label>
+        <app-image-upload
+          [currentUrl]="categoryForm.get('imageUrl')?.value || ''"
+          [loading]="uploadingImage()"
+          (fileSelected)="onImageSelected($event)">
+        </app-image-upload>
       </div>
-    }
+
+
 
     <div class="form-actions">
       <button type="button" class="btn btn--outline" (click)="closeModal()">Cancelar</button>
