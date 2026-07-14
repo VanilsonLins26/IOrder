@@ -39,7 +39,10 @@ public class StripePaymentService : IPaymentService
             {
                 { "OrderId", orderId.ToString() }
             },
-            PaymentMethodTypes = new List<string> { "card" }
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+            {
+                Enabled = true,
+            }
         };
 
         var service = new PaymentIntentService();
@@ -49,8 +52,7 @@ public class StripePaymentService : IPaymentService
         {
             OrderId = orderId,
             Amount = amount,
-            StripePaymentIntentId = paymentIntent.Id,
-            Method = IOrder.Domain.Entities.Enums.PaymentMethod.CreditCard
+            StripePaymentIntentId = paymentIntent.Id
         };
 
         await _paymentWriteOnlyRepository.CreateAsync(payment);
@@ -77,6 +79,25 @@ public class StripePaymentService : IPaymentService
                     var payment = await _paymentWriteOnlyRepository.GetByIdTracking(Guid.Parse(paymentIntent.Metadata["OrderId"]));
                     if (payment != null)
                     {
+                        if (!string.IsNullOrEmpty(paymentIntent.PaymentMethodId))
+                        {
+                            try
+                            {
+                                var pmService = new PaymentMethodService();
+                                var pm = await pmService.GetAsync(paymentIntent.PaymentMethodId);
+                                if (pm.Type == "boleto")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.Boleto;
+                                else if (pm.Type == "card")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.CreditCard;
+                                else if (pm.Type == "pix")
+                                    payment.Method = Domain.Entities.Enums.PaymentMethod.Pix;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to retrieve PaymentMethod type for PaymentIntent {PaymentIntentId}", paymentIntent.Id);
+                            }
+                        }
+
                         payment.Approve();
                         _paymentWriteOnlyRepository.Update(payment);
                         return MapToDto(payment);
