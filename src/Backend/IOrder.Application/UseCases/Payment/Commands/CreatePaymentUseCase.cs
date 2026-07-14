@@ -84,7 +84,9 @@ public class CreatePaymentUseCase : ICreatePaymentUseCase
             }
         }
 
-        return await _paymentService.CreatePaymentIntentAsync(order.Id, order.TotalAmount, customerId);
+        var response = await _paymentService.CreatePaymentIntentAsync(order.Id, order.TotalAmount, customerId);
+        await _unitOfWork.Commit();
+        return response;
     }
 
     private async Task Validate(CreatePaymentRequestDto request)

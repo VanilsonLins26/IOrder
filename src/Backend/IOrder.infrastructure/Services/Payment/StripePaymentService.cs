@@ -80,7 +80,7 @@ public class StripePaymentService : IPaymentService
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
                 {
-                    var payment = await _paymentWriteOnlyRepository.GetByIdTracking(Guid.Parse(paymentIntent.Metadata["OrderId"]));
+                    var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(paymentIntent.Id);
                     if (payment != null)
                     {
                         if (!string.IsNullOrEmpty(paymentIntent.PaymentMethodId))
@@ -113,7 +113,7 @@ public class StripePaymentService : IPaymentService
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
                 {
-                    var payment = await _paymentWriteOnlyRepository.GetByIdTracking(Guid.Parse(paymentIntent.Metadata["OrderId"]));
+                    var payment = await _paymentReadOnlyRepository.GetByStripeIdAsync(paymentIntent.Id);
                     if (payment != null)
                     {
                         payment.Reject();

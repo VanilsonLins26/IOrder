@@ -2,7 +2,6 @@ using IOrder.Application.UseCases.Payment.Commands;
 using IOrder.Application.UseCases.Payment.Queries;
 using IOrder.Application.UseCases.UserCard.Commands;
 using IOrder.Application.UseCases.UserCard.Queries;
-using IOrder.Application.UseCases.Payment.Queries;
 using IOrder.Communication.Enums;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
@@ -114,6 +113,16 @@ public class PaymentController : IOrderBaseController
         [FromBody] UpdateSaveCardRequestDto request)
     {
         await useCase.Execute(orderId, request.SaveCard);
+        return Ok();
+    }
+
+    [HttpPost("{orderId:guid}/sync")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SyncPaymentStatus(
+        [FromServices] ISyncPaymentStatusUseCase useCase,
+        [FromRoute] Guid orderId)
+    {
+        await useCase.Execute(orderId);
         return Ok();
     }
 }
