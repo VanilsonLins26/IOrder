@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IOrder.API.Controllers.Profile;
 
-[Route("api/[controller]")]
-[ApiController]
 [Authorize]
-public class UserAddressController : ControllerBase
+public class UserAddressController : IOrderBaseController
 {
     [HttpPost]
     [ProducesResponseType(typeof(UserAddressResponseDto), StatusCodes.Status201Created)]
