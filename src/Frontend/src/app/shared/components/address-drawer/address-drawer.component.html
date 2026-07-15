@@ -1,0 +1,44 @@
+@if (visible()) {
+  <div class="address-drawer__backdrop" (click)="onBackdropClick($event)" (keydown.escape)="onClose()">
+    <div class="address-drawer" role="dialog" aria-label="Selecionar endereço">
+      <div class="address-drawer__header">
+        <h3 class="address-drawer__title">Selecione o endereço</h3>
+        <button class="address-drawer__close" (click)="onClose()" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="address-drawer__body">
+        <button class="address-drawer__geo-btn" (click)="onUseCurrentLocation()">
+          <span class="address-drawer__geo-icon">📍</span>
+          <span class="address-drawer__geo-text">Usar localização atual</span>
+        </button>
+
+        @for (addr of addressStore.addresses(); track addr.id) {
+          <button
+            class="address-drawer__item"
+            [class.address-drawer__item--active]="addressStore.selectedAddress()?.id === addr.id"
+            (click)="onSelect(addr)"
+          >
+            <span class="address-drawer__item-icon">🏠</span>
+            <div class="address-drawer__item-info">
+              <span class="address-drawer__item-name">{{ addr.name }}</span>
+              <span class="address-drawer__item-address">
+                {{ addr.street }}, {{ addr.number }} - {{ addr.neighborhood }}, {{ addr.city }}
+              </span>
+            </div>
+            @if (addressStore.selectedAddress()?.id === addr.id) {
+              <span class="address-drawer__item-check">✓</span>
+            }
+          </button>
+        } @empty {
+          <p class="address-drawer__empty">Nenhum endereço salvo</p>
+        }
+      </div>
+
+      <div class="address-drawer__footer">
+        <a routerLink="/profile/addresses" class="address-drawer__add-btn" (click)="onClose()">
+          <span>+</span> Adicionar novo endereço
+        </a>
+      </div>
+    </div>
+  </div>
+}
