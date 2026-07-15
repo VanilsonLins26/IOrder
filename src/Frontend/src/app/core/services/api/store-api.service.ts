@@ -33,6 +33,8 @@ export class StoreApiService {
     if (query.orderBy)                 params = params.set('OrderBy',      query.orderBy);
     if (query.isDescending !== undefined) params = params.set('IsDescending', query.isDescending);
     if (query.categoryId)              params = params.set('CategoryId',   query.categoryId);
+    if (query.userLatitude !== undefined)  params = params.set('UserLatitude',  query.userLatitude);
+    if (query.userLongitude !== undefined) params = params.set('UserLongitude', query.userLongitude);
     return this.http.get<PagedList<StoreResponse>>(`${this.baseUrl}/paged`, { params });
   }
 
