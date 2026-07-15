@@ -80,6 +80,6 @@ public class CreateStoreUseCaseTest
         if (userHasStore)
             readRepositoryBuilder.HasStore(userId);
 
-        return new CreateStoreUseCase(readRepositoryBuilder.Build(), writeRepository, unitOfWork, loggedUserService, new IOrder.Application.UseCases.Store.Commands.CreateStoreValidator());
+        return new CreateStoreUseCase(readRepositoryBuilder.Build(), writeRepository, unitOfWork, loggedUserService, new IOrder.Application.UseCases.Store.Commands.CreateStoreValidator(), new GeocodingServiceBuilder().GetCoordinatesAsync(-23.55, -46.63).Build());
     }
 }

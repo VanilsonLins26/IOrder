@@ -2,9 +2,14 @@ using IOrder.Application.UseCases.Store.Commands;
 using IOrder.Application.UseCases.Store.Queries;
 using IOrder.Communication.Request;
 using IOrder.Communication.Response;
+using IOrder.Domain.Repositories;
+using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Security.Services;
+using IOrder.Domain.Services;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace IOrder.API.Controllers;
 
@@ -128,6 +133,43 @@ public class StoreController : IOrderBaseController
         var imageUrl = await usecase.Execute(stream, file.FileName);
 
         return Ok(new { ImageUrl = imageUrl });
+    }
+
+    [Authorize(Roles = "ShopKeeper")]
+    [HttpPost("geocode-all")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> GeocodeAllStores(
+        [FromServices] IGeocodingService geocodingService,
+        [FromServices] IStoreReadOnlyRepository readRepository,
+        [FromServices] IStoreWriteOnlyRepository writeRepository,
+        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] ILoggedUserService loggedUserService)
+    {
+        var myStore = await readRepository.GetByUserIdAsync(loggedUserService.GetUserId());
+        if (myStore == null)
+            return BadRequest(new ResponseErrorDto("Loja não encontrada."));
+
+        if (myStore.Location != null)
+            return Ok(new { Message = "Loja já possui localização.", Updated = false });
+
+        if (myStore.Address == null)
+            return BadRequest(new ResponseErrorDto("Loja não possui endereço."));
+
+        var coords = await geocodingService.GetCoordinatesAsync(
+            myStore.Address.Street, myStore.Address.City, myStore.Address.State, myStore.Address.ZipCode);
+        
+        if (coords.HasValue)
+        {
+            var trackedStore = await writeRepository.GetByIdTracking(myStore.Id);
+            if (trackedStore != null)
+            {
+                trackedStore.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
+                await unitOfWork.Commit();
+            }
+            return Ok(new { Message = "Localização atualizada.", Updated = true });
+        }
+
+        return Ok(new { Message = "Não foi possível geocodificar o endereço.", Updated = false });
     }
 
 }

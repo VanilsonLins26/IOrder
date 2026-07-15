@@ -4,6 +4,7 @@ using IOrder.Communication.Request;
 using IOrder.Communication.Response;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -21,14 +22,22 @@ public class UpdateAddressUseCase : IUpdateAddressUseCase
     private readonly ILoggedUserService _loggedUserService;
     private readonly IStorePermissionService _storePermissionService;
     private readonly IValidator<AddressRequestDto> _validator;
+    private readonly IGeocodingService _geocodingService;
 
-    public UpdateAddressUseCase(IStoreWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, ILoggedUserService loggedUserService, IStorePermissionService storePermissionService, IValidator<AddressRequestDto> validator)
+    public UpdateAddressUseCase(
+        IStoreWriteOnlyRepository writeOnlyRepository,
+        IUnitOfWork uof,
+        ILoggedUserService loggedUserService,
+        IStorePermissionService storePermissionService,
+        IValidator<AddressRequestDto> validator,
+        IGeocodingService geocodingService)
     {
         _writeOnlyRepository = writeOnlyRepository;
         _uof = uof;
         _loggedUserService = loggedUserService;
         _storePermissionService = storePermissionService;
         _validator = validator;
+        _geocodingService = geocodingService;
     }
 
     public async Task<StoreResponseDto> Execute(AddressRequestDto request, Guid storeId)
@@ -39,7 +48,15 @@ public class UpdateAddressUseCase : IUpdateAddressUseCase
 
         await Validate(request);
 
-        request.Adapt(store.Address);
+        var updatedAddress = request.Adapt<Domain.Entities.Address>();
+        store.Address = updatedAddress;
+
+        var coords = await _geocodingService.GetCoordinatesAsync(
+            request.Street, request.City, request.State, request.ZipCode);
+        if (coords.HasValue)
+        {
+            store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
+        }
 
         await _uof.Commit();
 

@@ -4,6 +4,7 @@ using IOrder.Communication.Response;
 using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Store;
+using IOrder.Domain.Services;
 using IOrder.Exceptions;
 using IOrder.Exceptions.ExceptionBase;
 using Mapster;
@@ -21,14 +22,22 @@ public class CreateStoreUseCase : ICreateStoreUseCase
     private readonly IUnitOfWork _uof;
     private readonly ILoggedUserService _loggedUserService;
     private readonly IValidator<StoreRequestDto> _validator;
+    private readonly IGeocodingService _geocodingService;
 
-    public CreateStoreUseCase(IStoreReadOnlyRepository readOnlyRepository, IStoreWriteOnlyRepository writeOnlyRepository, IUnitOfWork uof, ILoggedUserService loggedUserService, IValidator<StoreRequestDto> validator)
+    public CreateStoreUseCase(
+        IStoreReadOnlyRepository readOnlyRepository,
+        IStoreWriteOnlyRepository writeOnlyRepository,
+        IUnitOfWork uof,
+        ILoggedUserService loggedUserService,
+        IValidator<StoreRequestDto> validator,
+        IGeocodingService geocodingService)
     {
         _readOnlyRepository = readOnlyRepository;
         _writeOnlyRepository = writeOnlyRepository;
         _uof = uof;
         _loggedUserService = loggedUserService;
         _validator = validator;
+        _geocodingService = geocodingService;
     }
 
     public async Task<StoreResponseDto> Execute(StoreRequestDto request)
@@ -40,6 +49,17 @@ public class CreateStoreUseCase : ICreateStoreUseCase
         store.UserId = userId;
         store.OwnerEmail = _loggedUserService.GetUserEmail();
         store.OwnerPhone = request.OwnerPhone;
+
+        if (store.Address != null)
+        {
+            var coords = await _geocodingService.GetCoordinatesAsync(
+                store.Address.Street, store.Address.City, store.Address.State, store.Address.ZipCode);
+            if (coords.HasValue)
+            {
+                store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
+            }
+        }
+
         store.AddDomainEvent(new IOrder.Domain.Events.StoreCreatedEvent(store.Id, store.Name));
 
         var createdStore = await _writeOnlyRepository.Create(store);
