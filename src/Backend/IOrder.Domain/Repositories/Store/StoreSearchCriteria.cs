@@ -8,5 +8,7 @@ public record StoreSearchCriteria(
     string? Name,
     Guid? CategoryId,
     string? OrderBy,
-    bool IsDescending
+    bool IsDescending,
+    double? UserLatitude = null,
+    double? UserLongitude = null
 );

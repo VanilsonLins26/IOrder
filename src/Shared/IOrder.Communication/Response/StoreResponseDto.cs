@@ -18,4 +18,6 @@ public class StoreResponseDto
     public string? CategoryName { get; set; }
     public String UserId { get; set; } = string.Empty;
     public bool IsOpen { get; set; }
+    public double? DistanceKm { get; set; }
+    public decimal? DeliveryFee { get; set; }
 }

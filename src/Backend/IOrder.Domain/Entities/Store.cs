@@ -29,6 +29,12 @@ public class Store : EntityBase, IAggregateRoot
     public double MaxDeliveryDistanceKm { get; set; } = 15.0;
     public NetTopologySuite.Geometries.Point? Location { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public double? DistanceKm { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public decimal? DeliveryFee { get; set; }
+
     public bool IsOpen()
     {
         var brazilTime = DateTime.UtcNow.AddHours(-3);
