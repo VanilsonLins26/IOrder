@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, computed, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, computed, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -37,15 +37,16 @@ export class StoreDetailComponent {
   private readonly addressStore = inject(AddressStore);
 
   readonly storeResource = rxResource({
-    stream: () => {
-      const lat = this.addressStore.latitude();
-      const lon = this.addressStore.longitude();
-      return this.storeApi.getById(
-        this.id(),
-        lat ?? undefined,
-        lon ?? undefined
-      );
-    },
+    params: () => ({
+      id: this.id(),
+      lat: this.addressStore.latitude(),
+      lon: this.addressStore.longitude(),
+    }),
+    stream: (req) => this.storeApi.getById(
+      req.params.id,
+      req.params.lat ?? undefined,
+      req.params.lon ?? undefined
+    ),
   });
 
   readonly productsResource = rxResource({
@@ -91,15 +92,7 @@ export class StoreDetailComponent {
   readonly loadingCustomization = signal(false);
   readonly pendingProduct = signal<ProductResponse | null>(null);
 
-  constructor() {
-    effect(() => {
-      const lat = this.addressStore.latitude();
-      const lon = this.addressStore.longitude();
-      if (lat !== null && lon !== null) {
-        this.storeResource.reload();
-      }
-    });
-  }
+  constructor() {}
 
   onAddToCart(product: ProductResponse) {
     const currentItems = this.cartStore.items();

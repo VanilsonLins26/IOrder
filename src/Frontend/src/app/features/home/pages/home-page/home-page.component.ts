@@ -4,7 +4,6 @@ import {
   inject,
   signal,
   computed,
-  effect,
   ElementRef,
   ViewChild
 } from '@angular/core';
@@ -50,18 +49,20 @@ export class HomePageComponent {
     stream: () => this.storeCategoryApi.getAll(),
   });
 
-  private readonly storesResource = rxResource<PagedList<StoreResponse>, string | null>({
-    params: () => this.selectedCatId(),
-    stream: (req) => {
-      const lat = this.addressStore.latitude();
-      const lon = this.addressStore.longitude();
-      return this.storeApi.getPaged({
-        pageNumber: 1,
-        pageSize: 12,
-        categoryId: req.params ?? undefined,
-        ...(lat !== null && lon !== null ? { userLatitude: lat, userLongitude: lon } : {}),
-      });
-    },
+  private readonly storesResource = rxResource<PagedList<StoreResponse>, { catId: string | null; lat: number | null; lon: number | null }>({
+    params: () => ({
+      catId: this.selectedCatId(),
+      lat: this.addressStore.latitude(),
+      lon: this.addressStore.longitude(),
+    }),
+    stream: (req) => this.storeApi.getPaged({
+      pageNumber: 1,
+      pageSize: 12,
+      categoryId: req.params.catId ?? undefined,
+      ...(req.params.lat !== null && req.params.lon !== null
+        ? { userLatitude: req.params.lat, userLongitude: req.params.lon }
+        : {}),
+    }),
   });
 
   readonly categories    = computed(() => this.categoriesResource.value() ?? []);
@@ -93,14 +94,6 @@ export class HomePageComponent {
 
   constructor() {
     this.addressStore.loadAddresses();
-
-    effect(() => {
-      const lat = this.addressStore.latitude();
-      const lon = this.addressStore.longitude();
-      if (lat !== null && lon !== null) {
-        this.storesResource.reload();
-      }
-    });
   }
 
   selectCategory(id: string | null): void { this.selectedCatId.set(id); }

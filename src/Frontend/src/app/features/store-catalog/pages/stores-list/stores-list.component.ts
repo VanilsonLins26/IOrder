@@ -25,8 +25,9 @@ export class StoresListComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const hasLocation = this.addressStore.hasLocation();
-      if (hasLocation) {
+      const lat = this.addressStore.latitude();
+      const lon = this.addressStore.longitude();
+      if (lat !== null && lon !== null) {
         this.catalogStore.loadStores({ pageNumber: 1, pageSize: 20 });
       }
     });
