@@ -40,12 +40,14 @@ public class StoreReadOnlyRepositoryBuilder
     public StoreReadOnlyRepositoryBuilder GetByIdAsync(Store store)
     {
         _repository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(store);
+        _repository.Setup(repository => repository.GetByIdWithDistanceAsync(It.IsAny<Guid>(), It.IsAny<double?>(), It.IsAny<double?>())).ReturnsAsync(store);
         return this;
     }
 
     public StoreReadOnlyRepositoryBuilder GetByIdAsyncReturnsNull()
     {
         _repository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Store?)null);
+        _repository.Setup(repository => repository.GetByIdWithDistanceAsync(It.IsAny<Guid>(), It.IsAny<double?>(), It.IsAny<double?>())).ReturnsAsync((Store?)null);
         return this;
     }
 
