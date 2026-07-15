@@ -117,5 +117,26 @@
 .store-card__location {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
+}
+
+.store-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.store-card__distance {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-600);
+  background: rgba(var(--color-primary-500-rgb), 0.08);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.store-card__delivery {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
   margin-top: var(--space-1);
 }

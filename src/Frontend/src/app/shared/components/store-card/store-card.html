@@ -25,10 +25,18 @@
     @if (store().about) {
       <p class="store-card__about">{{ store().about }}</p>
     }
-    @if (store().address) {
-      <p class="store-card__location">
-        📍 {{ store().address.city }}, {{ store().address.state }}
-      </p>
+    <div class="store-card__meta">
+      @if (store().address) {
+        <span class="store-card__location">
+          {{ store().address.city }}, {{ store().address.state }}
+        </span>
+      }
+      @if (store().distanceKm !== undefined && store().distanceKm !== null) {
+        <span class="store-card__distance">{{ store().distanceKm | number:'1.1-1' }} km</span>
+      }
+    </div>
+    @if (store().deliveryFee !== undefined && store().deliveryFee !== null) {
+      <span class="store-card__delivery">Entrega: {{ store().deliveryFee | currency:'BRL' }}</span>
     }
   </div>
 </a>
