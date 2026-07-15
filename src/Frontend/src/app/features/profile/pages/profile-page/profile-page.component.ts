@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { ProfileApiService } from '../../../../core/services/api/profile-api.service';
 import { UserCardApiService } from '../../../../core/services/api/user-card-api.service';
@@ -9,7 +10,7 @@ import { type UserCardResponseDto } from '../../../../core/models';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

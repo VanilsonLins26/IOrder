@@ -65,6 +65,14 @@ export const routes: Routes = [
             (m) => m.ProfilePageComponent,
           ),
       },
+      {
+        path: 'profile/addresses',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/profile/pages/addresses-page/addresses-page.component').then(
+            (m) => m.AddressesPageComponent,
+          ),
+      },
     ],
   },
 

@@ -39,6 +39,12 @@
     </div>
 
     <div class="profile-page__card profile-page__card--cards">
+      <h2 class="profile-page__subtitle">Meus Endereços</h2>
+      <p class="profile-page__hint">Gerencie seus endereços de entrega.</p>
+      <a routerLink="/profile/addresses" class="profile-page__link">Gerenciar endereços &rarr;</a>
+    </div>
+
+    <div class="profile-page__card profile-page__card--cards">
       <h2 class="profile-page__subtitle">Meus Cartões</h2>
       @if (loadingCards()) {
         <p class="profile-page__hint">Carregando cartões...</p>
