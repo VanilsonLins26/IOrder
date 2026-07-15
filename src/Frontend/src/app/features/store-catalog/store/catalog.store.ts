@@ -4,7 +4,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap, catchError, of } from 'rxjs';
 import { StoreApiService } from '../../../core/services/api/store-api.service';
 import { StoreCategoryApiService } from '../../../core/services/api/store-category-api.service';
-import { GeolocationService } from '../../../core/services/geolocation.service';
+import { AddressStore } from '../../../core/stores/address.store';
 import type { StoreResponse } from '../../../core/models/store.model';
 import type { StoreCategoryResponse } from '../../../core/models/store-category.model';
 import type { StoreSearchQuery } from '../../../core/models/api-response.model';
@@ -18,8 +18,6 @@ export interface CatalogState {
   pageNumber: number;
   pageSize: number;
   totalCount: number;
-  latitude: number | null;
-  longitude: number | null;
 }
 
 const initialState: CatalogState = {
@@ -31,16 +29,14 @@ const initialState: CatalogState = {
   pageNumber: 1,
   pageSize: 12,
   totalCount: 0,
-  latitude: null,
-  longitude: null,
 };
 
 export const CatalogStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed((store) => ({
+  withComputed((store, addressStore = inject(AddressStore)) => ({
     isLoading: computed(() => store.status() === 'loading'),
-    hasLocation: computed(() => store.latitude() !== null && store.longitude() !== null),
+    hasLocation: computed(() => addressStore.hasLocation()),
     filteredStores: computed(() => {
       const q = store.searchQuery().toLowerCase().trim();
       const catId = store.selectedCategoryId();
@@ -52,7 +48,7 @@ export const CatalogStore = signalStore(
       });
     }),
   })),
-  withMethods((store, storeApi = inject(StoreApiService), categoryApi = inject(StoreCategoryApiService), geoService = inject(GeolocationService)) => ({
+  withMethods((store, storeApi = inject(StoreApiService), categoryApi = inject(StoreCategoryApiService), addressStore = inject(AddressStore)) => ({
 
     setSearchQuery(query: string) {
       patchState(store, { searchQuery: query });
@@ -77,23 +73,12 @@ export const CatalogStore = signalStore(
       )
     ),
 
-    loadUserLocation() {
-      geoService.getCurrentPosition().subscribe({
-        next: (loc) => {
-          patchState(store, { latitude: loc.latitude, longitude: loc.longitude });
-        },
-        error: () => {
-          patchState(store, { latitude: null, longitude: null });
-        },
-      });
-    },
-
     loadStores: rxMethod<StoreSearchQuery>(
       pipe(
         tap(() => patchState(store, { status: 'loading' })),
         switchMap((query) => {
-          const lat = store.latitude();
-          const lon = store.longitude();
+          const lat = addressStore.latitude();
+          const lon = addressStore.longitude();
           const enrichedQuery: StoreSearchQuery = {
             ...query,
             ...(lat !== null && lon !== null ? { userLatitude: lat, userLongitude: lon } : {}),
