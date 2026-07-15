@@ -49,7 +49,8 @@ public static class DependencyInjectionExtension
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
-        services.AddDbContext<AppDbContext>(config => config.UseMySql(connectionString, serverVersion));
+        services.AddDbContext<AppDbContext>(config => 
+            config.UseMySql(connectionString, serverVersion, x => x.UseNetTopologySuite()));
     }
 
     private static void AddRedisCache(IServiceCollection services, IConfiguration configuration)
@@ -98,6 +99,9 @@ public static class DependencyInjectionExtension
         services.AddScoped<IUserCardReadOnlyRepository, UserCardRepository>();
         services.AddScoped<IUserCardWriteOnlyRepository, UserCardRepository>();
 
+        services.AddScoped<IUserAddressReadOnlyRepository, UserAddressRepository>();
+        services.AddScoped<IUserAddressWriteOnlyRepository, UserAddressRepository>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
@@ -113,6 +117,7 @@ public static class DependencyInjectionExtension
         services.AddSingleton<IEvolutionApiService, EvolutionApiService>();
         services.Configure<StripeSettings>(configuration.GetSection(StripeSettings.SectionName));
         services.AddScoped<IPaymentService, StripePaymentService>();
+        services.AddHttpClient<IGeocodingService, IOrder.infrastructure.Services.Geocoding.NominatimGeocodingService>();
     }
 
     private static void AddWorkers(IServiceCollection services)

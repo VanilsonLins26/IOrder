@@ -24,6 +24,7 @@ internal class AppDbContext  : DbContext
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<Domain.Entities.Payment> Payments { get; set; }
     public DbSet<UserCard> UserCards { get; set; }
+    public DbSet<UserAddress> UserAddresses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

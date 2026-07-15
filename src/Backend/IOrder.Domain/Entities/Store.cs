@@ -23,6 +23,12 @@ public class Store : EntityBase, IAggregateRoot
     public string? OwnerPhone { get; set; }
     public StoreCategory? Category { get; set; }
 
+    // Delivery & Location Fields
+    public decimal BaseDeliveryFee { get; set; } = 5.0m;
+    public decimal FeePerKm { get; set; } = 1.5m;
+    public double MaxDeliveryDistanceKm { get; set; } = 15.0;
+    public NetTopologySuite.Geometries.Point? Location { get; set; }
+
     public bool IsOpen()
     {
         var brazilTime = DateTime.UtcNow.AddHours(-3);
