@@ -25,7 +25,9 @@ public class GetAllStoreUseCase : IGetAllStoreUseCase
             request.Name, 
             request.CategoryId, 
             request.OrderBy, 
-            request.IsDescending);
+            request.IsDescending,
+            request.UserLatitude,
+            request.UserLongitude);
 
         var storesTuple = await _readOnlyRepository.GetAllPaged(criteria);
 

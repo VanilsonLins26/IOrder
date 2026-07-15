@@ -58,7 +58,42 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
                 : orderedQuery.ThenBy(p => p.Id)
         };
 
-        return await orderedQuery.ToPaginatedTupleAsync(criteria.PageNumber, criteria.PageSize);
+        var result = await orderedQuery.ToPaginatedTupleAsync(criteria.PageNumber, criteria.PageSize);
+        
+        if (criteria.UserLatitude.HasValue && criteria.UserLongitude.HasValue)
+        {
+            var userLocation = new NetTopologySuite.Geometries.Point(criteria.UserLongitude.Value, criteria.UserLatitude.Value) { SRID = 4326 };
+            foreach (var store in result.Items)
+            {
+                if (store.Location != null)
+                {
+                    // Calculate distance in memory for now, to ensure accurate meters (using Haversine)
+                    var distanceMeters = CalculateDistance(criteria.UserLatitude.Value, criteria.UserLongitude.Value, store.Location.Y, store.Location.X);
+                    var distanceKm = distanceMeters / 1000.0;
+                    
+                    store.DistanceKm = distanceKm;
+                    store.DeliveryFee = store.BaseDeliveryFee + (store.FeePerKm * (decimal)distanceKm);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        var R = 6371e3; // metres
+        var phi1 = lat1 * Math.PI / 180;
+        var phi2 = lat2 * Math.PI / 180;
+        var deltaPhi = (lat2 - lat1) * Math.PI / 180;
+        var deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+        var a = Math.Sin(deltaPhi / 2) * Math.Sin(deltaPhi / 2) +
+                Math.Cos(phi1) * Math.Cos(phi2) *
+                Math.Sin(deltaLambda / 2) * Math.Sin(deltaLambda / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        return R * c;
     }
 
     public async Task<Domain.Entities.Store> GetByIdAsync(Guid id)
