@@ -28,5 +28,25 @@ public class PaymentServiceBuilder
         _mock.Setup(m => m.GetPaymentByStripeIdAsync(It.IsAny<string>())).ReturnsAsync(response);
     }
 
+    public void BuildListCards(List<UserCardDto> response)
+    {
+        _mock.Setup(m => m.ListCardsAsync(It.IsAny<string>())).ReturnsAsync(response);
+    }
+
+    public void BuildDeleteCard()
+    {
+        _mock.Setup(m => m.DeleteCardAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+    }
+
+    public void BuildUpdatePaymentIntentSetupFutureUsageAsync()
+    {
+        _mock.Setup(m => m.UpdatePaymentIntentSetupFutureUsageAsync(It.IsAny<string>(), It.IsAny<bool>())).Returns(Task.CompletedTask);
+    }
+
+    public void BuildGetOrCreateCustomerAsync(string customerId)
+    {
+        _mock.Setup(m => m.GetOrCreateCustomerAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(customerId);
+    }
+
     public IPaymentService Build() => _mock.Object;
 }

@@ -43,6 +43,12 @@ public class StoreReadOnlyRepositoryBuilder
         return this;
     }
 
+    public StoreReadOnlyRepositoryBuilder GetByIdAsyncReturnsNull()
+    {
+        _repository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Store?)null);
+        return this;
+    }
+
     public StoreReadOnlyRepositoryBuilder GetAllPaged(IList<Store> stores)
     {
         _repository.Setup(repository => repository.GetAllPaged(It.IsAny<StoreSearchCriteria>())).ReturnsAsync((stores, stores.Count));
