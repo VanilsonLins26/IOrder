@@ -6,9 +6,19 @@
 .section-container {
   max-width: var(--container-xl);
   margin: 0 auto;
-  padding: var(--space-12) var(--space-4);
+  padding: var(--space-4) var(--space-4);
 
-  @media (min-width: 768px) { padding: var(--space-16) var(--space-6); }
+  @media (min-width: 768px) { padding: var(--space-4) var(--space-6); }
+}
+
+.address-section {
+  background: var(--surface-primary);
+  border-bottom: 1px solid var(--border-color);
+
+  .section-container {
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
 }
 
 .section-header {
@@ -50,7 +60,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding: var(--space-16) var(--space-4) var(--space-12);
+  padding: var(--space-10) var(--space-4) var(--space-12);
   background: linear-gradient(135deg,
     hsl(216, 100%, 97%) 0%,
     hsl(226, 100%, 97%) 100%

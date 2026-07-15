@@ -1,3 +1,11 @@
+<!-- ======================= ADDRESS BAR ======================= -->
+<div class="address-section">
+  <div class="section-container">
+    <app-address-bar (openDrawer)="openDrawer()" />
+  </div>
+</div>
+<app-address-drawer [visible]="drawerOpen()" (closeDrawer)="closeDrawer()" />
+
 <!-- ======================= HERO ======================= -->
 <section class="hero" aria-label="Bem-vindo ao IOrder">
   <div class="hero__bg-shapes" aria-hidden="true">
