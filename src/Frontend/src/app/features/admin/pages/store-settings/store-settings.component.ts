@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, effect, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray, FormGroup } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { AdminStore } from '../../store/admin.store';
 import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
@@ -10,7 +11,7 @@ import { take } from 'rxjs';
   selector: 'app-store-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, LoadingSkeletonComponent, ImageUploadComponent],
+  imports: [ReactiveFormsModule, LoadingSkeletonComponent, ImageUploadComponent, CurrencyPipe],
   templateUrl: './store-settings.component.html',
   styleUrl: './store-settings.component.scss',
 })
@@ -19,7 +20,7 @@ export class StoreSettingsComponent implements OnInit {
   readonly adminStore = inject(AdminStore);
   private readonly storeApi = inject(StoreApiService);
 
-  readonly activeTab = signal<'general' | 'address' | 'hours'>('general');
+  readonly activeTab = signal<'general' | 'address' | 'hours' | 'delivery'>('general');
 
   // Formulário Geral
   readonly generalForm = this.fb.nonNullable.group({
@@ -42,6 +43,13 @@ export class StoreSettingsComponent implements OnInit {
   // Formulário Horários
   readonly hoursForm = this.fb.nonNullable.group({
     openingHours: this.fb.array([] as FormGroup[])
+  });
+
+  // Formulário Entrega
+  readonly deliveryForm = this.fb.nonNullable.group({
+    baseDeliveryFee: [5.0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    feePerKm: [1.5, [Validators.required, Validators.min(0), Validators.max(50)]],
+    maxDeliveryDistanceKm: [15.0, [Validators.required, Validators.min(1), Validators.max(100)]],
   });
 
   readonly isSaving = signal(false);
@@ -84,6 +92,13 @@ export class StoreSettingsComponent implements OnInit {
             isClosed: [!existing] // Controle visual para dia fechado
           }));
         }
+
+        // Preencher Entrega
+        this.deliveryForm.patchValue({
+          baseDeliveryFee: myStore.baseDeliveryFee ?? 5.0,
+          feePerKm: myStore.feePerKm ?? 1.5,
+          maxDeliveryDistanceKm: myStore.maxDeliveryDistanceKm ?? 15.0,
+        });
       }
     }, { allowSignalWrites: true });
   }
@@ -103,7 +118,7 @@ export class StoreSettingsComponent implements OnInit {
     return days[day];
   }
 
-  setTab(tab: 'general' | 'address' | 'hours') {
+  setTab(tab: 'general' | 'address' | 'hours' | 'delivery') {
     this.activeTab.set(tab);
     this.saveSuccess.set(false);
   }
@@ -171,6 +186,30 @@ export class StoreSettingsComponent implements OnInit {
       })) || [];
 
     this.storeApi.updateOpeningHours(storeId, { openingHours }).subscribe({
+      next: (res) => {
+        this.adminStore.updateStoreInfo(res);
+        this.isSaving.set(false);
+        this.saveSuccess.set(true);
+      },
+      error: () => this.isSaving.set(false)
+    });
+  }
+
+  saveDelivery() {
+    if (this.deliveryForm.invalid) return;
+    const storeId = this.adminStore.myStore()?.id;
+    if (!storeId) return;
+
+    this.isSaving.set(true);
+    this.saveSuccess.set(false);
+    this.storeApi.update(storeId, {
+      name: this.adminStore.myStore()!.name,
+      about: this.adminStore.myStore()!.about,
+      imageUrl: this.adminStore.myStore()!.imageUrl,
+      baseDeliveryFee: this.deliveryForm.value.baseDeliveryFee!,
+      feePerKm: this.deliveryForm.value.feePerKm!,
+      maxDeliveryDistanceKm: this.deliveryForm.value.maxDeliveryDistanceKm!,
+    }).subscribe({
       next: (res) => {
         this.adminStore.updateStoreInfo(res);
         this.isSaving.set(false);

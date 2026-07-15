@@ -31,6 +31,12 @@
           (click)="setTab('hours')">
           🕒 Horários
         </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'delivery'" 
+          (click)="setTab('delivery')">
+          🚗 Entrega
+        </button>
       </nav>
 
       <div class="settings-content">
@@ -159,6 +165,54 @@
             <div class="form-actions">
               <button type="submit" class="btn btn--primary" [disabled]="hoursForm.invalid || isSaving()">
                 {{ isSaving() ? 'Salvando...' : 'Salvar Horários' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB ENTREGA -->
+        @if (activeTab() === 'delivery') {
+          <form [formGroup]="deliveryForm" (ngSubmit)="saveDelivery()" class="settings-form">
+            <p class="form-description">
+              Configure a política de entrega da sua loja. Esses valores serão usados para calcular o custo de entrega para os clientes.
+            </p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="baseDeliveryFee">Taxa Base (R$)</label>
+                <input id="baseDeliveryFee" type="number" formControlName="baseDeliveryFee" class="form-control" step="0.50" min="0" max="100" />
+                <span class="form-hint">Valor fixo cobrado para entregas curtas.</span>
+              </div>
+              <div class="form-group">
+                <label for="feePerKm">Valor por Km (R$)</label>
+                <input id="feePerKm" type="number" formControlName="feePerKm" class="form-control" step="0.50" min="0" max="50" />
+                <span class="form-hint">Valor cobrado a cada km excedente.</span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="maxDeliveryDistanceKm">Distância Máxima (km)</label>
+                <input id="maxDeliveryDistanceKm" type="number" formControlName="maxDeliveryDistanceKm" class="form-control" step="1" min="1" max="100" />
+                <span class="form-hint">Distância máxima que a loja aceita entregar.</span>
+              </div>
+            </div>
+
+            <div class="delivery-preview">
+              <h4 class="delivery-preview__title">Pré-visualização</h4>
+              <div class="delivery-preview__formula">
+                Entrega = {{ deliveryForm.value.baseDeliveryFee | currency:'BRL' }} + (distância × {{ deliveryForm.value.feePerKm | currency:'BRL' }}/km)
+              </div>
+              <div class="delivery-preview__examples">
+                <span>2 km: {{ (deliveryForm.value.baseDeliveryFee! + 2 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                <span>5 km: {{ (deliveryForm.value.baseDeliveryFee! + 5 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                <span>10 km: {{ (deliveryForm.value.baseDeliveryFee! + 10 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="deliveryForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Entrega' }}
               </button>
             </div>
           </form>

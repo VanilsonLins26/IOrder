@@ -20,12 +20,18 @@ export interface StoreResponse {
   categoryName?: string;
   distanceKm?: number;
   deliveryFee?: number;
+  baseDeliveryFee: number;
+  feePerKm: number;
+  maxDeliveryDistanceKm: number;
 }
 
 export interface UpdateStoreRequest {
   name: string;
   about: string;
   imageUrl: string;
+  baseDeliveryFee?: number;
+  feePerKm?: number;
+  maxDeliveryDistanceKm?: number;
 }
 
 export interface AddressRequest {

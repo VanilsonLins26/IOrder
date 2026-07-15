@@ -239,3 +239,54 @@
 }
 
 // End of store-settings styles
+
+// ENTREGA
+.form-description {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+  line-height: var(--line-height-relaxed);
+}
+
+.form-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.delivery-preview {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+}
+
+.delivery-preview__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.delivery-preview__formula {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-family: monospace;
+  margin-bottom: var(--space-3);
+}
+
+.delivery-preview__examples {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  flex-wrap: wrap;
+
+  span {
+    padding: var(--space-1) var(--space-3);
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+  }
+}
