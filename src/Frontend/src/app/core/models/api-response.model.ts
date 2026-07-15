@@ -30,6 +30,8 @@ export interface ProductSearchQuery extends PaginationQuery {
 }
 
 export interface StoreSearchQuery extends PaginationQuery {
-  name?:       string;
-  categoryId?: string;
+  name?:          string;
+  categoryId?:    string;
+  userLatitude?:  number;
+  userLongitude?: number;
 }

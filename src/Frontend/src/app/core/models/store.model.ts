@@ -18,6 +18,8 @@ export interface StoreResponse {
   isOpen: boolean;
   categoryId: string;
   categoryName?: string;
+  distanceKm?: number;
+  deliveryFee?: number;
 }
 
 export interface UpdateStoreRequest {
