@@ -28,5 +28,15 @@ public class PaymentServiceBuilder
         _mock.Setup(m => m.GetPaymentByStripeIdAsync(It.IsAny<string>())).ReturnsAsync(response);
     }
 
+    public void BuildListCards(List<UserCardDto> response)
+    {
+        _mock.Setup(m => m.ListCardsAsync(It.IsAny<string>())).ReturnsAsync(response);
+    }
+
+    public void BuildDeleteCard()
+    {
+        _mock.Setup(m => m.DeleteCardAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+    }
+
     public IPaymentService Build() => _mock.Object;
 }
