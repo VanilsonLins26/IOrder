@@ -20,4 +20,7 @@ public class StoreResponseDto
     public bool IsOpen { get; set; }
     public double? DistanceKm { get; set; }
     public decimal? DeliveryFee { get; set; }
+    public decimal BaseDeliveryFee { get; set; }
+    public decimal FeePerKm { get; set; }
+    public double MaxDeliveryDistanceKm { get; set; }
 }
