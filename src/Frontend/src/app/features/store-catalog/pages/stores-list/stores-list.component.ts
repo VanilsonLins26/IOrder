@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, effect } from '@angular/core';
 import { CatalogStore } from '../../store/catalog.store';
+import { AddressStore } from '../../../../core/stores/address.store';
 import { StoreFiltersComponent } from '../../components/store-filters/store-filters';
 import { StoreCardComponent } from '../../../../shared/components/store-card/store-card';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
@@ -20,14 +21,12 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
 })
 export class StoresListComponent implements OnInit {
   readonly catalogStore = inject(CatalogStore);
-
-  private locationLoaded = false;
+  private readonly addressStore = inject(AddressStore);
 
   constructor() {
     effect(() => {
-      const hasLocation = this.catalogStore.hasLocation();
-      if (hasLocation && !this.locationLoaded) {
-        this.locationLoaded = true;
+      const hasLocation = this.addressStore.hasLocation();
+      if (hasLocation) {
         this.catalogStore.loadStores({ pageNumber: 1, pageSize: 20 });
       }
     });
@@ -35,8 +34,7 @@ export class StoresListComponent implements OnInit {
 
   ngOnInit() {
     this.catalogStore.loadCategories();
-    this.catalogStore.loadUserLocation();
-    this.catalogStore.loadStores({ pageNumber: 1, pageSize: 20 });
+    this.addressStore.loadAddresses();
   }
 
   onCategorySelect(categoryId: string | null) {
