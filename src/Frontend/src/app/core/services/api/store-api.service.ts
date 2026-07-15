@@ -21,8 +21,11 @@ export class StoreApiService {
     return this.http.post<StoreResponse>(this.baseUrl, dto);
   }
 
-  getById(id: string): Observable<StoreResponse> {
-    return this.http.get<StoreResponse>(`${this.baseUrl}/${id}`);
+  getById(id: string, userLatitude?: number, userLongitude?: number): Observable<StoreResponse> {
+    let params = new HttpParams();
+    if (userLatitude !== undefined)  params = params.set('userLatitude',  userLatitude);
+    if (userLongitude !== undefined) params = params.set('userLongitude', userLongitude);
+    return this.http.get<StoreResponse>(`${this.baseUrl}/${id}`, { params });
   }
 
   getPaged(query: StoreSearchQuery): Observable<PagedList<StoreResponse>> {

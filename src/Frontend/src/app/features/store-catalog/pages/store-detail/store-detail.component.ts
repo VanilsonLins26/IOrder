@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, computed, signal, effect } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -7,6 +7,7 @@ import { ProductApiService } from '../../../../core/services/api/product-api.ser
 import { CategoryApiService } from '../../../../core/services/api/category-api.service';
 import { UploadApiService } from '../../../../core/services/api/upload-api.service';
 import { CustomizationApiService } from '../../../../core/services/api/customization-api.service';
+import { AddressStore } from '../../../../core/stores/address.store';
 import { StoreInfoHeaderComponent } from '../../components/store-info-header/store-info-header';
 import { ProductGridComponent } from '../../components/product-grid/product-grid';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
@@ -25,7 +26,6 @@ import type { CustomizationGroup } from '../../../../core/models/customization.m
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StoreDetailComponent {
-  // Recebe o ':id' da rota
   id = input.required<string>();
 
   private readonly storeApi = inject(StoreApiService);
@@ -34,9 +34,18 @@ export class StoreDetailComponent {
   private readonly uploadApi = inject(UploadApiService);
   private readonly customizationApi = inject(CustomizationApiService);
   private readonly cartStore = inject(CartStore);
+  private readonly addressStore = inject(AddressStore);
 
   readonly storeResource = rxResource({
-    stream: () => this.storeApi.getById(this.id()),
+    stream: () => {
+      const lat = this.addressStore.latitude();
+      const lon = this.addressStore.longitude();
+      return this.storeApi.getById(
+        this.id(),
+        lat ?? undefined,
+        lon ?? undefined
+      );
+    },
   });
 
   readonly productsResource = rxResource({
@@ -57,7 +66,7 @@ export class StoreDetailComponent {
   readonly groupedProducts = computed(() => {
     const products = this.products();
     const categories = this.categories().sort((a, b) => a.position - b.position);
-    
+
     const grouped = categories.map(cat => ({
       id: cat.id,
       name: cat.name,
@@ -68,7 +77,7 @@ export class StoreDetailComponent {
     if (unassignedProducts.length > 0) {
        grouped.push({ id: '', name: 'Outros', products: unassignedProducts });
     }
-    
+
     return grouped;
   });
 
@@ -81,6 +90,16 @@ export class StoreDetailComponent {
   readonly selectedOptionIds = signal<Set<string>>(new Set());
   readonly loadingCustomization = signal(false);
   readonly pendingProduct = signal<ProductResponse | null>(null);
+
+  constructor() {
+    effect(() => {
+      const lat = this.addressStore.latitude();
+      const lon = this.addressStore.longitude();
+      if (lat !== null && lon !== null) {
+        this.storeResource.reload();
+      }
+    });
+  }
 
   onAddToCart(product: ProductResponse) {
     const currentItems = this.cartStore.items();
