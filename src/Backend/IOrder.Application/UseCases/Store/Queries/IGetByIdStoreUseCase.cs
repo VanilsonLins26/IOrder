@@ -7,6 +7,6 @@ namespace IOrder.Application.UseCases.Store.Queries;
 
 public interface IGetByIdStoreUseCase
 {
-    Task<StoreResponseDto> Execute(Guid Id);
+    Task<StoreResponseDto> Execute(Guid Id, double? userLatitude = null, double? userLongitude = null);
 }
 

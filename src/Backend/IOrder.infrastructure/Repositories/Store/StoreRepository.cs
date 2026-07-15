@@ -101,6 +101,26 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return await _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public async Task<Domain.Entities.Store?> GetByIdWithDistanceAsync(Guid id, double? userLatitude, double? userLongitude)
+    {
+        var store = await _dbContext.Stores
+            .Include(s => s.OpeningHours)
+            .Include(s => s.Category)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (store != null && userLatitude.HasValue && userLongitude.HasValue && store.Location != null)
+        {
+            var distanceMeters = CalculateDistance(userLatitude.Value, userLongitude.Value, store.Location.Y, store.Location.X);
+            var distanceKm = distanceMeters / 1000.0;
+
+            store.DistanceKm = distanceKm;
+            store.DeliveryFee = store.BaseDeliveryFee + (store.FeePerKm * (decimal)distanceKm);
+        }
+
+        return store;
+    }
+
     public async Task<Domain.Entities.Store> GetByIdTracking(Guid id)
     {
         return await _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).FirstOrDefaultAsync(s => s.Id == id);

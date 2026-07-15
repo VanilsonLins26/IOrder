@@ -46,9 +46,13 @@ public class StoreController : IOrderBaseController
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(StoreResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> GetById([FromServices] IGetByIdStoreUseCase usecase, Guid id)
+    public async Task<ActionResult> GetById(
+        [FromServices] IGetByIdStoreUseCase usecase,
+        Guid id,
+        [FromQuery] double? userLatitude,
+        [FromQuery] double? userLongitude)
     {
-        var store = await usecase.Execute(id);
+        var store = await usecase.Execute(id, userLatitude, userLongitude);
 
         return Ok(store);
     }

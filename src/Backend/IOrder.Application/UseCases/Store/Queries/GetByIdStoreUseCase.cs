@@ -20,9 +20,10 @@ public class GetByIdStoreUseCase : IGetByIdStoreUseCase
         _readOnlyRepository = readOnlyRepository;
     }
 
-    public async Task<StoreResponseDto> Execute(Guid Id)
+    public async Task<StoreResponseDto> Execute(Guid Id, double? userLatitude = null, double? userLongitude = null)
     {
-        var store = await _readOnlyRepository.GetByIdAsync(Id) ?? throw new NotFoundException([ResourceMessagesException.STORE_NOT_FOUND]);
+        var store = await _readOnlyRepository.GetByIdWithDistanceAsync(Id, userLatitude, userLongitude)
+            ?? throw new NotFoundException([ResourceMessagesException.STORE_NOT_FOUND]);
 
         return store.Adapt<StoreResponseDto>();
     }
