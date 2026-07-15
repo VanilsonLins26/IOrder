@@ -92,6 +92,8 @@ export class HomePageComponent {
   private scrollLeft = 0;
 
   constructor() {
+    this.addressStore.loadAddresses();
+
     effect(() => {
       const lat = this.addressStore.latitude();
       const lon = this.addressStore.longitude();
