@@ -84,9 +84,17 @@
         @if (o.couponCode) {
           <div class="info-row info-row--discount"><span>Desconto ({{ o.couponCode }})</span><span>-{{ o.discountValue | currency:'BRL' }}</span></div>
         }
+        @let itemsTotal = o.totalAmount - o.deliveryFee;
+        @let baseItemsTotal = o.discountedTotal ?? o.originalAmount;
+        @if (itemsTotal !== baseItemsTotal) {
+          <div class="info-row info-row--negotiated"><span>Valor negociado</span><span>{{ itemsTotal | currency:'BRL' }}</span></div>
+        }
+        @if (o.deliveryFee > 0) {
+          <div class="info-row"><span>Taxa de entrega</span><span>{{ o.deliveryFee | currency:'BRL' }}</span></div>
+        }
         <div class="info-row info-row--total"><span>Total</span><span>{{ o.totalAmount | currency:'BRL' }}</span></div>
         @if (o.deliveryDate) {
-          <div class="info-row"><span>Entrega</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span></div>
+          <div class="info-row"><span>{{ o.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span></div>
         }
       </div>
       @if (o.customerNotes) {
@@ -136,13 +144,11 @@
       </div>
     </section>
     
-    <div style="margin-top: 24px;">
-      <button class="action-btn action-btn--primary" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; font-size: 1rem; position: relative;" (click)="openChat()">
-        💬 Abrir Negociação / Chat
+    <div class="order-detail__chat-cta">
+      <button class="order-detail__chat-btn" (click)="openChat()">
+        💬 Negociação / Chat
         @if (unreadMessagesCount() > 0) {
-          <span style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; border: 2px solid white;">
-            {{ unreadMessagesCount() }}
-          </span>
+          <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
         }
       </button>
     </div>

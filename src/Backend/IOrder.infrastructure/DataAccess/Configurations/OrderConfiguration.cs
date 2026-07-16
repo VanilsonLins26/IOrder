@@ -51,6 +51,17 @@ public class OrderConfiguration : BaseEntityConfiguration<Domain.Entities.Order>
 
         builder.Property(x => x.DeliveryDate);
 
+        builder.Property(x => x.DeliveryType)
+               .HasConversion<string>()
+               .HasMaxLength(20)
+               .IsRequired()
+               .HasDefaultValue(DeliveryType.Delivery);
+
+        builder.Property(x => x.DeliveryFee)
+               .HasColumnType("decimal(10,2)")
+               .IsRequired()
+               .HasDefaultValue(0m);
+
         builder.Property(x => x.CustomerNotes)
                .HasMaxLength(1000);
 

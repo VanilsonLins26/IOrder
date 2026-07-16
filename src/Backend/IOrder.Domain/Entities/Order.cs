@@ -18,6 +18,8 @@ public class Order : EntityBase, IAggregateRoot
     public decimal? DiscountValue { get; set; }
     public decimal? DiscountedTotal { get; set; }
     public DateTime? DeliveryDate { get; set; }
+    public DeliveryType DeliveryType { get; set; } = DeliveryType.Delivery;
+    public decimal DeliveryFee { get; set; }
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; private set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
@@ -67,7 +69,7 @@ public class Order : EntityBase, IAggregateRoot
         if (lastProposal != null)
         {
             if (lastProposal.ProposedTotalAmount.HasValue)
-                TotalAmount = lastProposal.ProposedTotalAmount.Value;
+                TotalAmount = lastProposal.ProposedTotalAmount.Value + DeliveryFee;
             if (lastProposal.ProposedDeliveryDate.HasValue)
                 DeliveryDate = lastProposal.ProposedDeliveryDate.Value;
         }

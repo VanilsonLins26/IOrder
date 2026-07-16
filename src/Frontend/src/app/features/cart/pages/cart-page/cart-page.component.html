@@ -142,9 +142,66 @@
             </div>
           }
 
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Tipo de Entrega</h3>
+            <div class="cart-summary__delivery-type">
+              <label class="cart-summary__radio" [class.cart-summary__radio--active]="deliveryType() === 0">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  [value]="0"
+                  [checked]="deliveryType() === 0"
+                  (change)="onDeliveryTypeChange(0)"
+                />
+                <span class="cart-summary__radio-icon">🚗</span>
+                <span class="cart-summary__radio-label">Entrega</span>
+              </label>
+              <label class="cart-summary__radio" [class.cart-summary__radio--active]="deliveryType() === 1">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  [value]="1"
+                  [checked]="deliveryType() === 1"
+                  (change)="onDeliveryTypeChange(1)"
+                />
+                <span class="cart-summary__radio-icon">🏪</span>
+                <span class="cart-summary__radio-label">Retirada</span>
+              </label>
+            </div>
+          </div>
+
+          @if (deliveryType() === 0) {
+            <div class="cart-summary__section">
+              <h3 class="cart-summary__subtitle">Endereço de Entrega</h3>
+              @if (addressStore.addresses().length > 0) {
+                <select
+                  class="form-control"
+                  [ngModel]="selectedAddressId() || addressStore.selectedAddress()?.id"
+                  (ngModelChange)="onAddressChange($event)"
+                >
+                  @for (addr of addressStore.addresses(); track addr.id) {
+                    <option [value]="addr.id">{{ addr.name }} — {{ addr.street }}, {{ addr.number }} - {{ addr.neighborhood }}</option>
+                  }
+                </select>
+                @if (computedDistanceKm() > 0) {
+                  <p class="cart-summary__distance">{{ computedDistanceKm() }} km de distância</p>
+                }
+              } @else {
+                <p class="cart-summary__hint">Nenhum cadastrado. <a routerLink="/profile/addresses">Adicionar endereço</a></p>
+              }
+            </div>
+          }
+
+          @if (deliveryType() === 0 && computedDeliveryFee() > 0) {
+            <div class="cart-summary__line cart-summary__line--delivery">
+              <span>Taxa de entrega</span>
+              <span>{{ computedDeliveryFee() | currency:'BRL' }}</span>
+            </div>
+          }
+
           <div class="cart-summary__line cart-summary__line--total">
             <span>Total</span>
-            <span>{{ (cartStore.discountedTotal() ?? cartStore.cartTotal()) | currency:'BRL' }}</span>
+            <span>{{ orderTotal() | currency:'BRL' }}</span>
           </div>
 
           <div class="cart-summary__section">
@@ -190,7 +247,7 @@
           <div class="cart-summary__checkout-wrapper">
               <button
                 class="cart-summary__checkout-btn"
-                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || !deliveryDate() || !deliveryTime()"
+                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || !deliveryDate() || !deliveryTime() || (deliveryType() === 0 && !selectedAddressId() && !addressStore.selectedAddress())"
                 (click)="createOrder()"
               >
               @if (creatingOrder()) {

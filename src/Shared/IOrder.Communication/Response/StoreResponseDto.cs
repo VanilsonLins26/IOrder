@@ -23,4 +23,6 @@ public class StoreResponseDto
     public decimal BaseDeliveryFee { get; set; }
     public decimal FeePerKm { get; set; }
     public double MaxDeliveryDistanceKm { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }
