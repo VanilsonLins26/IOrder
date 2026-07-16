@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import type {
   DeliveryAssignmentResponseDto,
   CourierLocationResponseDto,
+  AssignCourierRequestDto,
   UpdateCourierLocationRequestDto,
   PagedList,
 } from '../../models';
@@ -18,6 +19,10 @@ export class DeliveryApiService {
     return this.http.get<PagedList<DeliveryAssignmentResponseDto>>(`${this.baseUrl}/my-deliveries`, {
       params: { pageNumber, pageSize },
     });
+  }
+
+  assignCourier(orderId: string, dto: AssignCourierRequestDto): Observable<DeliveryAssignmentResponseDto> {
+    return this.http.post<DeliveryAssignmentResponseDto>(`${this.baseUrl}/orders/${orderId}/assign`, dto);
   }
 
   acceptAssignment(assignmentId: string): Observable<DeliveryAssignmentResponseDto> {

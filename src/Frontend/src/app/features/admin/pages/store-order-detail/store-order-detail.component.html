@@ -31,7 +31,29 @@
           {{ showNegotiate() ? 'Cancelar' : 'Negociar' }}
         </button>
       }
+      @if (canAssignCourier()) {
+        <button class="action-btn action-btn--secondary" (click)="toggleAssignCourier()">
+          {{ showAssignCourier() ? 'Cancelar' : '🛵 Atribuir Entregador' }}
+        </button>
+      }
     </div>
+
+    @if (showAssignCourier()) {
+      <div class="store-order-detail__negotiate">
+        <h3>Atribuir Entregador</h3>
+        <div class="negotiate__fields">
+          <label>
+            ID do Entregador
+            <input type="text" [ngModel]="courierUserId()" (ngModelChange)="courierUserId.set($event)" placeholder="User ID do entregador" />
+          </label>
+          <button class="action-btn action-btn--primary"
+                  (click)="assignCourier()"
+                  [disabled]="!courierUserId().trim() || assigningCourier()">
+            {{ assigningCourier() ? 'Atribuindo...' : 'Atribuir' }}
+          </button>
+        </div>
+      </div>
+    }
 
     @if (showNegotiate()) {
       <div class="store-order-detail__negotiate">

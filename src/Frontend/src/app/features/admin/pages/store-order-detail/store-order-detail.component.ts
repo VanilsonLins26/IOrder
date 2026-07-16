@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
 import { ChatApiService } from '../../../../core/services/api/chat-api.service';
+import { DeliveryApiService } from '../../../../core/services/api/delivery-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
@@ -31,6 +32,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly orderApi = inject(OrderApiService);
   private readonly chatApi = inject(ChatApiService);
+  private readonly deliveryApi = inject(DeliveryApiService);
   protected readonly chatSignalr = inject(ChatSignalRService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -41,6 +43,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly typingUser = signal<string | null>(null);
   readonly expandedImage = signal<string | null>(null);
   readonly chatOpen = signal(false);
+
+  readonly showAssignCourier = signal(false);
+  readonly courierUserId = signal('');
+  readonly assigningCourier = signal(false);
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
@@ -79,6 +85,15 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     const uid = this.currentUser()?.sub;
     if (!o || !uid) return 0;
     return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  });
+
+  readonly canAssignCourier = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    const assignableStatuses = [OrderStatusDto.Paid, OrderStatusDto.Preparing, OrderStatusDto.Ready];
+    return assignableStatuses.includes(o.status)
+      && o.deliveryType === 0
+      && !o.activeAssignment;
   });
 
   ngOnInit() {
@@ -318,6 +333,32 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
         }
         this.chatSignalr.markOrderRead(this.id());
       }
+    });
+  }
+
+  toggleAssignCourier() {
+    this.showAssignCourier.set(!this.showAssignCourier());
+    if (this.showAssignCourier()) {
+      this.courierUserId.set('');
+    }
+  }
+
+  assignCourier() {
+    const userId = this.courierUserId().trim();
+    if (!userId) return;
+    this.assigningCourier.set(true);
+    this.deliveryApi.assignCourier(this.id(), { courierUserId: userId }).subscribe({
+      next: () => {
+        this.toast.success('Entregador atribuído com sucesso!');
+        this.showAssignCourier.set(false);
+        this.courierUserId.set('');
+        this.assigningCourier.set(false);
+        this.loadOrder();
+      },
+      error: (err) => {
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao atribuir entregador.');
+        this.assigningCourier.set(false);
+      },
     });
   }
 
