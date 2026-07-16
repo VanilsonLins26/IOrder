@@ -100,3 +100,8 @@ export interface OrderStatusChangedEvent {
   orderId: string;
   status: OrderStatusDto;
 }
+
+export interface CourierAssignedEvent {
+  orderId: string;
+  courierUserId: string;
+}
