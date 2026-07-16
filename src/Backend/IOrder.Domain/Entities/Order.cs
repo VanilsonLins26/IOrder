@@ -32,6 +32,11 @@ public class Order : EntityBase, IAggregateRoot
     private readonly List<OrderMessage> _messages = [];
     public IReadOnlyCollection<OrderMessage> Messages => _messages.AsReadOnly();
 
+    private readonly List<DeliveryAssignment> _assignments = [];
+    public IReadOnlyCollection<DeliveryAssignment> Assignments => _assignments.AsReadOnly();
+    public DeliveryAssignment? ActiveAssignment => _assignments.LastOrDefault(a =>
+        a.Status != AssignmentStatus.Rejected && a.Status != AssignmentStatus.Failed);
+
     public void AddItem(OrderItem item)
     {
         _items.Add(item);
@@ -48,6 +53,12 @@ public class Order : EntityBase, IAggregateRoot
         UpdatedAt = DateTime.UtcNow;
         LastMessageAt = DateTime.UtcNow;
         AddDomainEvent(new NewOrderMessageEvent(Id, message.UserId, message.Message));
+    }
+
+    public void AssignCourier(DeliveryAssignment assignment)
+    {
+        _assignments.Add(assignment);
+        AddDomainEvent(new CourierAssignedEvent(Id, assignment.CourierUserId));
     }
 
     public void Negotiate(decimal? newTotalAmount, DateTime? newDeliveryDate, string? shopkeeperNotes)

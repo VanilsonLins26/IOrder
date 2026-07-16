@@ -20,12 +20,6 @@ public static class MapsterSettings
             .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Y : (double?)null)
             .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.X : (double?)null);
 
-        TypeAdapterConfig<Domain.Entities.Order, OrderResponseDto>
-            .NewConfig()
-            .Map(dest => dest.Status, src => src.Status)
-            .Map(dest => dest.DeliveryType, src => (Communication.Enums.DeliveryTypeDto)(int)src.DeliveryType)
-            .Map(dest => dest.DeliveryFee, src => src.DeliveryFee);
-
         TypeAdapterConfig<OrderItem, OrderItemResponseDto>
             .NewConfig()
             .Map(dest => dest.TotalPrice, src => src.TotalPrice);
@@ -42,5 +36,19 @@ public static class MapsterSettings
             .NewConfig()
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.Method, src => src.Method);
+
+        TypeAdapterConfig<DeliveryAssignment, DeliveryAssignmentResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Status, src => (Communication.Enums.AssignmentStatusDto)(int)src.Status);
+
+        TypeAdapterConfig<CourierLocation, CourierLocationResponseDto>
+            .NewConfig();
+
+        TypeAdapterConfig<Domain.Entities.Order, OrderResponseDto>
+            .NewConfig()
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.DeliveryType, src => (Communication.Enums.DeliveryTypeDto)(int)src.DeliveryType)
+            .Map(dest => dest.DeliveryFee, src => src.DeliveryFee)
+            .Map(dest => dest.ActiveAssignment, src => src.ActiveAssignment);
     }
 }

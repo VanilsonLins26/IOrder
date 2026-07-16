@@ -22,4 +22,5 @@ public class OrderResponseDto
     public DateTime UpdatedAt { get; set; }
     public List<OrderItemResponseDto> Items { get; set; } = [];
     public List<OrderMessageResponseDto> Messages { get; set; } = [];
+    public DeliveryAssignmentResponseDto? ActiveAssignment { get; set; }
 }
