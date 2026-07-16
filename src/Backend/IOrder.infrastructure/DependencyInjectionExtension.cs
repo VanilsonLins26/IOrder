@@ -28,6 +28,8 @@ using IOrder.Domain.Repositories.Profile;
 using IOrder.infrastructure.Repositories.Profile;
 using IOrder.Domain.Repositories.Customization;
 using IOrder.infrastructure.Repositories.Customization;
+using IOrder.Domain.Repositories.Delivery;
+using IOrder.infrastructure.Repositories.Delivery;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -101,6 +103,12 @@ public static class DependencyInjectionExtension
 
         services.AddScoped<IUserAddressReadOnlyRepository, UserAddressRepository>();
         services.AddScoped<IUserAddressWriteOnlyRepository, UserAddressRepository>();
+
+        services.AddScoped<IDeliveryAssignmentReadOnlyRepository, DeliveryAssignmentRepository>();
+        services.AddScoped<IDeliveryAssignmentWriteOnlyRepository, DeliveryAssignmentRepository>();
+
+        services.AddScoped<ICourierLocationReadOnlyRepository, CourierLocationRepository>();
+        services.AddScoped<ICourierLocationWriteOnlyRepository, CourierLocationRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
