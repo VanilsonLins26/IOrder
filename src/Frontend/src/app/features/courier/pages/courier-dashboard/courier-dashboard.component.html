@@ -1,0 +1,93 @@
+<div class="courier-dashboard">
+  <header class="courier-dashboard__header">
+    <h1 class="courier-dashboard__title">Dashboard</h1>
+    @if (user(); as u) {
+      <p class="courier-dashboard__subtitle">Olá, {{ u.name }}</p>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="courier-dashboard__skeleton">
+      @for (i of [1,2]; track i) {
+        <app-loading-skeleton height="120px" border-radius="var(--radius-2xl)" />
+      }
+    </div>
+  } @else {
+    <!-- Pending assignments -->
+    @if (pendingAssignments().length > 0) {
+      <section class="courier-dashboard__section">
+        <h2 class="courier-dashboard__section-title">
+          ⏳ Aguardando Resposta
+          <span class="courier-dashboard__badge">{{ pendingAssignments().length }}</span>
+        </h2>
+        <div class="courier-dashboard__list">
+          @for (assignment of pendingAssignments(); track assignment.id) {
+            <div class="assignment-card assignment-card--pending" (click)="goToDeliveryDetail(assignment.id)">
+              <div class="assignment-card__header">
+                <span class="assignment-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
+                <span class="assignment-card__status {{ getStatusClass(assignment.status) }}">
+                  {{ getStatusLabel(assignment.status) }}
+                </span>
+              </div>
+              <div class="assignment-card__body">
+                <span class="assignment-card__date">Atribuído em {{ assignment.assignedAt | date:"dd/MM/yyyy HH:mm" }}</span>
+              </div>
+              <div class="assignment-card__action">
+                <span>Ver detalhes →</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Active assignments -->
+    <section class="courier-dashboard__section">
+      <h2 class="courier-dashboard__section-title">🚚 Entregas Ativas</h2>
+      @if (activeAssignments().length === 0) {
+        <app-empty-state
+          icon="📦"
+          title="Nenhuma entrega ativa"
+          description="Atribuições aceitas e em andamento aparecerão aqui."
+        />
+      } @else {
+        <div class="courier-dashboard__list">
+          @for (assignment of activeAssignments(); track assignment.id) {
+            <div class="assignment-card" (click)="goToDeliveryDetail(assignment.id)">
+              <div class="assignment-card__header">
+                <span class="assignment-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
+                <span class="assignment-card__status {{ getStatusClass(assignment.status) }}">
+                  {{ getStatusLabel(assignment.status) }}
+                </span>
+              </div>
+              <div class="assignment-card__body">
+                @if (assignment.pickedUpAt) {
+                  <span class="assignment-card__date">Coletado em {{ assignment.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}</span>
+                } @else if (assignment.acceptedAt) {
+                  <span class="assignment-card__date">Aceito em {{ assignment.acceptedAt | date:"dd/MM/yyyy HH:mm" }}</span>
+                }
+              </div>
+              <div class="assignment-card__action">
+                <span>Ver detalhes →</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Quick stats -->
+    <section class="courier-dashboard__section courier-dashboard__stats">
+      <div class="stat-card">
+        <span class="stat-card__icon">⏳</span>
+        <span class="stat-card__value">{{ pendingAssignments().length }}</span>
+        <span class="stat-card__label">Pendentes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__icon">🚚</span>
+        <span class="stat-card__value">{{ activeAssignments().length }}</span>
+        <span class="stat-card__label">Ativas</span>
+      </div>
+    </section>
+  }
+</div>

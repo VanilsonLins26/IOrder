@@ -1,0 +1,70 @@
+<div class="my-deliveries">
+  <header class="my-deliveries__header">
+    <h1 class="my-deliveries__title">Minhas Entregas</h1>
+  </header>
+
+  @if (loading() && assignments().length === 0) {
+    <div class="my-deliveries__skeleton">
+      @for (i of [1,2,3]; track i) {
+        <app-loading-skeleton height="100px" border-radius="var(--radius-2xl)" />
+      }
+    </div>
+  } @else if (assignments().length === 0) {
+    <app-empty-state
+      icon="📦"
+      title="Nenhuma entrega"
+      description="Atribuições de entrega aparecerão aqui."
+    />
+  } @else {
+    <div class="my-deliveries__list">
+      @for (assignment of assignments(); track trackById($index, assignment)) {
+        <div class="delivery-card" (click)="goToDetail(assignment.id)">
+          <div class="delivery-card__header">
+            <span class="delivery-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
+            <span class="delivery-card__status {{ getStatusClass(assignment.status) }}">
+              {{ getStatusLabel(assignment.status) }}
+            </span>
+          </div>
+          <div class="delivery-card__body">
+            <span class="delivery-card__date">
+              @if (assignment.deliveredAt) {
+                Entregue em {{ assignment.deliveredAt | date:"dd/MM/yyyy HH:mm" }}
+              } @else if (assignment.pickedUpAt) {
+                Coletado em {{ assignment.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}
+              } @else if (assignment.acceptedAt) {
+                Aceito em {{ assignment.acceptedAt | date:"dd/MM/yyyy HH:mm" }}
+              } @else {
+                Atribuído em {{ assignment.assignedAt | date:"dd/MM/yyyy HH:mm" }}
+              }
+            </span>
+          </div>
+          <div class="delivery-card__footer">
+            <span class="delivery-card__arrow">Ver detalhes →</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="my-deliveries__pagination">
+        <button
+          class="pagination__btn"
+          [disabled]="!hasPrevious()"
+          (click)="changePage(currentPage() - 1)"
+        >
+          &larr; Anterior
+        </button>
+        <span class="pagination__info">
+          Página {{ currentPage() }} de {{ totalPages() }}
+        </span>
+        <button
+          class="pagination__btn"
+          [disabled]="!hasNext()"
+          (click)="changePage(currentPage() + 1)"
+        >
+          Pr&oacute;xima &rarr;
+        </button>
+      </div>
+    }
+  }
+</div>

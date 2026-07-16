@@ -1,4 +1,5 @@
 import type { SelectedOption } from './customization.model';
+import type { DeliveryAssignmentResponseDto } from './delivery.model';
 
 export enum OrderStatusDto {
   Pending = 0,
@@ -92,6 +93,7 @@ export interface OrderResponseDto {
   updatedAt: string;
   items: OrderItemResponseDto[];
   messages: OrderMessageResponseDto[];
+  activeAssignment: DeliveryAssignmentResponseDto | null;
 }
 
 export interface OrderStatusChangedEvent {

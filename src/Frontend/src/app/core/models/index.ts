@@ -10,3 +10,4 @@ export * from './profile.model';
 export * from './customization.model';
 export * from './payment.model';
 export * from './user-address.model';
+export * from './delivery.model';

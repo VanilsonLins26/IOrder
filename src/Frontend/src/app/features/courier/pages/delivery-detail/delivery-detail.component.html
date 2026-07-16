@@ -1,0 +1,168 @@
+@let a = assignment();
+@let o = order();
+
+<div class="delivery-detail">
+  <a class="delivery-detail__back" (click)="goBack()">← Voltar</a>
+
+  @if (loading() && !a) {
+    <p class="delivery-detail__loading">Carregando...</p>
+  } @else if (!a) {
+    <p class="delivery-detail__not-found">Atribuição não encontrada.</p>
+  } @else {
+    <header class="delivery-detail__header">
+      <div>
+        <h1 class="delivery-detail__title">Pedido #{{ a.orderId | slice:0:8 }}</h1>
+        <p class="delivery-detail__date">Atribuído em {{ a.assignedAt | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
+      </div>
+      <span class="delivery-detail__status {{ getStatusClass(a.status) }}">
+        {{ getStatusLabel(a.status) }}
+      </span>
+    </header>
+
+    <!-- Action buttons -->
+    <div class="delivery-detail__actions">
+      @if (canAccept()) {
+        <button class="action-btn action-btn--primary" (click)="acceptAssignment()" [disabled]="processing()">
+          ✅ Aceitar Entrega
+        </button>
+      }
+      @if (canReject()) {
+        <button class="action-btn action-btn--danger" (click)="rejectAssignment()" [disabled]="processing()">
+          ❌ Rejeitar
+        </button>
+      }
+      @if (canPickup()) {
+        <button class="action-btn action-btn--primary" (click)="pickupOrder()" [disabled]="processing()">
+          📦 Coletar Pedido
+        </button>
+      }
+      @if (canDeliver()) {
+        <button class="action-btn action-btn--success" (click)="deliverOrder()" [disabled]="processing()">
+          🏁 Confirmar Entrega
+        </button>
+      }
+    </div>
+
+    <!-- Order info -->
+    @if (o) {
+      <section class="delivery-detail__section">
+        <h2>Pedido</h2>
+        <div class="info-grid">
+          <div class="info-row">
+            <span>Status do Pedido</span>
+            <span class="delivery-detail__order-status {{ getOrderStatusClass(o.status) }}">
+              {{ getOrderStatusLabel(o.status) }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span>Total</span>
+            <span>{{ o.totalAmount | currency:'BRL' }}</span>
+          </div>
+          @if (o.deliveryFee > 0) {
+            <div class="info-row">
+              <span>Taxa de entrega</span>
+              <span>{{ o.deliveryFee | currency:'BRL' }}</span>
+            </div>
+          }
+          @if (o.deliveryDate) {
+            <div class="info-row">
+              <span>{{ o.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span>
+              <span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span>
+            </div>
+          }
+          @if (o.customerNotes) {
+            <div class="info-row info-row--notes">
+              <span>Observações do cliente</span>
+              <span>{{ o.customerNotes }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="delivery-detail__section">
+        <h2>Itens ({{ o.items.length }})</h2>
+        <div class="items-list">
+          @for (item of o.items; track item.id) {
+            <div class="item-row">
+              <div class="item-row__image">
+                @if (item.productImageUrl) {
+                  <img [src]="item.productImageUrl" alt="" />
+                } @else {
+                  <div class="item-row__placeholder">📦</div>
+                }
+              </div>
+              <div class="item-row__info">
+                <p class="item-row__name">{{ item.productName }}</p>
+                @if (item.selectedOptions.length) {
+                  <div class="item-row__selected-options">
+                    @for (opt of item.selectedOptions; track opt.optionId) {
+                      <span class="item-row__option-tag">
+                        {{ opt.groupName }}: {{ opt.optionName }}
+                        @if (opt.priceModifier) { <span class="item-row__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span> }
+                      </span>
+                    }
+                  </div>
+                }
+                @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
+              </div>
+              <span class="item-row__qty">{{ item.quantity }}x</span>
+              <span class="item-row__total">{{ item.totalPrice | currency:'BRL' }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Map placeholder -->
+    @if (isActive()) {
+      <section class="delivery-detail__section">
+        <h2>📍 Sua Localização</h2>
+        <div class="delivery-detail__map-placeholder">
+          <p>Enviando localização a cada 5 segundos...</p>
+          <div class="delivery-detail__location-pulse"></div>
+        </div>
+      </section>
+    }
+
+    <!-- Assignment timeline -->
+    <section class="delivery-detail__section">
+      <h2>Timeline da Entrega</h2>
+      <div class="timeline">
+        <div class="timeline__item timeline__item--active">
+          <div class="timeline__dot"></div>
+          <div class="timeline__content">
+            <span class="timeline__label">Atribuído</span>
+            <span class="timeline__date">{{ a.assignedAt | date:"dd/MM/yyyy HH:mm" }}</span>
+          </div>
+        </div>
+        @if (a.acceptedAt) {
+          <div class="timeline__item timeline__item--done">
+            <div class="timeline__dot"></div>
+            <div class="timeline__content">
+              <span class="timeline__label">Aceito</span>
+              <span class="timeline__date">{{ a.acceptedAt | date:"dd/MM/yyyy HH:mm" }}</span>
+            </div>
+          </div>
+        }
+        @if (a.pickedUpAt) {
+          <div class="timeline__item timeline__item--done">
+            <div class="timeline__dot"></div>
+            <div class="timeline__content">
+              <span class="timeline__label">Coletado</span>
+              <span class="timeline__date">{{ a.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}</span>
+            </div>
+          </div>
+        }
+        @if (a.deliveredAt) {
+          <div class="timeline__item timeline__item--done">
+            <div class="timeline__dot"></div>
+            <div class="timeline__content">
+              <span class="timeline__label">Entregue</span>
+              <span class="timeline__date">{{ a.deliveredAt | date:"dd/MM/yyyy HH:mm" }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

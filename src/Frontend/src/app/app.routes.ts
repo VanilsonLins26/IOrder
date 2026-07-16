@@ -137,6 +137,40 @@ export const routes: Routes = [
     ]
   },
 
+  // Courier routes — Delivery role
+  {
+    path: 'courier',
+    canActivate: [authGuard, roleGuard(Roles.Delivery)],
+    loadComponent: () =>
+      import('./layouts/courier-layout/courier-layout.component').then(
+        (m) => m.CourierLayoutComponent,
+      ),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/courier/pages/courier-dashboard/courier-dashboard.component').then(
+            (m) => m.CourierDashboardComponent,
+          ),
+      },
+      {
+        path: 'deliveries',
+        loadComponent: () =>
+          import('./features/courier/pages/my-deliveries/my-deliveries.component').then(
+            (m) => m.MyDeliveriesComponent,
+          ),
+      },
+      {
+        path: 'deliveries/:id',
+        loadComponent: () =>
+          import('./features/courier/pages/delivery-detail/delivery-detail.component').then(
+            (m) => m.DeliveryDetailComponent,
+          ),
+      },
+    ],
+  },
+
   // Fallback
   { path: '**', redirectTo: '' },
 ];
