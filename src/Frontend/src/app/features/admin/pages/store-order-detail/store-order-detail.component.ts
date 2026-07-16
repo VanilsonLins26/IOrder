@@ -200,7 +200,7 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     if (this.showNegotiate()) {
       const o = this.order();
       if (o) {
-        this.proposedAmount.set(o.totalAmount);
+        this.proposedAmount.set(o.discountedTotal ?? o.originalAmount);
         if (o.deliveryDate) {
           const date = new Date(o.deliveryDate);
           date.setMinutes(date.getMinutes() - date.getTimezoneOffset());

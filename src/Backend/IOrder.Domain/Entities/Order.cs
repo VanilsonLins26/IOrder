@@ -69,7 +69,7 @@ public class Order : EntityBase, IAggregateRoot
         if (lastProposal != null)
         {
             if (lastProposal.ProposedTotalAmount.HasValue)
-                TotalAmount = lastProposal.ProposedTotalAmount.Value;
+                TotalAmount = lastProposal.ProposedTotalAmount.Value + DeliveryFee;
             if (lastProposal.ProposedDeliveryDate.HasValue)
                 DeliveryDate = lastProposal.ProposedDeliveryDate.Value;
         }
