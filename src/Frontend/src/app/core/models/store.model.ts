@@ -23,6 +23,8 @@ export interface StoreResponse {
   baseDeliveryFee: number;
   feePerKm: number;
   maxDeliveryDistanceKm: number;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdateStoreRequest {

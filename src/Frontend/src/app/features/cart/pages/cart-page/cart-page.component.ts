@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,8 +9,11 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
-import type { OpeningHourResponse } from '../../../../core/models';
-import { effect, untracked, computed } from '@angular/core';
+import { calculateDeliveryFee } from '../../../../core/utils/delivery.utils';
+import { DeliveryTypeDto } from '../../../../core/models/order.model';
+import { AddressStore } from '../../../../core/stores/address.store';
+import type { OpeningHourResponse, StoreResponse } from '../../../../core/models';
+import { effect, untracked } from '@angular/core';
 
 @Component({
   selector: 'app-cart-page',
@@ -22,6 +25,7 @@ import { effect, untracked, computed } from '@angular/core';
 })
 export class CartPageComponent implements OnInit {
   readonly cartStore = inject(CartStore);
+  readonly addressStore = inject(AddressStore);
   private readonly router = inject(Router);
   private readonly orderApi = inject(OrderApiService);
   private readonly storeApi = inject(StoreApiService);
@@ -33,6 +37,13 @@ export class CartPageComponent implements OnInit {
   readonly customerNotes = signal('');
   readonly creatingOrder = signal(false);
   readonly storeHours = signal<OpeningHourResponse[]>([]);
+  readonly storeData = signal<StoreResponse | null>(null);
+  readonly deliveryType = signal<DeliveryTypeDto>(DeliveryTypeDto.Delivery);
+  readonly selectedAddressId = signal<string>('');
+  readonly computedDeliveryFee = signal<number>(0);
+  readonly computedDistanceKm = signal<number>(0);
+
+  readonly DeliveryTypeDto = DeliveryTypeDto;
 
   readonly availableDates = computed(() => {
     return generateAvailableDates(this.storeHours(), 7);
@@ -40,6 +51,11 @@ export class CartPageComponent implements OnInit {
 
   readonly availableTimes = computed(() => {
     return generateTimeSlots(this.deliveryDate(), this.storeHours(), 30);
+  });
+
+  readonly orderTotal = computed(() => {
+    const base = this.cartStore.discountedTotal() ?? this.cartStore.cartTotal();
+    return base + this.computedDeliveryFee();
   });
 
   constructor() {
@@ -63,8 +79,47 @@ export class CartPageComponent implements OnInit {
         const storeId = items[0].storeId;
         untracked(() => {
           this.storeApi.getById(storeId).subscribe({
-            next: (store) => this.storeHours.set(store.openingHours)
+            next: (store) => {
+              this.storeHours.set(store.openingHours);
+              this.storeData.set(store);
+            }
           });
+        });
+      }
+    });
+
+    effect(() => {
+      const type = this.deliveryType();
+      const store = this.storeData();
+      const addresses = this.addressStore.addresses();
+      const selectedId = this.selectedAddressId();
+
+      if (type === DeliveryTypeDto.Pickup || !store?.latitude || !store?.longitude) {
+        untracked(() => {
+          this.computedDeliveryFee.set(0);
+          this.computedDistanceKm.set(0);
+        });
+        return;
+      }
+
+      const addr = addresses.find(a => a.id === selectedId);
+      if (addr?.latitude && addr?.longitude) {
+        const result = calculateDeliveryFee(
+          store.baseDeliveryFee,
+          store.feePerKm,
+          store.latitude,
+          store.longitude,
+          addr.latitude,
+          addr.longitude,
+        );
+        untracked(() => {
+          this.computedDeliveryFee.set(result.fee);
+          this.computedDistanceKm.set(result.distanceKm);
+        });
+      } else {
+        untracked(() => {
+          this.computedDeliveryFee.set(0);
+          this.computedDistanceKm.set(0);
         });
       }
     });
@@ -72,6 +127,19 @@ export class CartPageComponent implements OnInit {
 
   ngOnInit() {
     this.cartStore.loadCart();
+    this.addressStore.loadAddresses();
+  }
+
+  onDeliveryTypeChange(type: DeliveryTypeDto) {
+    this.deliveryType.set(type);
+  }
+
+  onAddressChange(addressId: string) {
+    this.selectedAddressId.set(addressId);
+    const addr = this.addressStore.addresses().find(a => a.id === addressId);
+    if (addr) {
+      this.addressStore.selectAddress(addr);
+    }
   }
 
   removeItem(itemId: string) {
@@ -110,6 +178,8 @@ export class CartPageComponent implements OnInit {
     this.orderApi.create({
       deliveryDate,
       customerNotes: this.customerNotes() || null,
+      deliveryType: this.deliveryType(),
+      deliveryFee: this.deliveryType() === DeliveryTypeDto.Pickup ? 0 : this.computedDeliveryFee(),
     }).subscribe({
       next: (order) => {
         this.creatingOrder.set(false);

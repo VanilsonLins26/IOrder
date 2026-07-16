@@ -12,6 +12,11 @@ export enum OrderStatusDto {
   Declined = 8,
 }
 
+export enum DeliveryTypeDto {
+  Delivery = 0,
+  Pickup = 1,
+}
+
 export enum MessageTypeDto {
   Text = 0,
   Proposal = 1,
@@ -21,6 +26,8 @@ export interface CreateOrderRequestDto {
   customerNotes?: string | null;
   deliveryDate?: string | null;
   customerPhone?: string | null;
+  deliveryType: DeliveryTypeDto;
+  deliveryFee: number;
 }
 
 export interface UpdateOrderStatusRequestDto {
@@ -76,6 +83,8 @@ export interface OrderResponseDto {
   couponCode?: string | null;
   discountValue?: number | null;
   discountedTotal?: number | null;
+  deliveryType: DeliveryTypeDto;
+  deliveryFee: number;
   deliveryDate?: string | null;
   customerNotes?: string | null;
   shopkeeperNotes?: string | null;

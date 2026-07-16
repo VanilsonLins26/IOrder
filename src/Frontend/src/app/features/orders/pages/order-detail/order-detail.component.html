@@ -47,13 +47,25 @@
               <span>-{{ order.discountValue | currency:'BRL' }}</span>
             </div>
           }
+          @if (order.deliveryType === 1) {
+            <div class="order-detail__row">
+              <span>Tipo</span>
+              <span>🏪 Retirada</span>
+            </div>
+          }
+          @if (order.deliveryFee > 0) {
+            <div class="order-detail__row">
+              <span>Taxa de entrega</span>
+              <span>{{ order.deliveryFee | currency:'BRL' }}</span>
+            </div>
+          }
           <div class="order-detail__row order-detail__row--total">
             <span>Total</span>
             <span>{{ order.totalAmount | currency:'BRL' }}</span>
           </div>
           @if (order.deliveryDate) {
             <div class="order-detail__row">
-              <span>Entrega prevista</span>
+              <span>{{ order.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span>
               <span>{{ order.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span>
             </div>
           }
