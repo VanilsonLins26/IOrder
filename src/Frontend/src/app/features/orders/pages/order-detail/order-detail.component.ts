@@ -77,15 +77,15 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         this.store.replaceMessage(tempId, message);
       } else {
         this.store.appendMessage(message);
-      }
-      if (this.chatOpen()) {
-        this.chatApi.markAsRead(this.id()).subscribe({
-          next: () => {
-            const uid = this.currentUser()?.sub;
-            if (uid) this.store.markOtherMessagesAsRead(uid);
-            this.chatSignalr.markOrderRead(this.id());
-          }
-        });
+        if (this.chatOpen()) {
+          this.chatApi.markAsRead(this.id()).subscribe({
+            next: () => {
+              const uid = this.currentUser()?.sub;
+              if (uid) this.store.markOtherMessagesAsRead(uid);
+              this.chatSignalr.markOrderRead(this.id());
+            }
+          });
+        }
       }
     });
 

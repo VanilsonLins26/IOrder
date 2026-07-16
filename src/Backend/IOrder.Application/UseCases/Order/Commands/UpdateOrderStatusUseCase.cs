@@ -63,7 +63,8 @@ public class UpdateOrderStatusUseCase : IUpdateOrderStatusUseCase
         };
 
         if (isClient && newStatus != Domain.Entities.Enums.OrderStatus.Declined
-                     && newStatus != Domain.Entities.Enums.OrderStatus.Cancelled)
+                     && newStatus != Domain.Entities.Enums.OrderStatus.Cancelled
+                     && newStatus != Domain.Entities.Enums.OrderStatus.AwaitingPayment)
         {
             throw new UnauthorizedStoreException([ResourceMessagesException.UNAUTHORIZED_STORE]);
         }
