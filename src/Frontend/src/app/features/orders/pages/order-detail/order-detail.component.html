@@ -47,6 +47,14 @@
               <span>-{{ order.discountValue | currency:'BRL' }}</span>
             </div>
           }
+          @let itemsTotal = order.totalAmount - order.deliveryFee;
+          @let baseItemsTotal = order.discountedTotal ?? order.originalAmount;
+          @if (itemsTotal !== baseItemsTotal) {
+            <div class="order-detail__row order-detail__row--negotiated">
+              <span>Valor negociado</span>
+              <span>{{ itemsTotal | currency:'BRL' }}</span>
+            </div>
+          }
           @if (order.deliveryType === 1) {
             <div class="order-detail__row">
               <span>Tipo</span>

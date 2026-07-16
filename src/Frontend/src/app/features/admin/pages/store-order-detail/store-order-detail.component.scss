@@ -166,6 +166,7 @@
   color: var(--text-secondary);
 
   &--discount { color: var(--color-success-dark); }
+  &--negotiated { color: var(--color-warning); font-weight: var(--font-weight-semibold); }
   &--total {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);

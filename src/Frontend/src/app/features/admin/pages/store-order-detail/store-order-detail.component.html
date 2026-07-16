@@ -84,6 +84,11 @@
         @if (o.couponCode) {
           <div class="info-row info-row--discount"><span>Desconto ({{ o.couponCode }})</span><span>-{{ o.discountValue | currency:'BRL' }}</span></div>
         }
+        @let itemsTotal = o.totalAmount - o.deliveryFee;
+        @let baseItemsTotal = o.discountedTotal ?? o.originalAmount;
+        @if (itemsTotal !== baseItemsTotal) {
+          <div class="info-row info-row--negotiated"><span>Valor negociado</span><span>{{ itemsTotal | currency:'BRL' }}</span></div>
+        }
         @if (o.deliveryFee > 0) {
           <div class="info-row"><span>Taxa de entrega</span><span>{{ o.deliveryFee | currency:'BRL' }}</span></div>
         }
