@@ -112,7 +112,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
             OriginalAmount = cart.CartTotal,
             CouponCode = cart.CouponCode,
             DiscountValue = discountValue,
-            DiscountedTotal = discountedTotal + deliveryFee,
+            DiscountedTotal = discountedTotal,
             CustomerNotes = request.CustomerNotes,
             DeliveryDate = request.DeliveryDate,
             DeliveryType = isPickup ? Domain.Entities.Enums.DeliveryType.Pickup : Domain.Entities.Enums.DeliveryType.Delivery,
