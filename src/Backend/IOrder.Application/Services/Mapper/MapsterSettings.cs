@@ -16,11 +16,15 @@ public static class MapsterSettings
 
         TypeAdapterConfig<Store, StoreResponseDto>
             .NewConfig()
-            .Map(dest => dest.IsOpen, src => src.IsOpen());
+            .Map(dest => dest.IsOpen, src => src.IsOpen())
+            .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Y : (double?)null)
+            .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.X : (double?)null);
 
         TypeAdapterConfig<Domain.Entities.Order, OrderResponseDto>
             .NewConfig()
-            .Map(dest => dest.Status, src => src.Status);
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.DeliveryType, src => (Communication.Enums.DeliveryTypeDto)(int)src.DeliveryType)
+            .Map(dest => dest.DeliveryFee, src => src.DeliveryFee);
 
         TypeAdapterConfig<OrderItem, OrderItemResponseDto>
             .NewConfig()

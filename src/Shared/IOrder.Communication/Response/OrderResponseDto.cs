@@ -13,6 +13,8 @@ public class OrderResponseDto
     public string? CouponCode { get; set; }
     public decimal? DiscountValue { get; set; }
     public decimal? DiscountedTotal { get; set; }
+    public DeliveryTypeDto DeliveryType { get; set; }
+    public decimal DeliveryFee { get; set; }
     public DateTime? DeliveryDate { get; set; }
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; set; }

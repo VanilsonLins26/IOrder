@@ -99,19 +99,24 @@ public class CreateOrderUseCase : ICreateOrderUseCase
             _profileWriteOnlyRepository.Update(profile);
         }
 
+        var isPickup = request.DeliveryType == Communication.Enums.DeliveryTypeDto.Pickup;
+        var deliveryFee = isPickup ? 0 : request.DeliveryFee;
+
         var order = new Domain.Entities.Order
         {
             UserId = userId,
             CustomerEmail = customerEmail,
             CustomerPhone = phone,
             StoreId = storeId,
-            TotalAmount = discountedTotal,
+            TotalAmount = discountedTotal + deliveryFee,
             OriginalAmount = cart.CartTotal,
             CouponCode = cart.CouponCode,
             DiscountValue = discountValue,
-            DiscountedTotal = discountedTotal,
+            DiscountedTotal = discountedTotal + deliveryFee,
             CustomerNotes = request.CustomerNotes,
-            DeliveryDate = request.DeliveryDate
+            DeliveryDate = request.DeliveryDate,
+            DeliveryType = isPickup ? Domain.Entities.Enums.DeliveryType.Pickup : Domain.Entities.Enums.DeliveryType.Delivery,
+            DeliveryFee = deliveryFee
         };
 
         foreach (var cartItem in cart.Items)

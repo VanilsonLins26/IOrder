@@ -18,6 +18,8 @@ public class Order : EntityBase, IAggregateRoot
     public decimal? DiscountValue { get; set; }
     public decimal? DiscountedTotal { get; set; }
     public DateTime? DeliveryDate { get; set; }
+    public DeliveryType DeliveryType { get; set; } = DeliveryType.Delivery;
+    public decimal DeliveryFee { get; set; }
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; private set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
