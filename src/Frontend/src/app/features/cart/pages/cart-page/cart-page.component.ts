@@ -91,8 +91,8 @@ export class CartPageComponent implements OnInit {
     effect(() => {
       const type = this.deliveryType();
       const store = this.storeData();
-      const addresses = this.addressStore.addresses();
       const selectedId = this.selectedAddressId();
+      const selectedFromStore = this.addressStore.selectedAddress();
 
       if (type === DeliveryTypeDto.Pickup || !store?.latitude || !store?.longitude) {
         untracked(() => {
@@ -102,7 +102,7 @@ export class CartPageComponent implements OnInit {
         return;
       }
 
-      const addr = addresses.find(a => a.id === selectedId);
+      const addr = selectedFromStore;
       if (addr?.latitude && addr?.longitude) {
         const result = calculateDeliveryFee(
           store.baseDeliveryFee,
