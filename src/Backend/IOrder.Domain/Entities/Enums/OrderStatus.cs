@@ -10,5 +10,6 @@ public enum OrderStatus
     Ready = 5,
     Delivered = 6,
     Cancelled = 7,
-    Declined = 8
+    Declined = 8,
+    OutForDelivery = 9
 }

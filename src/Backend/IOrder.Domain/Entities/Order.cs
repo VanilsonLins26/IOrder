@@ -22,6 +22,7 @@ public class Order : EntityBase, IAggregateRoot
     public decimal DeliveryFee { get; set; }
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; private set; }
+    public bool RequestedEarlyDelivery { get; private set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? LastMessageAt { get; private set; }
@@ -137,5 +138,21 @@ public class Order : EntityBase, IAggregateRoot
         Status = OrderStatus.Delivered;
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new OrderStatusChangedEvent(Id, UserId, StoreId, oldStatus, Status));
+    }
+
+    public void MarkAsOutForDelivery()
+    {
+        var oldStatus = Status;
+        Status = OrderStatus.OutForDelivery;
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new OrderStatusChangedEvent(Id, UserId, StoreId, oldStatus, Status));
+        AddDomainEvent(new OrderOutForDeliveryEvent(Id, null));
+    }
+
+    public void RequestEarlyDelivery()
+    {
+        RequestedEarlyDelivery = true;
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new EarlyDeliveryRequestedEvent(Id, UserId));
     }
 }
