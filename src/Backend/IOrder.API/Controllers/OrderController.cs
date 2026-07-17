@@ -1,3 +1,4 @@
+using IOrder.Application.UseCases.Delivery.Commands;
 using IOrder.Application.UseCases.Order.Commands;
 using IOrder.Application.UseCases.Order.Queries;
 using IOrder.Communication.Request;
@@ -122,6 +123,44 @@ public class OrderController : IOrderBaseController
         [FromBody] SendOrderMessageRequestDto request)
     {
         var response = await useCase.Execute(id, request);
+        return Ok(response);
+    }
+
+    [HttpPatch("{id:guid}/out-for-delivery")]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MarkAsOutForDelivery(
+        [FromServices] IMarkAsOutForDeliveryUseCase useCase,
+        [FromServices] IHubContext<ChatHub> hubContext,
+        [FromRoute] Guid id)
+    {
+        var response = await useCase.Execute(id);
+
+        await hubContext.Clients.Group(id.ToString()).SendAsync(
+            "OrderStatusChanged",
+            new { OrderId = response.Id, Status = (int)response.Status });
+
+        return Ok(response);
+    }
+
+    [HttpPatch("{id:guid}/request-early-delivery")]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RequestEarlyDelivery(
+        [FromServices] IRequestEarlyDeliveryUseCase useCase,
+        [FromServices] IHubContext<ChatHub> hubContext,
+        [FromRoute] Guid id)
+    {
+        var response = await useCase.Execute(id);
+
+        await hubContext.Clients.Group(id.ToString()).SendAsync(
+            "EarlyDeliveryRequested",
+            new { OrderId = response.Id });
+
         return Ok(response);
     }
 }
