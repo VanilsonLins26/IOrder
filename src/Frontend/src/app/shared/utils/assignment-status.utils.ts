@@ -40,6 +40,10 @@ export function canPickup(status: number): boolean {
   return status === AssignmentStatusDto.Accepted;
 }
 
-export function canDeliver(status: number): boolean {
+export function canStartTransit(status: number): boolean {
   return status === AssignmentStatusDto.PickedUp;
+}
+
+export function canDeliver(status: number): boolean {
+  return status === AssignmentStatusDto.PickedUp || status === AssignmentStatusDto.InTransit;
 }

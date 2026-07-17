@@ -11,6 +11,7 @@ export enum OrderStatusDto {
   Delivered = 6,
   Cancelled = 7,
   Declined = 8,
+  OutForDelivery = 9,
 }
 
 export enum DeliveryTypeDto {
@@ -85,8 +86,11 @@ export interface OrderResponseDto {
   discountValue?: number | null;
   discountedTotal?: number | null;
   deliveryType: DeliveryTypeDto;
+  deliveryPartner: number;
   deliveryFee: number;
   deliveryDate?: string | null;
+  deliveryDateEnd?: string | null;
+  requestedEarlyDelivery: boolean;
   customerNotes?: string | null;
   shopkeeperNotes?: string | null;
   createdAt: string;
@@ -104,4 +108,8 @@ export interface OrderStatusChangedEvent {
 export interface CourierAssignedEvent {
   orderId: string;
   courierUserId: string;
+}
+
+export interface EarlyDeliveryRequestedEvent {
+  orderId: string;
 }

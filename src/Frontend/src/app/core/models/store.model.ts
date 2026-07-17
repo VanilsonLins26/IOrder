@@ -23,6 +23,8 @@ export interface StoreResponse {
   baseDeliveryFee: number;
   feePerKm: number;
   maxDeliveryDistanceKm: number;
+  freeDeliveryRadiusKm: number;
+  deliveryPartner: number;
   latitude?: number | null;
   longitude?: number | null;
 }
@@ -34,6 +36,8 @@ export interface UpdateStoreRequest {
   baseDeliveryFee?: number;
   feePerKm?: number;
   maxDeliveryDistanceKm?: number;
+  freeDeliveryRadiusKm?: number;
+  deliveryPartner?: number;
 }
 
 export interface AddressRequest {

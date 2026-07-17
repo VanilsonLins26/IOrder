@@ -35,3 +35,10 @@ export interface UpdateCourierLocationRequestDto {
   latitude: number;
   longitude: number;
 }
+
+export interface AvailableCourierResponseDto {
+  courierUserId: string;
+  courierName?: string;
+  distanceKm?: number;
+  lastLocationAt: string;
+}
