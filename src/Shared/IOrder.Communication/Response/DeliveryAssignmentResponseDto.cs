@@ -11,6 +11,7 @@ public class DeliveryAssignmentResponseDto
     public DateTime AssignedAt { get; set; }
     public DateTime? AcceptedAt { get; set; }
     public DateTime? PickedUpAt { get; set; }
+    public DateTime? InTransitAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public string? CourierNotes { get; set; }
 }

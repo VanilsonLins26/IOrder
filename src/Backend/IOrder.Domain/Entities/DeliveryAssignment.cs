@@ -13,6 +13,7 @@ public class DeliveryAssignment : EntityBase, IAggregateRoot
     public DateTime AssignedAt { get; init; } = DateTime.UtcNow;
     public DateTime? AcceptedAt { get; private set; }
     public DateTime? PickedUpAt { get; private set; }
+    public DateTime? InTransitAt { get; private set; }
     public DateTime? DeliveredAt { get; private set; }
     public string? CourierNotes { get; set; }
 
@@ -39,6 +40,7 @@ public class DeliveryAssignment : EntityBase, IAggregateRoot
     public void StartTransit()
     {
         Status = AssignmentStatus.InTransit;
+        InTransitAt = DateTime.UtcNow;
     }
 
     public void Deliver()
