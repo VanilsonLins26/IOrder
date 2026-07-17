@@ -23,11 +23,15 @@ export class StoresListComponent implements OnInit {
   readonly catalogStore = inject(CatalogStore);
   private readonly addressStore = inject(AddressStore);
 
+  private previousLat: number | null = null;
+
   constructor() {
     effect(() => {
       const lat = this.addressStore.latitude();
       const lon = this.addressStore.longitude();
-      if (lat !== null && lon !== null) {
+
+      if (lat !== null && lon !== null && lat !== this.previousLat) {
+        this.previousLat = lat;
         this.catalogStore.loadStores({ pageNumber: 1, pageSize: 20 });
       }
     });
@@ -35,6 +39,7 @@ export class StoresListComponent implements OnInit {
 
   ngOnInit() {
     this.catalogStore.loadCategories();
+    this.catalogStore.loadStores({ pageNumber: 1, pageSize: 20 });
     this.addressStore.loadAddresses();
   }
 

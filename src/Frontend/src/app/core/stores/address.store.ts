@@ -50,7 +50,6 @@ export const AddressStore = signalStore(
         next: (addresses) => {
           if (addresses.length === 0) {
             patchState(store, { addresses: [], status: 'loaded' });
-            this.useCurrentLocation();
             return;
           }
           const defaultAddr = addresses.find(a => a.isDefault) ?? addresses[0];
@@ -65,7 +64,6 @@ export const AddressStore = signalStore(
         },
         error: () => {
           patchState(store, { status: 'error' });
-          this.useCurrentLocation();
         },
       });
     },
