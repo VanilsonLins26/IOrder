@@ -17,8 +17,8 @@ public static class MapsterSettings
         TypeAdapterConfig<Store, StoreResponseDto>
             .NewConfig()
             .Map(dest => dest.IsOpen, src => src.IsOpen())
-            .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.X : (double?)null)
-            .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.Y : (double?)null);
+            .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Y : (double?)null)
+            .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.X : (double?)null);
 
         TypeAdapterConfig<OrderItem, OrderItemResponseDto>
             .NewConfig()

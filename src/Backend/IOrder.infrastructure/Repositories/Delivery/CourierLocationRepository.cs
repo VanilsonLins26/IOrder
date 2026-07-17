@@ -34,7 +34,7 @@ internal class CourierLocationRepository : ICourierLocationReadOnlyRepository, I
         var existing = await _context.CourierLocations
             .FirstOrDefaultAsync(c => c.CourierUserId == location.CourierUserId);
 
-        location.Location = new Point(location.Latitude, location.Longitude) { SRID = 4326 };
+        location.Location = new Point(location.Longitude, location.Latitude) { SRID = 4326 };
 
         if (existing is null)
         {

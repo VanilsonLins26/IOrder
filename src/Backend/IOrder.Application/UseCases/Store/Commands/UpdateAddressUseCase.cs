@@ -55,7 +55,7 @@ public class UpdateAddressUseCase : IUpdateAddressUseCase
             request.Street, request.City, request.State, request.ZipCode);
         if (coords.HasValue)
         {
-            store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Latitude, coords.Value.Longitude) { SRID = 4326 };
+            store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
         }
 
         await _uof.Commit();
