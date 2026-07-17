@@ -56,7 +56,7 @@ public class CreateStoreUseCase : ICreateStoreUseCase
                 store.Address.Street, store.Address.City, store.Address.State, store.Address.ZipCode);
             if (coords.HasValue)
             {
-                store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
+                store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Latitude, coords.Value.Longitude) { SRID = 4326 };
             }
         }
 

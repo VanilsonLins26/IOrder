@@ -69,7 +69,7 @@ public class AddUserAddressUseCase : IAddUserAddressUseCase
             State = request.State,
             Latitude = lat,
             Longitude = lon,
-            Location = coords.HasValue ? new NetTopologySuite.Geometries.Point(lon, lat) { SRID = 4326 } : null,
+            Location = coords.HasValue ? new NetTopologySuite.Geometries.Point(lat, lon) { SRID = 4326 } : null,
             IsDefault = isDefault
         };
 
