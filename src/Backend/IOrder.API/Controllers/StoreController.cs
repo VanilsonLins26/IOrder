@@ -163,7 +163,7 @@ public class StoreController : IOrderBaseController
             var trackedStore = await writeRepository.GetByIdTracking(myStore.Id);
             if (trackedStore != null)
             {
-                trackedStore.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
+                trackedStore.Location = new NetTopologySuite.Geometries.Point(coords.Value.Latitude, coords.Value.Longitude) { SRID = 4326 };
                 await unitOfWork.Commit();
             }
             return Ok(new { Message = "Localização atualizada.", Updated = true });
