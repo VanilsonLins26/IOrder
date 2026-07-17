@@ -62,13 +62,13 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         
         if (criteria.UserLatitude.HasValue && criteria.UserLongitude.HasValue)
         {
-            var userLocation = new NetTopologySuite.Geometries.Point(criteria.UserLatitude.Value, criteria.UserLongitude.Value) { SRID = 4326 };
+            var userLocation = new NetTopologySuite.Geometries.Point(criteria.UserLongitude.Value, criteria.UserLatitude.Value) { SRID = 4326 };
             foreach (var store in result.Items)
             {
                 if (store.Location != null)
                 {
                     // Calculate distance in memory for now, to ensure accurate meters (using Haversine)
-                    var distanceMeters = CalculateDistance(criteria.UserLatitude.Value, criteria.UserLongitude.Value, store.Location.X, store.Location.Y);
+                    var distanceMeters = CalculateDistance(criteria.UserLatitude.Value, criteria.UserLongitude.Value, store.Location.Y, store.Location.X);
                     var distanceKm = distanceMeters / 1000.0;
                     
                     store.DistanceKm = distanceKm;
@@ -111,7 +111,7 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
 
         if (store != null && userLatitude.HasValue && userLongitude.HasValue && store.Location != null)
         {
-            var distanceMeters = CalculateDistance(userLatitude.Value, userLongitude.Value, store.Location.X, store.Location.Y);
+            var distanceMeters = CalculateDistance(userLatitude.Value, userLongitude.Value, store.Location.Y, store.Location.X);
             var distanceKm = distanceMeters / 1000.0;
 
             store.DistanceKm = distanceKm;
