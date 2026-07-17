@@ -1,0 +1,69 @@
+<div class="profile-page">
+  <h1 class="profile-page__title">Meu Perfil</h1>
+
+  @if (loading()) {
+    <p class="profile-page__loading">Carregando...</p>
+  } @else {
+    <div class="profile-page__card">
+      @if (user(); as u) {
+        <div class="profile-page__avatar-section">
+          @if (u.picture) {
+            <img [src]="u.picture" [alt]="u.name" class="profile-page__avatar" width="80" height="80" />
+          }
+          <div class="profile-page__user-info">
+            <span class="profile-page__user-name">{{ u.name }}</span>
+            <span class="profile-page__user-email">{{ u.email }}</span>
+          </div>
+        </div>
+      }
+
+      <div class="profile-page__field">
+        <label class="profile-page__label" for="phone">Telefone</label>
+        <input
+          id="phone"
+          type="tel"
+          class="profile-page__input"
+          placeholder="(XX) XXXXX-XXXX"
+          [(ngModel)]="phone"
+        />
+        <span class="profile-page__hint">Usado como contato nos pedidos.</span>
+      </div>
+
+      <button
+        class="profile-page__btn"
+        (click)="save()"
+        [disabled]="saving()"
+      >
+        {{ saving() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+
+    <div class="profile-page__card profile-page__card--cards">
+      <h2 class="profile-page__subtitle">Meus Endereços</h2>
+      <p class="profile-page__hint">Gerencie seus endereços de entrega.</p>
+      <a routerLink="/profile/addresses" class="profile-page__link">Gerenciar endereços &rarr;</a>
+    </div>
+
+    <div class="profile-page__card profile-page__card--cards">
+      <h2 class="profile-page__subtitle">Meus Cartões</h2>
+      @if (loadingCards()) {
+        <p class="profile-page__hint">Carregando cartões...</p>
+      } @else {
+        @if (savedCards().length === 0) {
+          <p class="profile-page__hint">Nenhum cartão salvo.</p>
+        } @else {
+          <div class="profile-page__card-list">
+            @for (card of savedCards(); track card.id) {
+              <div class="profile-card-item">
+                <span class="profile-card-item__brand">{{ card.brand }}</span>
+                <span class="profile-card-item__number">**** {{ card.lastFourDigits }}</span>
+                <span class="profile-card-item__expiry">Exp: {{ card.expirationMonth }}/{{ card.expirationYear }}</span>
+                <button class="profile-card-item__delete" (click)="deleteCard(card.id)" title="Remover">🗑️</button>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

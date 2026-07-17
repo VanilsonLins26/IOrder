@@ -61,11 +61,191 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Insira uma descrição sobre a loja.
+        /// </summary>
+        public static string ABOUT_EMPTY {
+            get {
+                return ResourceManager.GetString("ABOUT_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O endereço da loja precisa ser informado.
+        /// </summary>
+        public static string ADDRESS_EMPTY {
+            get {
+                return ResourceManager.GetString("ADDRESS_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O carrinho já contém itens de outra loja. Limpe o carrinho para adicionar produtos desta loja..
+        /// </summary>
+        public static string CART_DIFFERENT_STORE {
+            get {
+                return ResourceManager.GetString("CART_DIFFERENT_STORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O id do item do carrinho esta vazio.
+        /// </summary>
+        public static string CART_ITEM_ID_EMPTY {
+            get {
+                return ResourceManager.GetString("CART_ITEM_ID_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Item do carrinho não encontrado.
+        /// </summary>
+        public static string CART_ITEM_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("CART_ITEM_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Categoria não encontrada.
+        /// </summary>
+        public static string CATEGORY_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("CATEGORY_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A cidade é obrigatória.
+        /// </summary>
+        public static string CITY_EMPTY {
+            get {
+                return ResourceManager.GetString("CITY_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A cidade não pode passar de 100 caracteres..
+        /// </summary>
+        public static string CITY_INVALID {
+            get {
+                return ResourceManager.GetString("CITY_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O complemento não pode passar de 50 caracteres..
+        /// </summary>
+        public static string COMPLEMENT_INVALID {
+            get {
+                return ResourceManager.GetString("COMPLEMENT_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Já existe um cupom com este código.
+        /// </summary>
+        public static string COUPON_CODE_EXISTS {
+            get {
+                return ResourceManager.GetString("COUPON_CODE_EXISTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Este cupom já expirou.
+        /// </summary>
+        public static string COUPON_EXPIRED {
+            get {
+                return ResourceManager.GetString("COUPON_EXPIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Cupom inválido.
+        /// </summary>
+        public static string COUPON_INVALID {
+            get {
+                return ResourceManager.GetString("COUPON_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Valor mínimo da compra não atingido.
+        /// </summary>
+        public static string COUPON_MIN_PURCHASE {
+            get {
+                return ResourceManager.GetString("COUPON_MIN_PURCHASE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Cupom não encontrado.
+        /// </summary>
+        public static string COUPON_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("COUPON_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Este cupom atingiu o limite de usos.
+        /// </summary>
+        public static string COUPON_USAGE_LIMIT {
+            get {
+                return ResourceManager.GetString("COUPON_USAGE_LIMIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O texto está muito longo.
+        /// </summary>
+        public static string CUSTOMIZE_TOO_LONG {
+            get {
+                return ResourceManager.GetString("CUSTOMIZE_TOO_LONG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O dia de abertura não pode estar vazio.
+        /// </summary>
+        public static string DAY_OF_WEEK_EMPTY {
+            get {
+                return ResourceManager.GetString("DAY_OF_WEEK_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O dia de abertura deve ser de 0 a 6.
+        /// </summary>
+        public static string DAY_OF_WEEK_INVALID {
+            get {
+                return ResourceManager.GetString("DAY_OF_WEEK_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Existe dia(s) duplicado(s).
+        /// </summary>
+        public static string DUPLICATED_DAY_OF_WEEK {
+            get {
+                return ResourceManager.GetString("DUPLICATED_DAY_OF_WEEK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Já existe uma promoção ativa nesse intervalo de datas.
         /// </summary>
         public static string EXISTS_PROMOTION_IN_THIS_DATE {
             get {
                 return ResourceManager.GetString("EXISTS_PROMOTION_IN_THIS_DATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O horário final não pode estar vazio.
+        /// </summary>
+        public static string FINAL_OPENING_HOUR_EMPTY {
+            get {
+                return ResourceManager.GetString("FINAL_OPENING_HOUR_EMPTY", resourceCulture);
             }
         }
         
@@ -88,6 +268,15 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O url da imagem nao pode estar vazia.
+        /// </summary>
+        public static string IMAGE_URL_EMPTY {
+            get {
+                return ResourceManager.GetString("IMAGE_URL_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a A data inicial não pode estar vazia.
         /// </summary>
         public static string INITIAL_TIME_EMPTY {
@@ -106,6 +295,24 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O carrinho esta vazio, tente adicionar os produtos novamente.
+        /// </summary>
+        public static string INVALID_CART {
+            get {
+                return ResourceManager.GetString("INVALID_CART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A posição não pode ser menor que 0.
+        /// </summary>
+        public static string INVALID_POSITION {
+            get {
+                return ResourceManager.GetString("INVALID_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a O nome já existe.
         /// </summary>
         public static string NAME_ALREADY_EXISTS {
@@ -120,6 +327,195 @@ namespace IOrder.Exceptions {
         public static string NAME_EMPTY {
             get {
                 return ResourceManager.GetString("NAME_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O bairro é obrigatório.
+        /// </summary>
+        public static string NEIGHBORHOOD_EMPTY {
+            get {
+                return ResourceManager.GetString("NEIGHBORHOOD_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O bairro não pode passar de 100 caracteres..
+        /// </summary>
+        public static string NEIGHBORHOOD_INVALID {
+            get {
+                return ResourceManager.GetString("NEIGHBORHOOD_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O numero é obrigatório.
+        /// </summary>
+        public static string NUMBER_EMPTY {
+            get {
+                return ResourceManager.GetString("NUMBER_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número está muito longo..
+        /// </summary>
+        public static string NUMBER_INVALID {
+            get {
+                return ResourceManager.GetString("NUMBER_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O horário inicial não pode estar vazio.
+        /// </summary>
+        public static string OPENING_HOUR_EMPTY {
+            get {
+                return ResourceManager.GetString("OPENING_HOUR_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Os horários da loja não podem estar vazios.
+        /// </summary>
+        public static string OPENING_HOURS_EMPTY {
+            get {
+                return ResourceManager.GetString("OPENING_HOURS_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Não é possível modificar um pedido com status atual.
+        /// </summary>
+        public static string ORDER_CANNOT_MODIFY {
+            get {
+                return ResourceManager.GetString("ORDER_CANNOT_MODIFY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A data de entrega deve ser futura.
+        /// </summary>
+        public static string ORDER_DELIVERY_DATE_IN_PAST {
+            get {
+                return ResourceManager.GetString("ORDER_DELIVERY_DATE_IN_PAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O carrinho está vazio. Adicione produtos antes de criar um pedido..
+        /// </summary>
+        public static string ORDER_EMPTY_CART {
+            get {
+                return ResourceManager.GetString("ORDER_EMPTY_CART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Status inválido para esta operação.
+        /// </summary>
+        public static string ORDER_INVALID_STATUS {
+            get {
+                return ResourceManager.GetString("ORDER_INVALID_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A mensagem não pode estar vazia.
+        /// </summary>
+        public static string ORDER_MESSAGE_EMPTY {
+            get {
+                return ResourceManager.GetString("ORDER_MESSAGE_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Pedido não encontrado.
+        /// </summary>
+        public static string ORDER_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ORDER_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O token do cartão é obrigatório para pagamento com cartão de crédito.
+        /// </summary>
+        public static string PAYMENT_CARD_TOKEN_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_CARD_TOKEN_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O email do pagador é obrigatório.
+        /// </summary>
+        public static string PAYMENT_EMAIL_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_EMAIL_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O email do pagador é inválido.
+        /// </summary>
+        public static string PAYMENT_EMAIL_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_EMAIL_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número de parcelas é obrigatório para pagamento com cartão de crédito.
+        /// </summary>
+        public static string PAYMENT_INSTALLMENTS_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_INSTALLMENTS_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O número de parcelas deve ser maior que zero.
+        /// </summary>
+        public static string PAYMENT_INSTALLMENTS_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_INSTALLMENTS_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Método de pagamento inválido.
+        /// </summary>
+        public static string PAYMENT_METHOD_INVALID {
+            get {
+                return ResourceManager.GetString("PAYMENT_METHOD_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O id do pedido é obrigatório.
+        /// </summary>
+        public static string PAYMENT_ORDER_ID_EMPTY {
+            get {
+                return ResourceManager.GetString("PAYMENT_ORDER_ID_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Pedido não está aguardando pagamento.
+        /// </summary>
+        public static string PAYMENT_ORDER_NOT_AWAITING {
+            get {
+                return ResourceManager.GetString("PAYMENT_ORDER_NOT_AWAITING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A posição da categoria não pode ser nula.
+        /// </summary>
+        public static string POSITION_NULL {
+            get {
+                return ResourceManager.GetString("POSITION_NULL", resourceCulture);
             }
         }
         
@@ -169,6 +565,87 @@ namespace IOrder.Exceptions {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A quantidade precisa ser maior que 0.
+        /// </summary>
+        public static string QUANTITY_INVALID {
+            get {
+                return ResourceManager.GetString("QUANTITY_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A quantidade não pode ser nula.
+        /// </summary>
+        public static string QUANTITY_NULL {
+            get {
+                return ResourceManager.GetString("QUANTITY_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O estado é obrigatório.
+        /// </summary>
+        public static string STATE_EMPTY {
+            get {
+                return ResourceManager.GetString("STATE_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Estado deve conter exatamente 2 letras..
+        /// </summary>
+        public static string STATE_INVALID {
+            get {
+                return ResourceManager.GetString("STATE_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O id da loja não pode estar vazio.
+        /// </summary>
+        public static string STORE_ID_EMPTY {
+            get {
+                return ResourceManager.GetString("STORE_ID_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Loja não encontrada.
+        /// </summary>
+        public static string STORE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("STORE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A rua é obrigatório.
+        /// </summary>
+        public static string STREET_EMPTY {
+            get {
+                return ResourceManager.GetString("STREET_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A rua não pode passar de 150 caracteres.
+        /// </summary>
+        public static string STREET_INVALID {
+            get {
+                return ResourceManager.GetString("STREET_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Você não tem permissão nessa loja.
+        /// </summary>
+        public static string UNAUTHORIZED_STORE {
+            get {
+                return ResourceManager.GetString("UNAUTHORIZED_STORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a A medida não pode estar vazio.
         /// </summary>
         public static string UNIT_OF_MEASURE_EMPTY {
@@ -183,6 +660,33 @@ namespace IOrder.Exceptions {
         public static string UNKNOWN_ERROR {
             get {
                 return ResourceManager.GetString("UNKNOWN_ERROR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Usuário ja possui uma loja.
+        /// </summary>
+        public static string USER_ALREADY_HAS_STORE {
+            get {
+                return ResourceManager.GetString("USER_ALREADY_HAS_STORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Cep não pode estar vazio.
+        /// </summary>
+        public static string ZIP_CODE_EMPTY {
+            get {
+                return ResourceManager.GetString("ZIP_CODE_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a O Cep deve ter entre 8 e 9 caracteres.
+        /// </summary>
+        public static string ZIP_CODE_INVALID {
+            get {
+                return ResourceManager.GetString("ZIP_CODE_INVALID", resourceCulture);
             }
         }
     }

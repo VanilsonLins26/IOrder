@@ -1,0 +1,212 @@
+<!-- ======================= ADDRESS BAR ======================= -->
+<div class="address-section">
+  <div class="section-container">
+    <app-address-bar (openDrawer)="openDrawer()" />
+  </div>
+</div>
+<app-address-drawer [visible]="drawerOpen()" (closeDrawer)="closeDrawer()" />
+
+<!-- ======================= HERO ======================= -->
+<section class="hero" aria-label="Bem-vindo ao IOrder">
+  <div class="hero__bg-shapes" aria-hidden="true">
+    <div class="hero__shape hero__shape--1"></div>
+    <div class="hero__shape hero__shape--2"></div>
+    <div class="hero__shape hero__shape--3"></div>
+  </div>
+
+  <div class="hero__container">
+    <div class="hero__content">
+      <span class="hero__badge">🚀 Marketplace de Encomendas</span>
+      <h1 class="hero__title">
+        Encomendas sob medida,<br />
+        <span class="hero__title-highlight">do seu jeito</span>
+      </h1>
+      <p class="hero__subtitle">
+        Descubra lojas incríveis, personalize seus produtos favoritos e acompanhe tudo em tempo real.
+      </p>
+
+      <!-- Search bar -->
+      <div class="hero__search">
+        <span class="hero__search-icon">🔍</span>
+        <input
+          id="home-search"
+          type="search"
+          class="hero__search-input"
+          placeholder="Buscar lojas, produtos..."
+          [value]="searchQuery()"
+          (input)="onSearch($event)"
+          aria-label="Buscar lojas e produtos"
+        />
+        <button class="hero__search-btn" type="button">Buscar</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <span class="hero__stat-value">{{ stores().length }}+</span>
+          <span class="hero__stat-label">Lojas</span>
+        </div>
+        <div class="hero__stat-divider"></div>
+        <div class="hero__stat">
+          <span class="hero__stat-value">{{ categories().length }}</span>
+          <span class="hero__stat-label">Categorias</span>
+        </div>
+        <div class="hero__stat-divider"></div>
+        <div class="hero__stat">
+          <span class="hero__stat-value">100%</span>
+          <span class="hero__stat-label">Personalizado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__illustration" aria-hidden="true">
+      <div class="hero__card hero__card--1">
+        <span>🍕</span>
+        <span>Pizza artesanal</span>
+        <span class="hero__card-badge">Novo</span>
+      </div>
+      <div class="hero__card hero__card--2">
+        <span>👗</span>
+        <span>Roupa customizada</span>
+      </div>
+      <div class="hero__card hero__card--3">
+        <span>🎂</span>
+        <span>Bolo personalizado</span>
+        <span class="hero__card-badge hero__card-badge--orange">Popular</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CATEGORIES ======================= -->
+<section class="categories" aria-label="Categorias de lojas">
+  <div class="section-container">
+    <div class="section-header">
+      <h2 class="section-title">O que você procura?</h2>
+      <p class="section-subtitle">Explore por categoria</p>
+    </div>
+
+    <div 
+      class="categories__scroll" 
+      role="list"
+      #scrollContainer
+      (mousedown)="onMouseDown($event)"
+      (mouseleave)="onMouseLeave()"
+      (mouseup)="onMouseUp()"
+      (mousemove)="onMouseMove($event)"
+    >
+      <!-- All -->
+      <button
+        class="category-chip"
+        [class.category-chip--active]="selectedCatId() === null"
+        (click)="selectCategory(null)"
+        role="listitem"
+      >
+        <span class="category-chip__icon">🏪</span>
+        <span>Todas</span>
+      </button>
+
+      @if (loadingCats()) {
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="category-chip category-chip--skeleton">
+            <app-loading-skeleton width="80px" height="16px" />
+          </div>
+        }
+      } @else {
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="category-chip"
+            [class.category-chip--active]="selectedCatId() === cat.id"
+            (click)="selectCategory(cat.id)"
+            role="listitem"
+          >
+            @if (cat.imageUrl) {
+              <img [src]="cat.imageUrl" [alt]="cat.name" class="category-chip__img" width="24" height="24" />
+            } @else {
+              <span class="category-chip__icon">🏷️</span>
+            }
+            <span>{{ cat.name }}</span>
+          </button>
+        }
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STORES GRID ======================= -->
+<section class="stores" aria-label="Lojas disponíveis">
+  <div class="section-container">
+    <div class="section-header">
+      <h2 class="section-title">
+        {{ selectedCategoryName() }}
+      </h2>
+      <a routerLink="/stores" class="section-link">Ver todas →</a>
+    </div>
+
+    @if (loadingStores()) {
+      <!-- Skeleton grid -->
+      <div class="stores__grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="store-card store-card--skeleton">
+            <app-loading-skeleton height="180px" border-radius="var(--radius-xl) var(--radius-xl) 0 0" />
+            <div class="store-card__body">
+              <app-loading-skeleton height="20px" width="60%" />
+              <app-loading-skeleton height="14px" width="80%" />
+              <app-loading-skeleton height="14px" width="40%" />
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (filteredStores().length === 0) {
+      <app-empty-state
+        icon="🏪"
+        title="Nenhuma loja encontrada"
+        description="Tente buscar por outro termo ou explore outras categorias."
+        actionLabel="Ver todas as lojas"
+        (action)="selectCategory(null)"
+      />
+    } @else {
+      <div class="stores__grid">
+        @for (store of filteredStores(); track store.id) {
+          <app-store-card [store]="store" />
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ======================= HOW IT WORKS ======================= -->
+<section class="how-it-works" aria-label="Como funciona o IOrder">
+  <div class="section-container">
+    <div class="section-header">
+      <h2 class="section-title">Como funciona</h2>
+      <p class="section-subtitle">Em 4 passos simples</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step__icon">🔍</div>
+        <h3 class="step__title">Explore</h3>
+        <p class="step__desc">Descubra lojas e produtos únicos na sua cidade</p>
+      </div>
+      <div class="step__arrow" aria-hidden="true">→</div>
+      <div class="step">
+        <div class="step__icon">✏️</div>
+        <h3 class="step__title">Personalize</h3>
+        <p class="step__desc">Customize seu pedido com os detalhes que você quer</p>
+      </div>
+      <div class="step__arrow" aria-hidden="true">→</div>
+      <div class="step">
+        <div class="step__icon">💬</div>
+        <h3 class="step__title">Negocie</h3>
+        <p class="step__desc">Converse diretamente com o lojista pelo chat</p>
+      </div>
+      <div class="step__arrow" aria-hidden="true">→</div>
+      <div class="step">
+        <div class="step__icon">🚀</div>
+        <h3 class="step__title">Receba</h3>
+        <p class="step__desc">Acompanhe o preparo e receba seu pedido</p>
+      </div>
+    </div>
+  </div>
+</section>

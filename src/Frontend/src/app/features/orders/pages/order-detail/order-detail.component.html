@@ -1,0 +1,230 @@
+@let order = store.currentOrder();
+
+<div class="order-detail">
+  <a routerLink="/orders" class="order-detail__back">Voltar para Meus Pedidos</a>
+
+  @if (store.orderLoading()) {
+    <div class="order-detail__loading">Carregando...</div>
+  } @else if (!order) {
+    <p class="order-detail__not-found">Pedido não encontrado.</p>
+  } @else {
+    <header class="order-detail__header">
+      <div>
+        <h1 class="order-detail__title">Pedido #{{ order.id | slice:0:8 }}</h1>
+        <p class="order-detail__date">Realizado em {{ order.createdAt | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
+      </div>
+      <div class="order-detail__status-group">
+        <span class="order-detail__status {{ getStatusClass(order.status) }}">
+          {{ getStatusLabel(order.status) }}
+        </span>
+        @if (order.requestedEarlyDelivery) {
+          <span class="order-detail__early-badge">⚡ Receber Antes</span>
+        }
+      </div>
+    </header>
+
+    <app-order-timeline [status]="order.status"></app-order-timeline>
+
+    <div class="order-detail__actions">
+      @if (order.status === OrderStatusDto.Pending || order.status === OrderStatusDto.Negotiating) {
+        <button class="order-detail__cancel-btn" (click)="showCancelConfirm.set(true)" [disabled]="cancelling()">
+          {{ cancelling() ? 'Cancelando...' : '✕ Cancelar Pedido' }}
+        </button>
+      }
+      @if (order.status === OrderStatusDto.AwaitingPayment) {
+        <button class="order-detail__pay-btn" (click)="openPaymentModal()">
+          💳 Pagar Agora
+        </button>
+      }
+      @if (canRequestEarlyDelivery()) {
+        <button class="order-detail__early-btn" (click)="requestEarlyDelivery()" [disabled]="updatingStatus()">
+          {{ updatingStatus() ? 'Solicitando...' : '⚡ Receber Agora' }}
+        </button>
+      }
+    </div>
+
+    <div class="order-detail__grid">
+      <section class="order-detail__section">
+        <h2 class="order-detail__section-title">Resumo</h2>
+        <div class="order-detail__info">
+          <div class="order-detail__row">
+            <span>Valor original</span>
+            <span>{{ order.originalAmount | currency:'BRL' }}</span>
+          </div>
+          @if (order.couponCode) {
+            <div class="order-detail__row order-detail__row--discount">
+              <span>Desconto ({{ order.couponCode }})</span>
+              <span>-{{ order.discountValue | currency:'BRL' }}</span>
+            </div>
+          }
+          @let itemsTotal = order.totalAmount - order.deliveryFee;
+          @let baseItemsTotal = order.discountedTotal ?? order.originalAmount;
+          @if (itemsTotal !== baseItemsTotal) {
+            <div class="order-detail__row order-detail__row--negotiated">
+              <span>Valor negociado</span>
+              <span>{{ itemsTotal | currency:'BRL' }}</span>
+            </div>
+          }
+          @if (order.deliveryType === 1) {
+            <div class="order-detail__row">
+              <span>Tipo</span>
+              <span>🏪 Retirada</span>
+            </div>
+          }
+          @if (order.deliveryFee > 0) {
+            <div class="order-detail__row">
+              <span>Taxa de entrega</span>
+              <span>{{ order.deliveryFee | currency:'BRL' }}</span>
+            </div>
+          }
+          <div class="order-detail__row order-detail__row--total">
+            <span>Total</span>
+            <span>{{ order.totalAmount | currency:'BRL' }}</span>
+          </div>
+          @if (order.deliveryDate) {
+            <div class="order-detail__row">
+              <span>{{ order.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span>
+              <span>
+                {{ order.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}
+                @if (order.deliveryDateEnd) {
+                  - {{ order.deliveryDateEnd | date:"HH:mm" }}
+                }
+              </span>
+            </div>
+          }
+        </div>
+
+        @if (order.customerNotes) {
+          <div class="order-detail__notes">
+            <h3>Observações</h3>
+            <p>{{ order.customerNotes }}</p>
+          </div>
+        }
+      </section>
+
+      <section class="order-detail__section">
+        <h2 class="order-detail__section-title">Itens ({{ order.items.length }})</h2>
+        <div class="order-detail__items">
+          @for (item of order.items; track item.id) {
+            <div class="order-item">
+              <div class="order-item__image">
+                @if (item.productImageUrl) {
+                  <img [src]="item.productImageUrl" [alt]="item.productName" class="order-item__img" (click)="openImage(item.productImageUrl)" />
+                } @else if (item.imageUrls[0]) {
+                  <img [src]="item.imageUrls[0]" [alt]="item.productName" class="order-item__img" (click)="openImage(item.imageUrls[0])" />
+                } @else {
+                  <div class="order-item__img-placeholder">📦</div>
+                }
+              </div>
+              <div class="order-item__info">
+                <p class="order-item__name">{{ item.productName }}</p>
+                @if (item.selectedOptions.length) {
+                  <div class="order-item__selected-options">
+                    @for (opt of item.selectedOptions; track opt.optionId) {
+                      <span class="order-item__option-tag">
+                        {{ opt.groupName }}: {{ opt.optionName }}
+                        @if (opt.priceModifier) {
+                          <span class="order-item__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
+                @if (item.customize) {
+                  <p class="order-item__customize">{{ item.customize }}</p>
+                }
+                @if (item.imageUrls.length) {
+                  <div class="order-item__customize-images">
+                    @for (url of item.imageUrls; track url) {
+                      <img [src]="url" alt="Customização" class="order-item__customize-thumb" (click)="openImage(url)" />
+                    }
+                  </div>
+                }
+              </div>
+              <div class="order-item__qty">{{ item.quantity }}x</div>
+              <div class="order-item__price">{{ item.unitPrice | currency:'BRL' }}</div>
+              <div class="order-item__total">{{ item.totalPrice | currency:'BRL' }}</div>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="order-detail__chat-cta">
+      <button class="order-detail__chat-btn" (click)="openChat()">
+        💬 Negociação / Chat
+        @if (unreadMessagesCount() > 0) {
+          <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
+        }
+      </button>
+    </div>
+  }
+</div>
+
+@if (order) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="order.messages"
+    [orderStatus]="order.status"
+    userRole="Client"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    [updatingStatus]="updatingStatus()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+    (onAcceptProposal)="showAcceptConfirm.set(true)"
+    (onDeclineProposal)="showDeclineConfirm.set(true)"
+  ></app-order-chat-offcanvas>
+
+  <app-payment-brick
+    [orderId]="id()"
+    [totalAmount]="order.totalAmount"
+    [isOpen]="showPaymentModal()"
+    [payerEmail]="userEmail()"
+    (close)="showPaymentModal.set(false)"
+  ></app-payment-brick>
+}
+
+  <app-confirmation-modal
+    title="Cancelar Pedido"
+    message="Tem certeza que deseja cancelar este pedido?"
+    [isOpen]="showCancelConfirm()"
+    confirmLabel="Sim, Cancelar"
+    [loading]="cancelling()"
+    (confirm)="cancelOrder()"
+    (cancel)="showCancelConfirm.set(false)"
+    (close)="showCancelConfirm.set(false)"
+  ></app-confirmation-modal>
+
+  <app-confirmation-modal
+    title="Aceitar Proposta"
+    message="Aceitar esta proposta de valor e entrega?"
+    [isOpen]="showAcceptConfirm()"
+    confirmLabel="Sim, Aceitar"
+    [loading]="updatingStatus()"
+    (confirm)="acceptProposal()"
+    (cancel)="showAcceptConfirm.set(false)"
+    (close)="showAcceptConfirm.set(false)"
+  ></app-confirmation-modal>
+
+  <app-confirmation-modal
+    title="Recusar Proposta"
+    message="Tem certeza que deseja recusar a proposta? O pedido será recusado."
+    [isOpen]="showDeclineConfirm()"
+    confirmLabel="Sim, Recusar"
+    [loading]="updatingStatus()"
+    (confirm)="declineProposal()"
+    (cancel)="showDeclineConfirm.set(false)"
+    (close)="showDeclineConfirm.set(false)"
+  ></app-confirmation-modal>
+
+  @if (expandedImage()) {
+    <div class="image-modal" (click)="closeImage()">
+      <div class="image-modal__content" (click)="$event.stopPropagation()">
+        <button class="image-modal__close" (click)="closeImage()">✕</button>
+        <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
+      </div>
+    </div>
+  }

@@ -1,7 +1,6 @@
-﻿using IOrder.Domain.Entities;
-using IOrder.Domain.Pagination;
+using IOrder.Domain.Entities;
+using IOrder.Domain.Entities.Enums;
 using IOrder.Domain.Repositories.Product;
-using IOrder.Domain.SeedWork.Pagination;
 using IOrder.infrastructure.DataAccess;
 using IOrder.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +21,9 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         _context = context;
     }
 
-    public IEnumerable<Domain.Entities.Product> GetAll()
+    public async Task<IList<Domain.Entities.Product>> GetAllAsync()
     {
-        return _context.Products.AsNoTracking();
+        return await _context.Products.AsNoTracking().ToListAsync();
     }
 
     public async Task<Domain.Entities.Product> GetByIdAsync(Guid id)
@@ -37,47 +36,55 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         return await _context.Products.FirstOrDefaultAsync(product => product.Id == id);
     }
 
+    public async Task<IList<Domain.Entities.Product>> GetByIdsTracking(IList<Guid> ids)
+    {
+        return await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync();
+    }
 
 
-    public async Task<PagedList<Domain.Entities.Product>> GetAllPagFiltroPrecoAsync(ProductSearchQuery productFilter)
+
+    public async Task<(IList<Domain.Entities.Product> Items, int TotalCount)> GetAllPagFiltroPrecoAsync(ProductSearchCriteria criteria)
     {
         var query = _context.Products.AsNoTracking();
 
-        if (productFilter.Price.HasValue && productFilter.PriceFilter.HasValue)
+        if (criteria.Price.HasValue && criteria.PriceFilter.HasValue)
         { 
-            query = productFilter.PriceFilter.Value switch
+            query = criteria.PriceFilter.Value switch
             {
-                PriceFilterType.GreaterThan => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) > productFilter.Price),
+                PriceFilterType.GreaterThan => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) > criteria.Price.Value),
 
-                PriceFilterType.LessThan => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) < productFilter.Price),
+                PriceFilterType.LessThan => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) < criteria.Price.Value),
 
-                PriceFilterType.EqualTo => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) == productFilter.Price),
+                PriceFilterType.EqualTo => query.Where(p => (p.CurrentPromotionalPrice ?? p.Price) == criteria.Price.Value),
 
                 _ => query
             };
         }
 
-        if (!string.IsNullOrWhiteSpace(productFilter.Name))
-            query = query.Where(p => p.Name.Contains(productFilter.Name));
+        if (!string.IsNullOrWhiteSpace(criteria.Name))
+            query = query.Where(p => p.Name.Contains(criteria.Name));
 
-        var property = productFilter.OrderBy?.ToLower().Trim();
+        if (criteria.StoreId.HasValue)
+            query = query.Where(p => p.StoreId == criteria.StoreId.Value);
+
+        var property = criteria.OrderBy?.ToLower().Trim();
 
         query = property switch
         {
-            "name" => productFilter.IsDescending
+            "name" => criteria.IsDescending
                 ? query.OrderByDescending(p => p.Name)
                 : query.OrderBy(p => p.Name),
 
-            "price" => productFilter.IsDescending
+            "price" => criteria.IsDescending
                 ? query.OrderByDescending(p => p.CurrentPromotionalPrice ?? p.Price)
                 : query.OrderBy(p => p.CurrentPromotionalPrice ?? p.Price),
 
-            _ => productFilter.IsDescending
+            _ => criteria.IsDescending
                 ? query.OrderByDescending(p => p.Id)
                 : query.OrderBy(p => p.Id)
         };
 
-        return await query.ToPagedListAsync(productFilter.PageNumber, productFilter.PageSize);
+        return await query.ToPaginatedTupleAsync(criteria.PageNumber, criteria.PageSize);
     }
 
 
@@ -113,8 +120,40 @@ internal class ProductRepository : IProductReadOnlyRepository, IProductWriteOnly
         return promotionPrice;
     }
 
-    public async Task<bool> ExistsPromotionInDate(DateTime inicialDate, DateTime finalDate)
+    public async Task<bool> ExistsPromotionInDate(Guid productId, DateTime inicialDate, DateTime finalDate)
     {
-        return await _context.Promotions.AnyAsync(pp => inicialDate <= pp.FinalTime && finalDate >= pp.InitialTime);
+        return await _context.Promotions.AnyAsync(pp =>
+            pp.ProductId == productId &&
+            inicialDate <= pp.FinalTime && finalDate >= pp.InitialTime);
+    }
+
+    public async Task<IList<PromotionPrice>> GetPromotionsToStartAsync(DateTime now, CancellationToken cancellationToken)
+    {
+        return await _context.Promotions
+            .Include(p => p.Product)
+            .Where(p => p.Active && p.InitialTime <= now && p.FinalTime >= now
+                     && p.Product.CurrentPromotionalPrice == null)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IList<PromotionPrice>> GetPromotionsToFinishAsync(DateTime now, CancellationToken cancellationToken)
+    {
+        return await _context.Promotions
+            .Include(p => p.Product)
+            .Where(p => p.FinalTime < now && p.Product.CurrentPromotionalPrice != null)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<decimal?> GetProductPriceById(Guid productId)
+    {
+        return await _context.Products.Where(product => product.Id == productId).Select(product => product.Price).FirstOrDefaultAsync();
+    }
+
+    public async Task<IDictionary<Guid, decimal>> GetProductPricesByIds(IEnumerable<Guid> productIds)
+    {
+        return await _context.Products
+            .Where(p => productIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Price }) // O Pulo do Gato para o banco fazer SELECT Id, Price
+            .ToDictionaryAsync(p => p.Id, p => p.Price);
     }
 }

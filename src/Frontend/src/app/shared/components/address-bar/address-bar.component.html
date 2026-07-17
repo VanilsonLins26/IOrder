@@ -1,0 +1,11 @@
+<button class="address-bar" (click)="openDrawer.emit()" type="button" aria-label="Selecionar endereço de entrega">
+  <span class="address-bar__icon">📍</span>
+  <span class="address-bar__text">
+    @if (isUsingGeo) {
+      <span class="address-bar__geo">Usando sua localização</span>
+    } @else {
+      {{ summary }}
+    }
+  </span>
+  <span class="address-bar__chevron" aria-hidden="true">▾</span>
+</button>

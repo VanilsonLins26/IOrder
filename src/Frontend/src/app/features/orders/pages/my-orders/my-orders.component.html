@@ -1,0 +1,79 @@
+<div class="my-orders">
+  <header class="my-orders__header">
+    <h1 class="my-orders__title">Meus Pedidos</h1>
+  </header>
+
+  @if (store.loading() && store.orders().length === 0) {
+    <div class="my-orders__skeleton">
+      @for (i of [1,2,3]; track i) {
+        <app-loading-skeleton height="100px" border-radius="var(--radius-2xl)" />
+      }
+    </div>
+  } @else if (store.orders().length === 0) {
+    <app-empty-state
+      icon="📦"
+      title="Nenhum pedido ainda"
+      description="Seus pedidos aparecerão aqui após você finalizar a compra."
+      actionLabel="Explorar lojas"
+      (action)="goToStores()"
+    />
+  } @else {
+    <div class="my-orders__list">
+      @for (order of store.orders(); track trackByOrderId($index, order)) {
+        <a [routerLink]="['/orders', order.id]" class="order-card">
+          <div class="order-card__header">
+            <span class="order-card__id">
+              #{{ order.id | slice:0:8 }}
+              @if (getUnreadCount(order) > 0) {
+                <span class="order-card__unread">{{ getUnreadCount(order) }} nova(s)</span>
+              }
+            </span>
+            <span class="order-card__status {{ getStatusClass(order.status) }}">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+          <div class="order-card__body">
+            <span class="order-card__total">{{ order.totalAmount | currency:'BRL' }}</span>
+            <span class="order-card__date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="order-card__footer">
+            <span class="order-card__items">
+              {{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'itens' }}
+            </span>
+            <span class="order-card__arrow">Ver detalhes →</span>
+          </div>
+        </a>
+      }
+    </div>
+
+    @if (store.totalPages() > 1) {
+      <div class="my-orders__pagination">
+        <button
+          class="pagination__btn"
+          [disabled]="store.currentPage() <= 1"
+          (click)="changePage(store.currentPage() - 1)"
+          style="position: relative;"
+        >
+          &larr; Anterior
+          @if (hasUnreadOnPreviousPage()) {
+            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+          }
+        </button>
+        <span class="pagination__info">
+          Página {{ store.currentPage() }} de {{ store.totalPages() }}
+        </span>
+        <button
+          class="pagination__btn"
+          [disabled]="store.currentPage() >= store.totalPages()"
+          (click)="changePage(store.currentPage() + 1)"
+          style="position: relative;"
+        >
+          Pr&oacute;xima &rarr;
+          @if (hasUnreadOnNextPage()) {
+            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+          }
+        </button>
+      </div>
+    }
+  }
+</div>

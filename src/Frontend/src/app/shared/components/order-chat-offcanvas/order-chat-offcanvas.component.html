@@ -1,0 +1,85 @@
+@if (isOpen()) {
+  <div class="offcanvas-backdrop" (click)="close()"></div>
+}
+
+<div class="offcanvas" [class.offcanvas--open]="isOpen()">
+  <div class="offcanvas__header">
+    <h2 class="offcanvas__title">Negociação / Chat</h2>
+    <button class="offcanvas__close" (click)="close()">&times;</button>
+  </div>
+
+  <div class="offcanvas__body" #messagesContainer>
+    <div class="chat-messages">
+      @if (messages().length === 0) {
+        <p class="no-messages">Nenhuma mensagem ainda. Envie a primeira mensagem!</p>
+      }
+
+      @for (msg of messages(); track msg.id; let isLast = $last) {
+        <div class="message" [class.message--own]="isOwnMessage(msg)">
+          <div class="message__bubble">
+            <div class="message__header">
+              <span class="message__author">{{ getAuthorName(msg) }}</span>
+              <span class="message__time">{{ msg.sentAt | date:"dd/MM/yyyy HH:mm" }}</span>
+              @if (msg.type === MessageTypeDto.Proposal) {
+                <span class="message__tag message__tag--proposal">Proposta</span>
+              }
+            </div>
+            
+            <p class="message__text">{{ msg.message }}</p>
+            
+            @if (msg.readAt && isOwnMessage(msg)) {
+              <span class="message__read">✓✓ Visualizada</span>
+            }
+
+            @if (msg.type === MessageTypeDto.Proposal) {
+              <div class="message__proposal">
+                @if (msg.proposedTotalAmount != null) {
+                  <span>Valor proposto: <strong>{{ msg.proposedTotalAmount | currency:'BRL' }}</strong></span>
+                }
+                @if (msg.proposedDeliveryDate != null) {
+                  <span>Entrega: <strong>{{ msg.proposedDeliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</strong></span>
+                }
+                
+                <!-- Botões de Aceitar/Recusar só aparecem para o cliente na última PROPOSTA e se o status for Negociando -->
+                @if (orderStatus() === OrderStatusDto.Negotiating && isLastProposal(msg) && userRole() === 'Client') {
+                  <div class="proposal-actions">
+                    <button class="action-btn action-btn--primary" (click)="acceptProposal()" [disabled]="updatingStatus()">
+                      Aceitar
+                    </button>
+                    <button class="action-btn action-btn--secondary" (click)="declineProposal()" [disabled]="updatingStatus()">
+                      Recusar
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (typingUser()) {
+        <p class="typing-indicator">{{ typingUser() }} está digitando...</p>
+      }
+    </div>
+  </div>
+
+  <div class="offcanvas__footer">
+    <input
+      type="text"
+      class="chat-input"
+      placeholder="Digite sua mensagem..."
+      [ngModel]="messageText()"
+      (ngModelChange)="messageText.set($event)"
+      (input)="onInput()"
+      (keyup.enter)="sendMessage()"
+      [disabled]="sendingMessage()"
+    />
+    <button
+      class="chat-send-btn"
+      (click)="sendMessage()"
+      [disabled]="sendingMessage() || !messageText().trim()"
+    >
+      {{ sendingMessage() ? '...' : 'Enviar' }}
+    </button>
+  </div>
+</div>

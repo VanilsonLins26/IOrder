@@ -1,0 +1,136 @@
+<div class="page-container">
+  @if (loadingStore()) {
+    <div class="store-skeleton">
+      <app-loading-skeleton height="280px" border-radius="var(--radius-2xl)" />
+    </div>
+  } @else if (store()) {
+    <app-store-info-header [store]="store()!" />
+
+    <div class="store-products-section">
+      @if (loadingProducts() || loadingCategories()) {
+        <app-loading-skeleton height="200px" />
+      } @else {
+        @for (group of groupedProducts(); track group.id) {
+          <div class="category-group">
+            <h2 class="category-title">{{ group.name }}</h2>
+            <app-product-grid 
+              [products]="group.products"
+              [isLoading]="false"
+              (addToCart)="onAddToCart($event)"
+            />
+          </div>
+        }
+      }
+    </div>
+  } @else {
+    <!-- Error or not found state -->
+    <div class="store-not-found">
+      <h1>Loja não encontrada</h1>
+      <p>A loja que você procura não existe ou está indisponível.</p>
+    </div>
+  }
+</div>
+
+<app-modal title="Carrinho com outra loja" [isOpen]="showStoreDialog()" (close)="onCancelStoreDialog()">
+  <p>Seu carrinho já contém itens de outra loja. Deseja limpar o carrinho e adicionar este produto?</p>
+  <div class="dialog-actions">
+    <button type="button" class="btn btn--outline" (click)="onCancelStoreDialog()">Cancelar</button>
+    <button type="button" class="btn btn--primary" (click)="onConfirmClearAndAdd()">Sim, limpar e adicionar</button>
+  </div>
+</app-modal>
+
+<app-modal title="Personalizar Produto" [isOpen]="showCustomizeDialog()" (close)="onCancelCustomize()">
+  @if (loadingCustomization()) {
+    <p>Carregando opções...</p>
+  } @else {
+    @for (group of customizationGroups(); track group.id) {
+      <div class="customization-group">
+        <h3 class="customization-group__title">
+          {{ group.name }}
+          @if (group.required) {
+            <span class="text-danger">*</span>
+          }
+        </h3>
+        @if (group.type === 'SingleChoice') {
+          <div class="customization-options">
+            @for (opt of group.options; track opt.id) {
+              <label class="customization-option" [class.selected]="selectedOptionIds().has(opt.id)">
+                <input
+                  type="radio"
+                  [name]="'group_' + group.id"
+                  [checked]="selectedOptionIds().has(opt.id)"
+                  (change)="toggleSingleOption(opt.id, group)"
+                />
+                <span class="customization-option__name">{{ opt.name }}</span>
+                @if (opt.priceModifier) {
+                  <span class="customization-option__price">
+                    {{ opt.priceModifier > 0 ? '+' : '' }}{{ opt.priceModifier | currency:'BRL' }}
+                  </span>
+                }
+              </label>
+            }
+          </div>
+        } @else {
+          <div class="customization-options">
+            @for (opt of group.options; track opt.id) {
+              <label class="customization-option" [class.selected]="selectedOptionIds().has(opt.id)">
+                <input
+                  type="checkbox"
+                  [checked]="selectedOptionIds().has(opt.id)"
+                  (change)="toggleOption(opt.id)"
+                />
+                <span class="customization-option__name">{{ opt.name }}</span>
+                @if (opt.priceModifier) {
+                  <span class="customization-option__price">
+                    {{ opt.priceModifier > 0 ? '+' : '' }}{{ opt.priceModifier | currency:'BRL' }}
+                  </span>
+                }
+              </label>
+            }
+          </div>
+        }
+        @if (group.minSelections > 0 || group.maxSelections < group.options.length) {
+          <p class="customization-group__hint">
+            Selecione {{ group.minSelections }}-{{ group.maxSelections }} opções
+          </p>
+        }
+      </div>
+    }
+
+    <textarea
+      class="form-control"
+      rows="3"
+      placeholder="Observações (ex: sem cebola, borda recheada...)"
+      [ngModel]="customizeText()"
+      (ngModelChange)="customizeText.set($event)"
+    ></textarea>
+
+    <div class="customize-images">
+      <label class="upload-btn" [class.loading]="uploadingCustomizeImage()">
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          [disabled]="uploadingCustomizeImage()"
+        />
+        @if (uploadingCustomizeImage()) {
+          <span>Enviando...</span>
+        } @else {
+          <span>+ Adicionar imagem</span>
+        }
+      </label>
+
+      @for (url of customizeImageUrls(); track url; let i = $index) {
+        <div class="preview-item">
+          <img [src]="url" alt="Imagem personalizada" />
+          <button type="button" class="remove-btn" (click)="removeCustomizeImage(i)">&times;</button>
+        </div>
+      }
+    </div>
+
+    <div class="dialog-actions" style="margin-top: var(--space-4);">
+      <button type="button" class="btn btn--outline" (click)="onSkipCustomize()">Pular</button>
+      <button type="button" class="btn btn--primary" [disabled]="!allGroupsValid()" (click)="onConfirmCustomize()">Confirmar</button>
+    </div>
+  }
+</app-modal>

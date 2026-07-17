@@ -1,0 +1,42 @@
+<a [routerLink]="['/stores', store().id]" class="store-card" [attr.aria-label]="'Ver loja ' + store().name">
+  <!-- Image -->
+  <div class="store-card__image-wrapper">
+    @if (store().imageUrl) {
+      <img [src]="store().imageUrl" [alt]="store().name" class="store-card__image" loading="lazy" />
+    } @else {
+      <div class="store-card__image-placeholder">🏪</div>
+    }
+    <!-- Open badge -->
+    <span class="store-card__status" [class.store-card__status--open]="store().isOpen">
+      {{ store().isOpen ? 'Aberto' : 'Fechado' }}
+    </span>
+    
+    <!-- Category badge -->
+    @if (store().categoryName) {
+      <span class="store-card__category">
+        {{ store().categoryName }}
+      </span>
+    }
+  </div>
+
+  <!-- Body -->
+  <div class="store-card__body">
+    <h3 class="store-card__name">{{ store().name }}</h3>
+    @if (store().about) {
+      <p class="store-card__about">{{ store().about }}</p>
+    }
+    <div class="store-card__meta">
+      @if (store().address) {
+        <span class="store-card__location">
+          {{ store().address.city }}, {{ store().address.state }}
+        </span>
+      }
+      @if (store().distanceKm !== undefined && store().distanceKm !== null) {
+        <span class="store-card__distance">{{ store().distanceKm | number:'1.1-1' }} km</span>
+      }
+    </div>
+    @if (store().deliveryFee !== undefined && store().deliveryFee !== null) {
+      <span class="store-card__delivery">Entrega: {{ store().deliveryFee | currency:'BRL' }}</span>
+    }
+  </div>
+</a>

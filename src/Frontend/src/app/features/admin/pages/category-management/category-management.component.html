@@ -1,0 +1,113 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div class="admin-header-main">
+      <div>
+        <h1 class="admin-title">Categorias</h1>
+        <p class="admin-subtitle">Gerencie as categorias da sua loja e a ordem que aparecem no cardápio</p>
+      </div>
+      <button class="btn btn--primary" (click)="openCreateModal()">
+        + Nova Categoria
+      </button>
+    </div>
+  </header>
+
+  @if (adminStore.loading()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="48px" />
+      <app-loading-skeleton height="150px" />
+    </div>
+  } @else if (adminStore.categories().length === 0) {
+    <div class="empty-list">
+      <span class="empty-icon">🏷️</span>
+      <h3>Nenhuma categoria cadastrada</h3>
+      <p>Crie sua primeira categoria para organizar seus produtos.</p>
+      <button class="btn btn--outline" (click)="openCreateModal()">Criar Categoria</button>
+    </div>
+  } @else {
+    <div class="categories-list" cdkDropList (cdkDropListDropped)="drop($event)">
+      @for (cat of adminStore.categories(); track cat.id) {
+        <div class="category-item" cdkDrag>
+          <div class="category-drag-handle" cdkDragHandle>
+            <!-- Drag Icon -->
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </div>
+          
+          <div class="category-info">
+            @if (cat.imageUrl) {
+              <img [src]="cat.imageUrl" [alt]="cat.name" class="category-img" />
+            } @else {
+              <div class="category-img-placeholder">🏷️</div>
+            }
+            <span class="category-name">{{ cat.name }}</span>
+          </div>
+
+          <div class="category-actions">
+            <button class="btn-icon" (click)="openEditModal(cat)" aria-label="Editar">
+              ✏️
+            </button>
+            <button class="btn-icon btn-icon--danger" (click)="deleteCategory(cat.id)" aria-label="Excluir">
+              🗑️
+            </button>
+          </div>
+
+          <!-- Drag Preview (o elemento flutuante enquanto arrasta) -->
+          <div *cdkDragPreview class="category-item category-item--dragging">
+            <span class="category-name">{{ cat.name }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal Criar / Editar -->
+<app-modal
+  [isOpen]="isModalOpen()"
+  [title]="editingCategoryId() ? 'Editar Categoria' : 'Nova Categoria'"
+  (close)="closeModal()"
+>
+  @if (isModalOpen()) {
+    <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="settings-form">
+      <div class="form-group">
+        <label for="catName">Nome da Categoria</label>
+        <input id="catName" type="text" formControlName="name" class="form-control" placeholder="Ex: Lanches, Bebidas..."
+          [attr.aria-invalid]="categoryForm.get('name')?.invalid && (categoryForm.get('name')?.dirty || categoryForm.get('name')?.touched)" />
+      </div>
+
+        <div class="form-group">
+          <label class="form-label" for="imageUrl">URL da Imagem (Ícone)</label>
+          <app-image-upload
+            [currentUrl]="categoryForm.get('imageUrl')?.value || ''"
+            [loading]="uploadingImage()"
+            (fileSelected)="onImageSelected($event)">
+          </app-image-upload>
+        </div>
+
+
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="categoryForm.invalid || isSaving()">
+          {{ isSaving() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  }
+</app-modal>
+
+<app-confirmation-modal
+  title="Excluir Categoria"
+  message="Tem certeza que deseja excluir esta categoria? Produtos associados a ela poderão ficar sem categoria!"
+  [isOpen]="showDeleteConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteCategory()"
+  (cancel)="showDeleteConfirm.set(false)"
+  (close)="showDeleteConfirm.set(false)"
+></app-confirmation-modal>

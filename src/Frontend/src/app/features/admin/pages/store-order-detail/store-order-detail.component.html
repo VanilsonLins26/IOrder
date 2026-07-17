@@ -1,0 +1,212 @@
+@let o = order();
+
+<div class="store-order-detail">
+  <a routerLink="/admin/orders" class="store-order-detail__back">← Voltar para Pedidos</a>
+
+  @if (loading() && !o) {
+    <p class="store-order-detail__loading">Carregando...</p>
+  } @else if (!o) {
+    <p class="store-order-detail__not-found">Pedido não encontrado.</p>
+  } @else {
+    <header class="store-order-detail__header">
+      <div>
+        <h1 class="store-order-detail__title">Pedido #{{ o.id | slice:0:8 }}</h1>
+        <p class="store-order-detail__date">{{ o.createdAt | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
+      </div>
+      <span class="store-order-detail__status {{ getStatusClass(o.status) }}">
+        {{ getStatusLabel(o.status) }}
+      </span>
+    </header>
+
+    <app-order-timeline [status]="o.status"></app-order-timeline>
+
+    @if (earlyDeliveryRequested()) {
+      <div class="store-order-detail__early-banner">
+        <span>⚡ O cliente quer receber antes!</span>
+        <button class="action-btn action-btn--primary" (click)="broadcastDeliveryOffer()">Buscar Entregador</button>
+      </div>
+    }
+
+    <div class="store-order-detail__actions">
+      @for (action of getNextStatuses(o.status); track action.status) {
+        <button class="action-btn action-btn--primary" (click)="updateStatus(action.status)">
+          {{ action.label }}
+        </button>
+      }
+      @if (o.status === OrderStatusDto.Pending || o.status === OrderStatusDto.Negotiating) {
+        <button class="action-btn action-btn--secondary" (click)="toggleNegotiate()">
+          {{ showNegotiate() ? 'Cancelar' : 'Negociar' }}
+        </button>
+      }
+
+      @if (isSearchingCourier()) {
+        <button class="action-btn action-btn--secondary" disabled>
+          Buscando Entregador...
+        </button>
+      }
+      @if (canBroadcastDeliveryOffer()) {
+        <button class="action-btn action-btn--secondary" (click)="broadcastDeliveryOffer()" [disabled]="broadcastingOffer()">
+          {{ broadcastingOffer() ? 'Enviando...' : '📡 Solicitar Entregador' }}
+        </button>
+      }
+      @if (canSendForDelivery()) {
+        <button class="action-btn action-btn--primary" (click)="markOutForDelivery()">
+          🚚 Saiu para Entrega
+        </button>
+      }
+      @if (canMarkDelivered()) {
+        <button class="action-btn action-btn--primary" (click)="markDelivered()">
+          ✅ Entregue
+        </button>
+      }
+    </div>
+
+
+
+
+
+    @if (showNegotiate()) {
+      <div class="store-order-detail__negotiate">
+        <h3>Nova Proposta</h3>
+        <div class="negotiate__fields">
+          <label>
+            Valor proposto
+            <input type="text" appCurrencyInput [ngModel]="proposedAmount()" (ngModelChange)="proposedAmount.set($event)" placeholder="0,00" />
+          </label>
+          <label>
+            Data de entrega
+            <div class="store-order-detail__date-time-row" style="display: flex; gap: 8px;">
+              <select
+                class="form-control"
+                [ngModel]="proposedDateString()"
+                (ngModelChange)="proposedDateString.set($event)"
+              >
+                @for (date of availableDates(); track date.date) {
+                  <option [value]="date.date">{{ date.label }}</option>
+                }
+              </select>
+              <select
+                class="form-control"
+                [ngModel]="proposedTimeString()"
+                (ngModelChange)="proposedTimeString.set($event)"
+              >
+                @for (time of availableTimes(); track time) {
+                  <option [value]="time">{{ time }}</option>
+                }
+              </select>
+            </div>
+          </label>
+          <label>
+            Observações
+            <textarea [ngModel]="shopkeeperNotes()" (ngModelChange)="shopkeeperNotes.set($event)" rows="3" placeholder="Observações para o cliente..."></textarea>
+          </label>
+          <button class="action-btn action-btn--primary" 
+                  (click)="sendProposal()" 
+                  [disabled]="!proposedDateString() || !proposedTimeString()">
+            Enviar Proposta
+          </button>
+        </div>
+      </div>
+    }
+
+    <section class="store-order-detail__section">
+      <h2>Resumo</h2>
+      <div class="info-grid">
+        <div class="info-row"><span>Valor original</span><span>{{ o.originalAmount | currency:'BRL' }}</span></div>
+        @if (o.couponCode) {
+          <div class="info-row info-row--discount"><span>Desconto ({{ o.couponCode }})</span><span>-{{ o.discountValue | currency:'BRL' }}</span></div>
+        }
+        @let itemsTotal = o.totalAmount - o.deliveryFee;
+        @let baseItemsTotal = o.discountedTotal ?? o.originalAmount;
+        @if (itemsTotal !== baseItemsTotal) {
+          <div class="info-row info-row--negotiated"><span>Valor negociado</span><span>{{ itemsTotal | currency:'BRL' }}</span></div>
+        }
+        @if (o.deliveryFee > 0) {
+          <div class="info-row"><span>Taxa de entrega</span><span>{{ o.deliveryFee | currency:'BRL' }}</span></div>
+        }
+        <div class="info-row info-row--total"><span>Total</span><span>{{ o.totalAmount | currency:'BRL' }}</span></div>
+        @if (o.deliveryDate) {
+          <div class="info-row"><span>{{ o.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span></div>
+        }
+      </div>
+      @if (o.customerNotes) {
+        <div class="notes-box"><strong>Cliente:</strong> {{ o.customerNotes }}</div>
+      }
+      @if (o.shopkeeperNotes) {
+        <div class="notes-box"><strong>Lojista:</strong> {{ o.shopkeeperNotes }}</div>
+      }
+    </section>
+
+    <section class="store-order-detail__section">
+      <h2>Itens ({{ o.items.length }})</h2>
+      <div class="items-list">
+        @for (item of o.items; track item.id) {
+          <div class="item-row">
+            <div class="item-row__image">
+              @if (item.productImageUrl) { <img [src]="item.productImageUrl" alt="" (click)="openImage(item.productImageUrl)" style="cursor: pointer" /> }
+              @else if (item.imageUrls[0]) { <img [src]="item.imageUrls[0]" alt="" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" /> }
+              @else { <div class="item-row__placeholder">📦</div> }
+            </div>
+            <div class="item-row__info">
+              <p class="item-row__name">{{ item.productName }}</p>
+              @if (item.selectedOptions.length) {
+                <div class="item-row__selected-options">
+                  @for (opt of item.selectedOptions; track opt.optionId) {
+                    <span class="item-row__option-tag">
+                      {{ opt.groupName }}: {{ opt.optionName }}
+                      @if (opt.priceModifier) { <span class="item-row__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span> }
+                    </span>
+                  }
+                </div>
+              }
+              @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
+              @if (item.imageUrls.length) {
+                <div class="item-row__customize-images">
+                  @for (url of item.imageUrls; track url) {
+                    <img [src]="url" alt="Customização" class="item-row__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
+                  }
+                </div>
+              }
+            </div>
+            <span class="item-row__qty">{{ item.quantity }}x</span>
+            <span class="item-row__price">{{ item.unitPrice | currency:'BRL' }}</span>
+            <span class="item-row__total">{{ item.totalPrice | currency:'BRL' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+    
+    <div class="order-detail__chat-cta">
+      <button class="order-detail__chat-btn" (click)="openChat()">
+        💬 Negociação / Chat
+        @if (unreadMessagesCount() > 0) {
+          <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
+        }
+      </button>
+    </div>
+  }
+</div>
+
+@if (o) {
+  <app-order-chat-offcanvas
+    [isOpen]="chatOpen()"
+    [messages]="o.messages"
+    [orderStatus]="o.status"
+    userRole="ShopKeeper"
+    [typingUser]="typingUser()"
+    [sendingMessage]="sendingMessage()"
+    (closeOffcanvas)="chatOpen.set(false)"
+    (onSendMessage)="sendMessage($event)"
+    (typingNotify)="chatSignalr.userTyping(id())"
+    (stoppedTypingNotify)="chatSignalr.userStoppedTyping(id())"
+  ></app-order-chat-offcanvas>
+}
+
+  @if (expandedImage()) {
+    <div class="image-modal" (click)="closeImage()">
+      <div class="image-modal__content" (click)="$event.stopPropagation()">
+        <button class="image-modal__close" (click)="closeImage()">&times;</button>
+        <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
+      </div>
+    </div>
+  }

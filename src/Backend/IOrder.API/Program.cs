@@ -1,21 +1,35 @@
 using IOrder.API.Filters;
 using IOrder.Application;
 using IOrder.infrastructure;
+using IOrder.infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
-
+using System.Diagnostics.CodeAnalysis;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add(typeof(ExceptionFIlter));
+    options.Filters.Add(typeof(ExceptionFilter));
 });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowCredentials()
+              .WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+builder.Services.AddSignalR();
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-// Configuração do Swagger com Swashbuckle baseada no seu outro projeto
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "IOrder API", Version = "v1" });
@@ -57,23 +71,35 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    var clientId = builder.Configuration["Authentication:ClientId"];
     app.UseSwagger();   
     app.UseSwaggerUI(options => 
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "IOrder API");
-        options.OAuthClientId("aNd8zsy1b7HYxFTcfRXCNbnbGeDr1l9V"); 
+        options.OAuthClientId(clientId); 
     });
 }
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<ChatHub>("/hubs/chat");
 app.MapControllers();
 
 app.Run();
+
+[ExcludeFromCodeCoverage]
+public partial class Program
+{
+    protected Program() { }
+}

@@ -1,0 +1,281 @@
+<div class="cart-page">
+  <div class="cart-page__container">
+    <header class="cart-page__header">
+      <h1 class="cart-page__title">Meu Carrinho</h1>
+      @if (cartStore.items().length > 0) {
+        <button class="cart-page__clear-btn" (click)="clearCart()" [disabled]="cartStore.loading()">
+          @if (cartStore.loading()) {
+            <span class="spinner spinner--sm"></span>
+          }
+          Limpar carrinho
+        </button>
+      }
+    </header>
+
+    @if (cartStore.loading() && cartStore.items().length === 0) {
+      <div class="cart-page__skeleton">
+        @for (i of [1,2,3]; track i) {
+          <div class="cart-skeleton-item">
+            <app-loading-skeleton height="100px" border-radius="var(--radius-xl)" />
+          </div>
+        }
+      </div>
+    } @else if (cartStore.items().length === 0) {
+      <app-empty-state
+        icon="🛒"
+        title="Seu carrinho está vazio"
+        description="Explore as lojas e adicione produtos ao carrinho para começar."
+        actionLabel="Explorar lojas"
+        (action)="goToStores()"
+      />
+    } @else {
+      <div class="cart-page__content">
+        <div class="cart-page__items">
+          @for (item of cartStore.items(); track trackByItemId($index, item)) {
+            <div class="cart-item">
+              <div class="cart-item__image">
+                @if (item.productImageUrl) {
+                  <img [src]="item.productImageUrl" alt="" class="cart-item__img" />
+                } @else if (item.imageUrls[0]) {
+                  <img [src]="item.imageUrls[0]" alt="" class="cart-item__img" />
+                } @else {
+                  <div class="cart-item__img-placeholder">📦</div>
+                }
+              </div>
+
+              <div class="cart-item__info">
+                <p class="cart-item__name">{{ item.productName || 'Produto' }}</p>
+                @if (item.selectedOptions.length) {
+                  <div class="cart-item__selected-options">
+                    @for (opt of item.selectedOptions; track opt.optionId) {
+                      <span class="cart-item__option-tag">
+                        <span class="cart-item__option-group">{{ opt.groupName }}:</span>
+                        {{ opt.optionName }}
+                        @if (opt.priceModifier) {
+                          <span class="cart-item__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
+                @if (item.customize) {
+                  <p class="cart-item__customize">{{ item.customize }}</p>
+                }
+                @if (item.imageUrls.length) {
+                  <div class="cart-item__customize-images">
+                    @for (url of item.imageUrls; track url) {
+                      <img [src]="url" alt="Customização" class="cart-item__customize-thumb" />
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="cart-item__quantity">
+                <button
+                  class="cart-item__qty-btn"
+                  (click)="changeQuantity(item.id, item.quantity - 1)"
+                  [disabled]="item.quantity <= 1 || cartStore.loading()"
+                  aria-label="Diminuir quantidade"
+                >−</button>
+                <span class="cart-item__qty-value">{{ item.quantity }}</span>
+                <button
+                  class="cart-item__qty-btn"
+                  (click)="changeQuantity(item.id, item.quantity + 1)"
+                  [disabled]="cartStore.loading()"
+                  aria-label="Aumentar quantidade"
+                >+</button>
+              </div>
+
+              <div class="cart-item__prices">
+                <span class="cart-item__unit-price">{{ item.unitPrice | currency:'BRL' }}</span>
+                <span class="cart-item__total-price">{{ item.totalPrice | currency:'BRL' }}</span>
+              </div>
+
+              <button
+                class="cart-item__remove-btn"
+                (click)="removeItem(item.id)"
+                [disabled]="cartStore.loading()"
+                aria-label="Remover item"
+              >✕</button>
+            </div>
+          }
+        </div>
+
+        <aside class="cart-summary">
+          <h2 class="cart-summary__title">Resumo</h2>
+
+          <div class="cart-summary__coupon">
+            <label class="cart-summary__label" for="coupon-input">Cupom de desconto</label>
+            <div class="cart-summary__coupon-row">
+              <input
+                id="coupon-input"
+                type="text"
+                class="cart-summary__coupon-input"
+                placeholder="Digite o cupom"
+                [ngModel]="couponInput()"
+                (ngModelChange)="couponInput.set($event)"
+                (keyup.enter)="applyCoupon()"
+              />
+              <button class="cart-summary__coupon-btn" (click)="applyCoupon()" [disabled]="cartStore.loading()">
+                @if (cartStore.loading()) {
+                  <span class="spinner spinner--sm"></span>
+                }
+                Aplicar
+              </button>
+            </div>
+            @if (cartStore.couponCode()) {
+              <span class="cart-summary__coupon-applied">
+                Cupom: <strong>{{ cartStore.couponCode() }}</strong>
+              </span>
+            }
+          </div>
+
+          <div class="cart-summary__line">
+            <span>Subtotal</span>
+            <span>{{ cartStore.cartTotal() | currency:'BRL' }}</span>
+          </div>
+
+          @if (cartStore.couponCode() && cartStore.discountValue() != null) {
+            <div class="cart-summary__line cart-summary__line--discount">
+              <span>Desconto</span>
+              <span>-{{ cartStore.discountValue() | currency:'BRL' }}</span>
+            </div>
+          }
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Tipo de Entrega</h3>
+            <div class="cart-summary__delivery-type">
+              <label class="cart-summary__radio" [class.cart-summary__radio--active]="deliveryType() === 0">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  [value]="0"
+                  [checked]="deliveryType() === 0"
+                  (change)="onDeliveryTypeChange(0)"
+                />
+                <span class="cart-summary__radio-icon">🚗</span>
+                <span class="cart-summary__radio-label">Entrega</span>
+              </label>
+              <label class="cart-summary__radio" [class.cart-summary__radio--active]="deliveryType() === 1">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  [value]="1"
+                  [checked]="deliveryType() === 1"
+                  (change)="onDeliveryTypeChange(1)"
+                />
+                <span class="cart-summary__radio-icon">🏪</span>
+                <span class="cart-summary__radio-label">Retirada</span>
+              </label>
+            </div>
+          </div>
+
+          @if (deliveryType() === 0) {
+            <div class="cart-summary__section">
+              <h3 class="cart-summary__subtitle">Endereço de Entrega</h3>
+              @if (addressStore.addresses().length > 0) {
+                <select
+                  class="form-control"
+                  [ngModel]="selectedAddressId() || addressStore.selectedAddress()?.id"
+                  (ngModelChange)="onAddressChange($event)"
+                >
+                  @for (addr of addressStore.addresses(); track addr.id) {
+                    <option [value]="addr.id">{{ addr.name }} — {{ addr.street }}, {{ addr.number }} - {{ addr.neighborhood }}</option>
+                  }
+                </select>
+                @if (computedDistanceKm() > 0) {
+                  <p class="cart-summary__distance">{{ computedDistanceKm() }} km de distância</p>
+                }
+              } @else {
+                <p class="cart-summary__hint">Nenhum cadastrado. <a routerLink="/profile/addresses">Adicionar endereço</a></p>
+              }
+            </div>
+          }
+
+          @if (deliveryType() === 0 && computedDeliveryFee() > 0) {
+            <div class="cart-summary__line cart-summary__line--delivery">
+              <span>Taxa de entrega</span>
+              <span>{{ computedDeliveryFee() | currency:'BRL' }}</span>
+            </div>
+          } @else if (deliveryType() === 0 && computedDeliveryFee() === 0 && storeData()?.deliveryPartner === 1 && computedDistanceKm() > 0) {
+            <div class="cart-summary__line cart-summary__line--free-delivery">
+              <span>Entrega</span>
+              <span class="cart-summary__free-badge">Grátis</span>
+            </div>
+          }
+
+          @if (deliveryType() === 0 && storeData()) {
+            <div class="cart-summary__line cart-summary__line--partner">
+              <span>Entrega via</span>
+              <span>{{ storeData()!.deliveryPartner === 0 ? '🚗 App (rastreável)' : '🏪 Próprio' }}</span>
+            </div>
+          }
+
+          <div class="cart-summary__line cart-summary__line--total">
+            <span>Total</span>
+            <span>{{ orderTotal() | currency:'BRL' }}</span>
+          </div>
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Data de Entrega</h3>
+              <div class="form-row">
+                <select
+                  class="form-control"
+                  [ngModel]="deliveryDate()"
+                  (ngModelChange)="deliveryDate.set($event)"
+                >
+                  @for (date of availableDates(); track date.date) {
+                    <option [value]="date.date">{{ date.label }}</option>
+                  }
+                </select>
+                <select
+                  class="form-control"
+                  [ngModel]="deliveryTime()"
+                  (ngModelChange)="deliveryTime.set($event)"
+                >
+                  @for (time of availableTimes(); track time) {
+                    <option [value]="time">{{ time }}</option>
+                  }
+                </select>
+              </div>
+              @if (deliveryType() === 0 && deliveryDate() && deliveryTime()) {
+                <p class="cart-summary__delivery-window">
+                  Entrega entre {{ deliveryTime() }} — {{ deliveryTime() }}
+                  <span class="cart-summary__delivery-buffer">(±30min)</span>
+                </p>
+              }
+            </div>
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Observações</h3>
+            <textarea
+              class="form-control"
+              rows="2"
+              placeholder="Instruções adicionais para o pedido..."
+              [ngModel]="customerNotes()"
+              (ngModelChange)="customerNotes.set($event)"
+            ></textarea>
+          </div>
+
+          <div class="cart-summary__section">
+            <h3 class="cart-summary__subtitle">Telefone de Contato</h3>
+            <p class="cart-summary__hint">O telefone cadastrado no seu perfil será usado para contato. Você pode atualizá-lo em <a routerLink="/profile">Meu Perfil</a>.</p>
+          </div>
+
+          <div class="cart-summary__checkout-wrapper">
+              <button
+                class="cart-summary__checkout-btn"
+                [disabled]="creatingOrder() || cartStore.loading() || cartStore.items().length === 0 || !deliveryDate() || !deliveryTime() || (deliveryType() === 0 && !selectedAddressId() && !addressStore.selectedAddress())"
+                (click)="createOrder()"
+              >
+              @if (creatingOrder()) {
+                <span class="spinner spinner--sm"></span>
+              }
+              {{ creatingOrder() ? 'Criando pedido...' : 'Finalizar Pedido' }}
+            </button>
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</div>

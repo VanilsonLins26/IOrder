@@ -1,0 +1,303 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div class="admin-header-main">
+      <div>
+        <h1 class="admin-title">Produtos</h1>
+        <p class="admin-subtitle">Gerencie o seu catálogo de produtos e ative promoções</p>
+      </div>
+      <button class="btn btn--primary" (click)="openCreateProduct()">
+        + Novo Produto
+      </button>
+    </div>
+  </header>
+
+  @if (adminStore.loading()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="60px" />
+      <app-loading-skeleton height="60px" />
+      <app-loading-skeleton height="60px" />
+    </div>
+  } @else if (adminStore.products().length === 0) {
+    <div class="empty-list">
+      <span class="empty-icon">🍔</span>
+      <h3>Nenhum produto cadastrado</h3>
+      <p>Crie seu primeiro produto para começar a vender.</p>
+      <button class="btn btn--outline" (click)="openCreateProduct()">Criar Produto</button>
+    </div>
+  } @else {
+    <div class="products-grid">
+      @for (prod of adminStore.products(); track prod.id) {
+        <div class="product-row">
+          <div class="product-row-image">
+            @if (prod.imageUrl) {
+              <img [src]="prod.imageUrl" [alt]="prod.name" />
+            } @else {
+              <div class="product-img-placeholder">🍽️</div>
+            }
+          </div>
+          
+          <div class="product-row-info">
+            <span class="product-name">{{ prod.name }}</span>
+            <span class="product-price">
+              @if (prod.currentPromotionalPrice) {
+                <span class="old-price">{{ prod.price | currency:'BRL' }}</span>
+                <span class="promo-price">{{ prod.currentPromotionalPrice | currency:'BRL' }}</span>
+              } @else {
+                {{ prod.price | currency:'BRL' }}
+              }
+            </span>
+          </div>
+
+          <div class="product-actions">
+            <!-- Promo Button -->
+            <button class="btn-icon btn-icon--promo" (click)="openPromoModal(prod)" title="Ativar Promoção">
+              🔥
+            </button>
+            <button class="btn-icon" (click)="openEditProduct(prod)" title="Editar Produto">
+              ✏️
+            </button>
+            <button class="btn-icon btn-icon--custom" (click)="openCustomization(prod)" title="Customizações">
+              ⚙️
+            </button>
+            <button class="btn-icon btn-icon--danger" (click)="deleteProduct(prod.id)" title="Excluir Produto">
+              🗑️
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal Produto -->
+<app-modal
+  [isOpen]="isProductModalOpen()"
+  [title]="editingProduct() ? 'Editar Produto' : 'Novo Produto'"
+  (close)="closeProductModal()"
+>
+  @if (isProductModalOpen()) {
+    <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="settings-form">
+      <div class="form-group">
+        <label for="prodName">Nome do Produto</label>
+        <input id="prodName" type="text" formControlName="name" class="form-control" placeholder="Ex: X-Burger"
+          [attr.aria-invalid]="productForm.get('name')?.invalid && (productForm.get('name')?.dirty || productForm.get('name')?.touched)" />
+      </div>
+
+      <div class="form-group">
+        <label>Imagem do Produto</label>
+        <app-image-upload
+          [currentUrl]="productForm.value.imageUrl"
+          [loading]="uploadingImage()"
+          (fileSelected)="onProductImageSelected($event)"
+        />
+        <input type="hidden" formControlName="imageUrl" />
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="customizable" />
+          <span>Produto personalizável</span>
+        </label>
+        <p class="form-help">Se ativado, o cliente poderá adicionar instruções de personalização ao comprar.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="prodDesc">Descrição</label>
+        <textarea id="prodDesc" formControlName="description" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-2">
+          <label for="prodPrice">Preço (R$)</label>
+          <input id="prodPrice" type="text" appCurrencyInput formControlName="price" class="form-control"
+            [attr.aria-invalid]="productForm.get('price')?.invalid && (productForm.get('price')?.dirty || productForm.get('price')?.touched)" />
+        </div>
+        <div class="form-group flex-2">
+          <label for="prodUom">Unidade</label>
+          <select id="prodUom" formControlName="unitOfMeasure" class="form-control">
+            <option [value]="UnitOfMeasure.Unit">Unidade</option>
+            <option [value]="UnitOfMeasure.Kg">Kg</option>
+            <option [value]="UnitOfMeasure.Gram">Grama (g)</option>
+            <option [value]="UnitOfMeasure.Liter">Litro (L)</option>
+            <option [value]="UnitOfMeasure.Ml">Mililitro (ml)</option>
+            <option [value]="UnitOfMeasure.Meter">Metro (m)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prodCategory">Categoria</label>
+        <select id="prodCategory" formControlName="categoryId" class="form-control">
+          <option value="">Nenhuma / Sem categoria</option>
+          @for (cat of adminStore.categories(); track cat.id) {
+            <option [value]="cat.id">{{ cat.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" (click)="closeProductModal()">Cancelar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="productForm.invalid || isSaving()">
+          {{ isSaving() ? 'Salvando...' : 'Salvar Produto' }}
+        </button>
+      </div>
+    </form>
+  }
+</app-modal>
+
+
+<!-- Modal Promoção -->
+<app-modal
+  [isOpen]="isPromoModalOpen()"
+  title="Ativar Promoção"
+  (close)="closePromoModal()"
+>
+  <form [formGroup]="promoForm" (ngSubmit)="savePromo()" class="settings-form">
+    
+    <div class="promo-header">
+      <span class="promo-title">🔥 {{ editingProduct()?.name }}</span>
+      <span class="promo-original">Preço original: {{ editingProduct()?.price | currency:'BRL' }}</span>
+    </div>
+
+    <div class="form-group">
+      <label for="promoPrice">Preço Promocional (R$)</label>
+      <input id="promoPrice" type="text" appCurrencyInput formControlName="price" class="form-control" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group flex-2">
+        <label for="promoStart">Início</label>
+        <input id="promoStart" type="datetime-local" formControlName="initialTime" class="form-control" />
+      </div>
+      <div class="form-group flex-2">
+        <label for="promoEnd">Fim</label>
+        <input id="promoEnd" type="datetime-local" formControlName="finalTime" class="form-control" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn--outline" (click)="closePromoModal()">Cancelar</button>
+      <button type="submit" class="btn btn--promo" [disabled]="promoForm.invalid || isSaving()">
+        {{ isSaving() ? 'Ativando...' : 'Ativar Promoção' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
+
+<!-- Modal Customização -->
+<app-modal
+  [isOpen]="isCustomizationModalOpen()"
+  title="Customizações - {{ editingProduct()?.name }}"
+  (close)="closeCustomizationModal()"
+>
+  @if (loadingCustomization()) {
+    <p>Carregando...</p>
+  } @else {
+    <div class="customization-list">
+      @for (group of customizationGroups(); track group.id) {
+        <div class="customization-group-card">
+          <div class="customization-group-card__header">
+            <strong>{{ group.name }}</strong>
+            <span class="customization-group-card__type">{{ group.type === 'SingleChoice' ? 'Escolha única' : 'Múltipla escolha' }}</span>
+          </div>
+          <div class="customization-group-card__options">
+            @for (opt of group.options; track opt.id) {
+              <span class="customization-option-tag">
+                {{ opt.name }}
+                @if (opt.priceModifier) {
+                  <span class="customization-option-tag__price">
+                    {{ opt.priceModifier > 0 ? '+' : '' }}{{ opt.priceModifier | currency:'BRL' }}
+                  </span>
+                }
+              </span>
+            }
+          </div>
+          <div class="customization-group-card__actions">
+            <button class="btn btn--sm btn--outline" (click)="openEditGroup(group)">Editar</button>
+            <button class="btn btn--sm btn--danger" (click)="deleteCustomizationGroup(group.id)">Excluir</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <hr />
+
+    <h3>{{ editingCustomizationGroup() ? 'Editar Grupo' : 'Novo Grupo' }}</h3>
+    <form [formGroup]="customizationForm" (ngSubmit)="saveCustomizationGroup()" class="settings-form">
+      <div class="form-row">
+        <div class="form-group flex-3">
+          <label>Nome do Grupo</label>
+          <input type="text" formControlName="name" class="form-control" placeholder="Ex: Tamanho, Borda..." />
+        </div>
+        <div class="form-group flex-2">
+          <label>Tipo</label>
+          <select formControlName="type" class="form-control">
+            <option value="SingleChoice">Escolha única</option>
+            <option value="MultipleChoice">Múltipla escolha</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mínimo</label>
+          <input type="number" formControlName="minSelections" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Máximo</label>
+          <input type="number" formControlName="maxSelections" class="form-control" />
+        </div>
+        <div class="form-group form-group--checkbox">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="required" />
+            <span>Obrigatório</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Opções</label>
+        <div formArrayName="options" class="options-list">
+          @for (opt of optionsArray.controls; track $index) {
+            <div class="option-row" [formGroupName]="$index">
+              <input type="text" formControlName="name" class="form-control" placeholder="Nome da opção" />
+              <input type="text" appCurrencyInput formControlName="priceModifier" class="form-control option-price" placeholder="R$ 0,00" />
+              <button type="button" class="btn-icon btn-icon--danger" (click)="removeOption($index)" title="Remover opção">×</button>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn--sm btn--outline" (click)="addOption()" style="margin-top: var(--space-2);">+ Adicionar opção</button>
+      </div>
+
+      <div class="form-actions">
+        @if (editingCustomizationGroup()) {
+          <button type="button" class="btn btn--outline" (click)="cancelEditGroup()">Cancelar edição</button>
+        }
+        <button type="button" class="btn btn--outline" (click)="closeCustomizationModal()">Fechar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="customizationForm.invalid || isSavingCustomization()">
+          {{ isSavingCustomization() ? 'Salvando...' : (editingCustomizationGroup() ? 'Atualizar Grupo' : 'Criar Grupo') }}
+        </button>
+      </div>
+    </form>
+  }
+</app-modal>
+
+<app-confirmation-modal
+  title="Excluir Produto"
+  message="Tem certeza que deseja excluir este produto?"
+  [isOpen]="showDeleteProductConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteProduct()"
+  (cancel)="showDeleteProductConfirm.set(false)"
+  (close)="showDeleteProductConfirm.set(false)"
+></app-confirmation-modal>
+
+<app-confirmation-modal
+  title="Excluir Grupo de Customização"
+  message="Tem certeza que deseja excluir este grupo de customização?"
+  [isOpen]="showDeleteCustomizationConfirm()"
+  confirmLabel="Sim, Excluir"
+  (confirm)="confirmDeleteCustomizationGroup()"
+  (cancel)="showDeleteCustomizationConfirm.set(false)"
+  (close)="showDeleteCustomizationConfirm.set(false)"
+></app-confirmation-modal>

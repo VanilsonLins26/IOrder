@@ -1,0 +1,262 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <h1 class="admin-title">Configurações da Loja</h1>
+    <p class="admin-subtitle">Atualize as informações, endereço e horários de funcionamento</p>
+  </header>
+
+  @if (adminStore.loading()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="48px" />
+      <app-loading-skeleton height="300px" />
+    </div>
+  } @else {
+    <div class="settings-container">
+      <!-- TABS -->
+      <nav class="settings-tabs" role="tablist">
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'general'" 
+          (click)="setTab('general')">
+          ⚙️ Geral
+        </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'address'" 
+          (click)="setTab('address')">
+          📍 Endereço
+        </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'hours'" 
+          (click)="setTab('hours')">
+          🕒 Horários
+        </button>
+        <button 
+          role="tab" 
+          [class.active]="activeTab() === 'delivery'" 
+          (click)="setTab('delivery')">
+          🚗 Entrega
+        </button>
+      </nav>
+
+      <div class="settings-content">
+        <!-- Feedback de Sucesso -->
+        @if (saveSuccess()) {
+          <div class="alert alert--success">
+            Alterações salvas com sucesso!
+          </div>
+        }
+
+        <!-- TAB GERAL -->
+        @if (activeTab() === 'general') {
+          <form [formGroup]="generalForm" (ngSubmit)="saveGeneral()" class="settings-form">
+            
+            <div class="form-group">
+              <label for="storeName">Nome da Loja</label>
+              <input id="storeName" type="text" formControlName="name" class="form-control" placeholder="Nome do seu negócio"
+                [attr.aria-invalid]="generalForm.get('name')?.invalid && (generalForm.get('name')?.dirty || generalForm.get('name')?.touched)" />
+            </div>
+
+            <div class="form-group">
+              <label for="storeAbout">Sobre (Descrição)</label>
+              <textarea id="storeAbout" formControlName="about" class="form-control" rows="4" placeholder="Descreva sua loja, o que você vende..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Imagem de Perfil / Capa</label>
+              <app-image-upload
+                [currentUrl]="generalForm.value.imageUrl"
+                [loading]="uploadingImage()"
+                (fileSelected)="onStoreImageSelected($event)"
+              />
+              <input type="hidden" formControlName="imageUrl" />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="generalForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Geral' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB ENDEREÇO -->
+        @if (activeTab() === 'address') {
+          <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="settings-form">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="zipCode">CEP</label>
+                <input id="zipCode" type="text" formControlName="zipCode" class="form-control" />
+              </div>
+              <div class="form-group flex-2">
+                <label for="street">Rua/Logradouro</label>
+                <input id="street" type="text" formControlName="street" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="number">Número</label>
+                <input id="number" type="text" formControlName="number" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="complement">Complemento</label>
+                <input id="complement" type="text" formControlName="complement" class="form-control" />
+              </div>
+              <div class="form-group flex-2">
+                <label for="neighborhood">Bairro</label>
+                <input id="neighborhood" type="text" formControlName="neighborhood" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="city">Cidade</label>
+                <input id="city" type="text" formControlName="city" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="state">UF</label>
+                <input id="state" type="text" formControlName="state" class="form-control" maxLength="2" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="addressForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Endereço' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB HORÁRIOS -->
+        @if (activeTab() === 'hours') {
+          <form [formGroup]="hoursForm" (ngSubmit)="saveHours()" class="settings-form">
+            <div formArrayName="openingHours" class="hours-list">
+              @for (control of hoursControls; track i; let i = $index) {
+                <div [formGroupName]="i" class="hour-row" [class.is-closed]="control.value.isClosed">
+                  <div class="hour-day">
+                    {{ getDayName(i) }}
+                  </div>
+                  
+                  @if (!control.value.isClosed) {
+                    <div class="hour-inputs">
+                      <input type="time" formControlName="openHour" class="form-control time-input" />
+                      <span>até</span>
+                      <input type="time" formControlName="closeHour" class="form-control time-input" />
+                    </div>
+                  } @else {
+                    <div class="hour-closed-msg">
+                      Fechado
+                    </div>
+                  }
+
+                  <div class="hour-toggle">
+                    <label class="toggle-switch">
+                      <input type="checkbox" formControlName="isClosed" />
+                      <span class="toggle-slider"></span>
+                      Fechado
+                    </label>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="hoursForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Horários' }}
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- TAB ENTREGA -->
+        @if (activeTab() === 'delivery') {
+          <form [formGroup]="deliveryForm" (ngSubmit)="saveDelivery()" class="settings-form">
+            <p class="form-description">
+              Configure como sua loja faz entregas.
+            </p>
+
+            <div class="form-group">
+              <label>Como sua loja faz entregas?</label>
+              <div class="delivery-partner-toggle">
+                <button type="button"
+                  class="delivery-partner-option"
+                  [class.active]="deliveryForm.value.deliveryPartner === 0"
+                  (click)="deliveryForm.patchValue({ deliveryPartner: 0 })">
+                  <span class="delivery-partner-icon">🚗</span>
+                  <span class="delivery-partner-label">Entregador do App</span>
+                  <span class="delivery-partner-desc">O app cobra taxa fixa. Entregadores rastreados.</span>
+                </button>
+                <button type="button"
+                  class="delivery-partner-option"
+                  [class.active]="deliveryForm.value.deliveryPartner === 1"
+                  (click)="deliveryForm.patchValue({ deliveryPartner: 1 })">
+                  <span class="delivery-partner-icon">🏪</span>
+                  <span class="delivery-partner-label">Entregador Próprio</span>
+                  <span class="delivery-partner-desc">Você configura o frete. Sem rastreamento.</span>
+                </button>
+              </div>
+            </div>
+
+            @if (deliveryForm.value.deliveryPartner === 1) {
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="baseDeliveryFee">Taxa Base (R$)</label>
+                  <input id="baseDeliveryFee" type="number" formControlName="baseDeliveryFee" class="form-control" step="0.50" min="0" max="100" />
+                  <span class="form-hint">Valor fixo cobrado para entregas curtas.</span>
+                </div>
+                <div class="form-group">
+                  <label for="feePerKm">Valor por Km (R$)</label>
+                  <input id="feePerKm" type="number" formControlName="feePerKm" class="form-control" step="0.50" min="0" max="50" />
+                  <span class="form-hint">Valor cobrado a cada km excedente.</span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="maxDeliveryDistanceKm">Distância Máxima (km)</label>
+                  <input id="maxDeliveryDistanceKm" type="number" formControlName="maxDeliveryDistanceKm" class="form-control" step="1" min="1" max="100" />
+                  <span class="form-hint">Distância máxima que a loja aceita entregar.</span>
+                </div>
+                <div class="form-group">
+                  <label for="freeDeliveryRadiusKm">Frete grátis até (km)</label>
+                  <input id="freeDeliveryRadiusKm" type="number" formControlName="freeDeliveryRadiusKm" class="form-control" step="0.5" min="0" max="50" />
+                  <span class="form-hint">Raio para entrega sem custo.</span>
+                </div>
+              </div>
+
+              <div class="delivery-preview">
+                <h4 class="delivery-preview__title">Pré-visualização</h4>
+                @if (deliveryForm.value.freeDeliveryRadiusKm! > 0) {
+                  <div class="delivery-preview__formula">
+                    Entrega grátis até {{ deliveryForm.value.freeDeliveryRadiusKm }} km
+                  </div>
+                }
+                <div class="delivery-preview__formula">
+                  Entrega = {{ deliveryForm.value.baseDeliveryFee | currency:'BRL' }} + (distância × {{ deliveryForm.value.feePerKm | currency:'BRL' }}/km)
+                </div>
+                <div class="delivery-preview__examples">
+                  <span>2 km: {{ (deliveryForm.value.baseDeliveryFee! + 2 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                  <span>5 km: {{ (deliveryForm.value.baseDeliveryFee! + 5 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                  <span>10 km: {{ (deliveryForm.value.baseDeliveryFee! + 10 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                </div>
+              </div>
+            } @else {
+              <div class="delivery-app-info">
+                <p>O app cobra uma taxa fixa de entrega dos clientes. Entregadores são rastreados em tempo real via GPS.</p>
+                <p class="form-hint">Entregadores disponíveis recebem notificações e aceitam pedidos próximos.</p>
+              </div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="deliveryForm.invalid || isSaving()">
+                {{ isSaving() ? 'Salvando...' : 'Salvar Entrega' }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  }
+</div>

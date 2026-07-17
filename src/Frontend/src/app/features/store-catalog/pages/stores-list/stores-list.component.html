@@ -1,0 +1,46 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Lojas Parceiras</h1>
+    <p class="page-subtitle">Encontre as melhores opções para sua encomenda</p>
+  </div>
+
+  <app-store-filters
+    [categories]="catalogStore.categories()"
+    [loadingCategories]="false"
+    [selectedCategoryId]="catalogStore.selectedCategoryId()"
+    [searchQuery]="catalogStore.searchQuery()"
+    (categorySelect)="onCategorySelect($event)"
+    (searchChange)="onSearch($event)"
+  />
+
+  <div class="stores-content">
+    @if (catalogStore.isLoading()) {
+      <div class="stores-grid">
+        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+          <div class="store-skeleton">
+            <app-loading-skeleton height="180px" border-radius="var(--radius-xl) var(--radius-xl) 0 0" />
+            <div class="store-skeleton__body">
+              <app-loading-skeleton height="20px" width="60%" />
+              <app-loading-skeleton height="14px" width="80%" />
+              <app-loading-skeleton height="14px" width="40%" />
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (catalogStore.filteredStores().length === 0) {
+      <app-empty-state
+        icon="🏪"
+        title="Nenhuma loja encontrada"
+        description="Não encontramos lojas com os filtros atuais. Tente buscar por outro termo ou limpar os filtros."
+        actionLabel="Limpar filtros"
+        (action)="onCategorySelect(null); onSearch('')"
+      />
+    } @else {
+      <div class="stores-grid">
+        @for (store of catalogStore.filteredStores(); track store.id) {
+          <app-store-card [store]="store" />
+        }
+      </div>
+    }
+  </div>
+</div>

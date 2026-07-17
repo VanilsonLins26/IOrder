@@ -1,0 +1,65 @@
+export enum PaymentMethodDto {
+  Pix = 0,
+  CreditCard = 1,
+  Boleto = 2,
+}
+
+export enum PaymentStatusDto {
+  Pending = 0,
+  Approved = 1,
+  Rejected = 2,
+  Refunded = 3,
+  Cancelled = 4,
+}
+
+export interface PaymentResponseDto {
+  id: string;
+  orderId: string;
+  amount: number;
+  method: PaymentMethodDto;
+  status: PaymentStatusDto;
+  pixQrCode: string | null;
+  pixCopyPaste: string | null;
+  boletoUrl: string | null;
+  boletoBarcode: string | null;
+  cardLastFourDigits: string | null;
+  installments: number | null;
+  installmentAmount: string | null;
+  createdAt: string;
+  paidAt: string | null;
+}
+
+export interface CreatePaymentRequestDto {
+  orderId: string;
+}
+
+export interface PaymentIntentResponseDto {
+  clientSecret: string;
+  paymentIntentId: string;
+  customerId: string;
+}
+
+export interface PublicKeyResponseDto {
+  publicKey: string;
+}
+
+export interface PaymentStatusChangedEvent {
+  orderId: string;
+  paymentId: string;
+  status: PaymentStatusDto;
+  paidAt: string | null;
+}
+
+export interface UserCardResponseDto {
+  id: string;
+  lastFourDigits: string;
+  brand: string;
+  expirationMonth: number;
+  expirationYear: number;
+  gatewayCardId: string;
+}
+
+export interface SaveCardRequestDto {
+  cardToken: string;
+  payerEmail?: string;
+}

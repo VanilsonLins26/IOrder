@@ -1,0 +1,109 @@
+<div class="addresses-page">
+  <div class="addresses-page__header">
+    <a routerLink="/profile" class="addresses-page__back">&larr; Voltar</a>
+    <h1 class="addresses-page__title">Meus Endereços</h1>
+  </div>
+
+  @if (loading()) {
+    <p class="addresses-page__loading">Carregando endereços...</p>
+  } @else {
+    <div class="addresses-page__card">
+      <div class="addresses-page__card-header">
+        <h2 class="addresses-page__subtitle">Endereços salvos</h2>
+        @if (!showForm()) {
+          <button class="addresses-page__add-btn" (click)="openForm()">+ Novo endereço</button>
+        }
+      </div>
+
+      @if (addresses().length === 0 && !showForm()) {
+        <p class="addresses-page__hint">Nenhum endereço salvo. Adicione um endereço para facilitar seus pedidos.</p>
+      } @else {
+        <div class="addresses-page__list">
+          @for (address of addresses(); track address.id) {
+            <div class="address-item" [class.address-item--default]="address.isDefault">
+              <div class="address-item__header">
+                <span class="address-item__name">{{ address.name }}</span>
+                @if (address.isDefault) {
+                  <span class="address-item__badge">Padrão</span>
+                }
+              </div>
+              <p class="address-item__detail">
+                {{ address.street }}, {{ address.number }}@if (address.complement) { - {{ address.complement }} }
+              </p>
+              <p class="address-item__detail">
+                {{ address.neighborhood }} - {{ address.city }}, {{ address.state }}
+              </p>
+              <p class="address-item__detail address-item__detail--muted">
+                CEP: {{ address.zipCode }}
+              </p>
+              <div class="address-item__actions">
+                @if (!address.isDefault) {
+                  <button class="address-item__action" (click)="setDefault(address.id)">Definir como padrão</button>
+                }
+                <button class="address-item__action address-item__action--delete" (click)="deleteAddress(address.id)">Remover</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (showForm()) {
+      <div class="addresses-page__card addresses-page__card--form">
+        <h2 class="addresses-page__subtitle">Novo endereço</h2>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label" for="addr-name">Nome *</label>
+            <input id="addr-name" type="text" class="form-input" placeholder="Ex: Casa, Trabalho" [ngModel]="formName()" (ngModelChange)="formName.set($event)" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-zip">CEP *</label>
+            <input id="addr-zip" type="text" class="form-input" placeholder="00000-000" [ngModel]="formZipCode()" (ngModelChange)="formZipCode.set($event)" (blur)="onCepBlur()" maxlength="9" />
+            @if (loadingCep()) {
+              <span class="form-hint">Buscando endereço...</span>
+            }
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label" for="addr-street">Rua *</label>
+            <input id="addr-street" type="text" class="form-input" [ngModel]="formStreet()" (ngModelChange)="formStreet.set($event)" [disabled]="loadingCep()" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-number">Número *</label>
+            <input id="addr-number" type="text" class="form-input" [ngModel]="formNumber()" (ngModelChange)="formNumber.set($event)" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-complement">Complemento</label>
+            <input id="addr-complement" type="text" class="form-input" placeholder="Apto, Bloco..." [ngModel]="formComplement()" (ngModelChange)="formComplement.set($event)" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-neighborhood">Bairro *</label>
+            <input id="addr-neighborhood" type="text" class="form-input" [ngModel]="formNeighborhood()" (ngModelChange)="formNeighborhood.set($event)" [disabled]="loadingCep()" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-city">Cidade *</label>
+            <input id="addr-city" type="text" class="form-input" [ngModel]="formCity()" (ngModelChange)="formCity.set($event)" [disabled]="loadingCep()" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addr-state">Estado *</label>
+            <input id="addr-state" type="text" class="form-input" placeholder="UF" maxlength="2" [ngModel]="formState()" (ngModelChange)="formState.set($event)" [disabled]="loadingCep()" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--outline" (click)="cancelForm()">Cancelar</button>
+          <button class="btn btn--primary" (click)="saveAddress()" [disabled]="saving()">
+            {{ saving() ? 'Salvando...' : 'Salvar endereço' }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

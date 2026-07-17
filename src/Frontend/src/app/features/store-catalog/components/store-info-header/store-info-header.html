@@ -1,0 +1,53 @@
+<div class="store-header">
+  <div class="store-header__banner">
+    <!-- Placeholder for banner if no image is provided -->
+  </div>
+  
+  <div class="store-header__content">
+    <div class="store-header__logo-wrapper">
+      @if (store().imageUrl) {
+        <img [src]="store().imageUrl" [alt]="store().name" class="store-header__logo" />
+      } @else {
+        <div class="store-header__logo-placeholder">🏪</div>
+      }
+    </div>
+
+    <div class="store-header__info">
+      <div class="store-header__title-row">
+        <h1 class="store-header__name">{{ store().name }}</h1>
+        <span class="store-badge" [class.store-badge--open]="store().isOpen">
+          {{ store().isOpen ? 'Aberto' : 'Fechado' }}
+        </span>
+      </div>
+      
+      @if (store().about) {
+        <p class="store-header__about">{{ store().about }}</p>
+      }
+
+      <div class="store-header__details">
+        @if (store().address) {
+          <span class="detail-item">
+            <span class="detail-icon">📍</span>
+            {{ store().address.street }}, {{ store().address.number }} - {{ store().address.city }}
+          </span>
+        }
+        @if (store().distanceKm !== undefined && store().distanceKm !== null) {
+          <span class="detail-item detail-item--highlight">
+            <span class="detail-icon">🚗</span>
+            {{ store().distanceKm | number:'1.1-1' }} km de você
+          </span>
+        }
+        @if (store().deliveryFee !== undefined && store().deliveryFee !== null) {
+          <span class="detail-item">
+            <span class="detail-icon">💰</span>
+            Entrega: {{ store().deliveryFee | currency:'BRL' }}
+          </span>
+        }
+        <span class="detail-item">
+          <span class="detail-icon">⭐</span>
+          4.8 (120 avaliações)
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
