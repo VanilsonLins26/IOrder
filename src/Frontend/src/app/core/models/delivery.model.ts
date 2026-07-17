@@ -16,6 +16,7 @@ export interface DeliveryAssignmentResponseDto {
   assignedAt: string;
   acceptedAt: string | null;
   pickedUpAt: string | null;
+  inTransitAt: string | null;
   deliveredAt: string | null;
   courierNotes: string | null;
 }
