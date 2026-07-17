@@ -22,12 +22,17 @@ export class DeliveryApiService {
     });
   }
 
-  assignCourier(orderId: string, dto: AssignCourierRequestDto): Observable<DeliveryAssignmentResponseDto> {
-    return this.http.post<DeliveryAssignmentResponseDto>(`${this.baseUrl}/orders/${orderId}/assign`, dto);
+  broadcastDeliveryOffer(orderId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/orders/${orderId}/broadcast`, {});
   }
 
-  acceptAssignment(assignmentId: string): Observable<DeliveryAssignmentResponseDto> {
-    return this.http.patch<DeliveryAssignmentResponseDto>(`${this.baseUrl}/assignments/${assignmentId}/accept`, {});
+  getAvailableDeliveries(): Observable<PagedList<any>> {
+    // Reusing PagedList or just an array. Our backend returns ResponseListDto which matches PagedList basically but without paging info, or we can use any
+    return this.http.get<PagedList<any>>(`${this.baseUrl}/available`);
+  }
+
+  acceptAssignment(orderId: string): Observable<DeliveryAssignmentResponseDto> {
+    return this.http.post<DeliveryAssignmentResponseDto>(`${this.baseUrl}/orders/${orderId}/accept`, {});
   }
 
   rejectAssignment(assignmentId: string): Observable<DeliveryAssignmentResponseDto> {
@@ -48,12 +53,6 @@ export class DeliveryApiService {
 
   getCourierLocation(courierUserId: string): Observable<CourierLocationResponseDto> {
     return this.http.get<CourierLocationResponseDto>(`${this.baseUrl}/courier/${courierUserId}/location`);
-  }
-
-  searchAvailableCouriers(orderId: string): Observable<AvailableCourierResponseDto[]> {
-    return this.http.get<AvailableCourierResponseDto[]>(`${this.baseUrl}/search`, {
-      params: { orderId },
-    });
   }
 
   startTransit(assignmentId: string): Observable<DeliveryAssignmentResponseDto> {

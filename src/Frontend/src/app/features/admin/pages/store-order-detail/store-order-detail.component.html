@@ -23,7 +23,7 @@
     @if (earlyDeliveryRequested()) {
       <div class="store-order-detail__early-banner">
         <span>⚡ O cliente quer receber antes!</span>
-        <button class="action-btn action-btn--primary" (click)="searchCouriers()">Buscar Entregador</button>
+        <button class="action-btn action-btn--primary" (click)="broadcastDeliveryOffer()">Buscar Entregador</button>
       </div>
     }
 
@@ -38,14 +38,15 @@
           {{ showNegotiate() ? 'Cancelar' : 'Negociar' }}
         </button>
       }
-      @if (canAssignCourier()) {
-        <button class="action-btn action-btn--secondary" (click)="toggleAssignCourier()">
-          {{ showAssignCourier() ? 'Cancelar' : '🛵 Atribuir Entregador' }}
+
+      @if (isSearchingCourier()) {
+        <button class="action-btn action-btn--secondary" disabled>
+          Buscando Entregador...
         </button>
       }
-      @if (canSearchCouriers()) {
-        <button class="action-btn action-btn--secondary" (click)="searchCouriers()" [disabled]="searchingCouriers()">
-          {{ searchingCouriers() ? 'Buscando...' : '🔍 Buscar Entregador' }}
+      @if (canBroadcastDeliveryOffer()) {
+        <button class="action-btn action-btn--secondary" (click)="broadcastDeliveryOffer()" [disabled]="broadcastingOffer()">
+          {{ broadcastingOffer() ? 'Enviando...' : '📡 Solicitar Entregador' }}
         </button>
       }
       @if (canSendForDelivery()) {
@@ -60,31 +61,9 @@
       }
     </div>
 
-    @if (showSearchCouriers()) {
-      <app-search-couriers-dialog
-        [couriers]="availableCouriers()"
-        [searching]="searchingCouriers()"
-        (assign)="assignFromSearch($event)"
-        (closeDialog)="showSearchCouriers.set(false)"
-      ></app-search-couriers-dialog>
-    }
 
-    @if (showAssignCourier()) {
-      <div class="store-order-detail__negotiate">
-        <h3>Atribuir Entregador</h3>
-        <div class="negotiate__fields">
-          <label>
-            ID do Entregador
-            <input type="text" [ngModel]="courierUserId()" (ngModelChange)="courierUserId.set($event)" placeholder="User ID do entregador" />
-          </label>
-          <button class="action-btn action-btn--primary"
-                  (click)="assignCourier()"
-                  [disabled]="!courierUserId().trim() || assigningCourier()">
-            {{ assigningCourier() ? 'Atribuindo...' : 'Atribuir' }}
-          </button>
-        </div>
-      </div>
-    }
+
+
 
     @if (showNegotiate()) {
       <div class="store-order-detail__negotiate">

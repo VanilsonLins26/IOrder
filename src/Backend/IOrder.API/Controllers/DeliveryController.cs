@@ -12,27 +12,24 @@ namespace IOrder.API.Controllers;
 [Authorize]
 public class DeliveryController : IOrderBaseController
 {
-    [HttpPost("orders/{orderId:guid}/assign")]
-    [ProducesResponseType(typeof(DeliveryAssignmentResponseDto), StatusCodes.Status201Created)]
+    [HttpPost("orders/{orderId:guid}/broadcast")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AssignCourier(
-        [FromServices] IAssignDeliveryUseCase useCase,
+    public async Task<IActionResult> BroadcastDeliveryOffer(
+        [FromServices] IBroadcastDeliveryOfferUseCase useCase,
         [FromServices] IHubContext<ChatHub> hubContext,
-        [FromRoute] Guid orderId,
-        [FromBody] AssignCourierRequestDto request)
+        [FromRoute] Guid orderId)
     {
-        var response = await useCase.Execute(orderId, request);
+        await useCase.Execute(orderId);
 
-        await hubContext.Clients.Group(orderId.ToString()).SendAsync(
-            "CourierAssigned",
-            new { OrderId = orderId, CourierUserId = request.CourierUserId });
+        await hubContext.Clients.Group("Couriers").SendAsync("NewDeliveryAvailable");
 
-        return Created(string.Empty, response);
+        return NoContent();
     }
 
-    [HttpPatch("assignments/{assignmentId:guid}/accept")]
+    [HttpPost("orders/{orderId:guid}/accept")]
     [ProducesResponseType(typeof(DeliveryAssignmentResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
@@ -40,9 +37,9 @@ public class DeliveryController : IOrderBaseController
     public async Task<IActionResult> AcceptDelivery(
         [FromServices] IAcceptDeliveryUseCase useCase,
         [FromServices] IHubContext<ChatHub> hubContext,
-        [FromRoute] Guid assignmentId)
+        [FromRoute] Guid orderId)
     {
-        var response = await useCase.Execute(assignmentId);
+        var response = await useCase.Execute(orderId);
 
         await hubContext.Clients.Group(response.OrderId.ToString()).SendAsync(
             "OrderStatusChanged",
@@ -162,6 +159,14 @@ public class DeliveryController : IOrderBaseController
             "OrderStatusChanged",
             new { OrderId = response.OrderId, Status = (int)9 });
 
+        return Ok(response);
+    }
+    [HttpGet("available")]
+    [ProducesResponseType(typeof(PagedResponse<AvailableDeliveryResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAvailableDeliveries(
+        [FromServices] IGetAvailableDeliveriesUseCase useCase)
+    {
+        var response = await useCase.ExecuteAsync();
         return Ok(response);
     }
 }

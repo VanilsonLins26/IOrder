@@ -23,6 +23,7 @@ public class Order : EntityBase, IAggregateRoot
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; private set; }
     public bool RequestedEarlyDelivery { get; private set; }
+    public bool IsSearchingCourier { get; private set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? LastMessageAt { get; private set; }
@@ -154,5 +155,17 @@ public class Order : EntityBase, IAggregateRoot
         RequestedEarlyDelivery = true;
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new EarlyDeliveryRequestedEvent(Id, UserId));
+    }
+
+    public void StartSearchingCourier()
+    {
+        IsSearchingCourier = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void StopSearchingCourier()
+    {
+        IsSearchingCourier = false;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

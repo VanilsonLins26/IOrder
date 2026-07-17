@@ -164,18 +164,39 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
     public async Task<IList<Domain.Entities.Order>> GetEligibleForAutoSearchAsync()
     {
         var now = DateTime.UtcNow;
-        var fiveMinutesBeforeEta = now.AddMinutes(5);
+        var fifteenMinutesBeforeEta = now.AddMinutes(15); // Changed to 15 mins
+
+        return await _context.Orders
+            .Include(o => o.Store)
+            .Include(o => o.Assignments)
+            .Where(o => (o.Status == Domain.Entities.Enums.OrderStatus.Ready || o.Status == Domain.Entities.Enums.OrderStatus.Preparing)
+                && o.DeliveryType == Domain.Entities.Enums.DeliveryType.Delivery
+                && o.Store != null
+                && o.Store.DeliveryPartner == Domain.Entities.Enums.DeliveryPartner.App
+                && !o.IsSearchingCourier
+                && (o.RequestedEarlyDelivery
+                    || (o.DeliveryDate.HasValue && o.DeliveryDate.Value <= fifteenMinutesBeforeEta))
+                && !o.Assignments.Any(a =>
+                    a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected
+                    && a.Status != Domain.Entities.Enums.AssignmentStatus.Failed))
+            .ToListAsync();
+    }
+
+    public async Task<IList<Domain.Entities.Order>> GetAvailableForDeliveryAsync(double courierLat, double courierLon, double maxDistanceKm)
+    {
+        // 1 degree is roughly 111km. For 5km, it's roughly 0.045 degrees
+        var distanceInDegrees = maxDistanceKm / 111.0;
+        var point = new NetTopologySuite.Geometries.Point(courierLon, courierLat) { SRID = 4326 };
 
         return await _context.Orders
             .AsNoTracking()
             .Include(o => o.Store)
             .Include(o => o.Assignments)
-            .Where(o => o.Status == Domain.Entities.Enums.OrderStatus.Ready
-                && o.DeliveryType == Domain.Entities.Enums.DeliveryType.Delivery
+            .Where(o => o.IsSearchingCourier
+                && (o.Status == Domain.Entities.Enums.OrderStatus.Ready || o.Status == Domain.Entities.Enums.OrderStatus.Preparing)
                 && o.Store != null
-                && o.Store.DeliveryPartner == Domain.Entities.Enums.DeliveryPartner.App
-                && (o.RequestedEarlyDelivery
-                    || (o.DeliveryDate.HasValue && o.DeliveryDate.Value <= fiveMinutesBeforeEta))
+                && o.Store.Location != null
+                && o.Store.Location.Distance(point) <= distanceInDegrees
                 && !o.Assignments.Any(a =>
                     a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected
                     && a.Status != Domain.Entities.Enums.AssignmentStatus.Failed))

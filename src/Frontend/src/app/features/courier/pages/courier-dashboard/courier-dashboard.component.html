@@ -13,27 +13,29 @@
       }
     </div>
   } @else {
-    <!-- Pending assignments -->
-    @if (pendingAssignments().length > 0) {
+    <!-- Available deliveries -->
+    @if (availableDeliveries().length > 0) {
       <section class="courier-dashboard__section">
         <h2 class="courier-dashboard__section-title">
-          ⏳ Aguardando Resposta
-          <span class="courier-dashboard__badge">{{ pendingAssignments().length }}</span>
+          📦 Entregas Disponíveis
+          <span class="courier-dashboard__badge">{{ availableDeliveries().length }}</span>
         </h2>
         <div class="courier-dashboard__list">
-          @for (assignment of pendingAssignments(); track assignment.id) {
-            <div class="assignment-card assignment-card--pending" (click)="goToDeliveryDetail(assignment.id)">
+          @for (delivery of availableDeliveries(); track delivery.orderId) {
+            <div class="assignment-card assignment-card--pending">
               <div class="assignment-card__header">
-                <span class="assignment-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
-                <span class="assignment-card__status {{ getStatusClass(assignment.status) }}">
-                  {{ getStatusLabel(assignment.status) }}
+                <span class="assignment-card__order-id">{{ delivery.storeName }}</span>
+                <span class="assignment-card__status status-pill status-pill--info">
+                  {{ delivery.distanceKm }} km
                 </span>
               </div>
               <div class="assignment-card__body">
-                <span class="assignment-card__date">Atribuído em {{ assignment.assignedAt | date:"dd/MM/yyyy HH:mm" }}</span>
+                <span class="assignment-card__date">Valor: {{ delivery.deliveryFee | currency:'BRL' }}</span>
               </div>
               <div class="assignment-card__action">
-                <span>Ver detalhes →</span>
+                <button class="action-btn action-btn--primary" style="padding: 4px 12px;" (click)="acceptDelivery(delivery.orderId)">
+                  Aceitar
+                </button>
               </div>
             </div>
           }
@@ -79,14 +81,14 @@
     <!-- Quick stats -->
     <section class="courier-dashboard__section courier-dashboard__stats">
       <div class="stat-card">
-        <span class="stat-card__icon">⏳</span>
-        <span class="stat-card__value">{{ pendingAssignments().length }}</span>
-        <span class="stat-card__label">Pendentes</span>
+        <span class="stat-card__icon">📦</span>
+        <span class="stat-card__value">{{ availableDeliveries().length }}</span>
+        <span class="stat-card__label">Disponíveis</span>
       </div>
       <div class="stat-card">
-        <span class="stat-card__icon">🚚</span>
+        <span class="stat-card__icon">🛵</span>
         <span class="stat-card__value">{{ activeAssignments().length }}</span>
-        <span class="stat-card__label">Ativas</span>
+        <span class="stat-card__label">Em Andamento</span>
       </div>
     </section>
   }

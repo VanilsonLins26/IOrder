@@ -89,9 +89,10 @@ export interface OrderResponseDto {
   deliveryPartner: number;
   deliveryFee: number;
   deliveryDate?: string | null;
-  deliveryDateEnd?: string | null;
+  deliveryDateEnd: string | null;
   requestedEarlyDelivery: boolean;
-  customerNotes?: string | null;
+  isSearchingCourier: boolean;
+  customerNotes: string | null;
   shopkeeperNotes?: string | null;
   createdAt: string;
   updatedAt: string;

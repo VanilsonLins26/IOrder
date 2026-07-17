@@ -19,6 +19,7 @@ public class OrderResponseDto
     public DateTime? DeliveryDate { get; set; }
     public DateTime? DeliveryDateEnd { get; set; }
     public bool RequestedEarlyDelivery { get; set; }
+    public bool IsSearchingCourier { get; set; }
     public string? CustomerNotes { get; set; }
     public string? ShopkeeperNotes { get; set; }
     public DateTime CreatedAt { get; set; }

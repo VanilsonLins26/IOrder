@@ -47,31 +47,20 @@ public class CourierAutoSearchService : BackgroundService
                     var storeLat = order.Store.Location.Y;
                     var storeLon = order.Store.Location.X;
 
-                    var availableCouriers = await courierLocationRepo.GetAvailableCouriersAsync(
-                        storeLat, storeLon, 15.0, order.Id);
-
-                    if (availableCouriers.Count == 0) continue;
-
-                    var courier = availableCouriers.First();
-
-                    var assignment = new Domain.Entities.DeliveryAssignment
+                    if (!order.IsSearchingCourier)
                     {
-                        OrderId = order.Id,
-                        CourierUserId = courier.CourierUserId
-                    };
+                        order.StartSearchingCourier();
+                        
+                        _logger.LogInformation(
+                            "Auto-search: broadcasting offer for order {Order}",
+                            order.Id);
 
-                    order.AssignCourier(assignment);
-                    await deliveryWriteRepo.CreateAsync(assignment);
-                    await uof.Commit();
-
-                    await hubContext.Clients.Group(order.Id.ToString()).SendAsync(
-                        "CourierAssigned",
-                        new { OrderId = order.Id, CourierUserId = courier.CourierUserId });
-
-                    _logger.LogInformation(
-                        "Auto-search: courier {Courier} assigned to order {Order}",
-                        courier.CourierUserId, order.Id);
+                        await hubContext.Clients.Group("Couriers").SendAsync(
+                            "NewDeliveryAvailable");
+                    }
                 }
+                
+                await uof.Commit();
             }
             catch (Exception ex)
             {

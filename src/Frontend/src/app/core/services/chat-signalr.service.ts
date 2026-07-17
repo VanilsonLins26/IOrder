@@ -21,6 +21,7 @@ export class ChatSignalRService {
   readonly onOrderStatusChanged = new Subject<OrderStatusChangedEvent>();
   readonly onCourierAssigned = new Subject<CourierAssignedEvent>();
   readonly onEarlyDeliveryRequested = new Subject<EarlyDeliveryRequestedEvent>();
+  readonly onNewDeliveryAvailable = new Subject<void>();
 
   async start(): Promise<void> {
     if (this.hubConnection?.state === 'Connected') return;
@@ -71,6 +72,10 @@ export class ChatSignalRService {
       this.onEarlyDeliveryRequested.next(event);
     });
 
+    this.hubConnection.on('NewDeliveryAvailable', () => {
+      this.onNewDeliveryAvailable.next();
+    });
+
     this.hubConnection.onreconnecting(() => this.connected.set(false));
     this.hubConnection.onreconnected(() => this.connected.set(true));
     this.hubConnection.onclose(() => this.connected.set(false));
@@ -105,6 +110,22 @@ export class ChatSignalRService {
       await this.hubConnection?.invoke('LeaveOrderGroup', orderId);
     } catch (err) {
       console.error('Failed to leave order group:', err);
+    }
+  }
+
+  async joinGroup(groupName: string): Promise<void> {
+    try {
+      await this.hubConnection?.invoke('JoinGroup', groupName);
+    } catch (err) {
+      console.error('Failed to join group:', err);
+    }
+  }
+
+  async leaveGroup(groupName: string): Promise<void> {
+    try {
+      await this.hubConnection?.invoke('LeaveGroup', groupName);
+    } catch (err) {
+      console.error('Failed to leave group:', err);
     }
   }
 

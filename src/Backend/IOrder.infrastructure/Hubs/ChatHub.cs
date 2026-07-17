@@ -24,6 +24,16 @@ public class ChatHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, orderId);
     }
 
+    public async Task JoinGroup(string groupName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+    }
+
+    public async Task LeaveGroup(string groupName)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+    }
+
     public async Task MarkOrderRead(string orderId)
     {
         await Clients.Group(orderId).SendAsync("MessagesRead", orderId);

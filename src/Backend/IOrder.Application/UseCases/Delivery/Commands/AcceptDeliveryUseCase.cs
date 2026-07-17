@@ -11,54 +11,63 @@ namespace IOrder.Application.UseCases.Delivery.Commands;
 
 public interface IAcceptDeliveryUseCase
 {
-    Task<DeliveryAssignmentResponseDto> Execute(Guid assignmentId);
+    Task<DeliveryAssignmentResponseDto> Execute(Guid orderId);
 }
 
 public class AcceptDeliveryUseCase : IAcceptDeliveryUseCase
 {
     private readonly ILoggedUserService _loggedUserService;
-    private readonly IDeliveryAssignmentReadOnlyRepository _readOnlyRepository;
-    private readonly IDeliveryAssignmentWriteOnlyRepository _writeOnlyRepository;
     private readonly IOrderWriteOnlyRepository _orderWriteOnlyRepository;
+    private readonly IDeliveryAssignmentWriteOnlyRepository _writeOnlyRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AcceptDeliveryUseCase(
         ILoggedUserService loggedUserService,
-        IDeliveryAssignmentReadOnlyRepository readOnlyRepository,
-        IDeliveryAssignmentWriteOnlyRepository writeOnlyRepository,
         IOrderWriteOnlyRepository orderWriteOnlyRepository,
+        IDeliveryAssignmentWriteOnlyRepository writeOnlyRepository,
         IUnitOfWork unitOfWork)
     {
         _loggedUserService = loggedUserService;
-        _readOnlyRepository = readOnlyRepository;
-        _writeOnlyRepository = writeOnlyRepository;
         _orderWriteOnlyRepository = orderWriteOnlyRepository;
+        _writeOnlyRepository = writeOnlyRepository;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<DeliveryAssignmentResponseDto> Execute(Guid assignmentId)
+    public async Task<DeliveryAssignmentResponseDto> Execute(Guid orderId)
     {
         var userId = _loggedUserService.GetUserId();
 
-        var assignment = await _writeOnlyRepository.GetByIdTrackingAsync(assignmentId)
-            ?? throw new NotFoundException(["Atribuição não encontrada."]);
+        var order = await _orderWriteOnlyRepository.GetByIdTracking(orderId)
+            ?? throw new NotFoundException(["Pedido não encontrado."]);
 
-        if (assignment.CourierUserId != userId)
-            throw new UnauthorizedStoreException(["Você não tem permissão para aceitar esta atribuição."]);
+        if (!order.IsSearchingCourier)
+            throw new ErrorOnValidationException(["Este pedido não está buscando entregadores."]);
 
-        if (assignment.Status != Domain.Entities.Enums.AssignmentStatus.Pending)
-            throw new ErrorOnValidationException(["Esta atribuição não está pendente."]);
-
-        assignment.Accept();
-        _writeOnlyRepository.Update(assignment);
-
-        var order = await _orderWriteOnlyRepository.GetByIdTracking(assignment.OrderId);
-        if (order is not null)
+        if (order.Assignments.Any(a => 
+            a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected 
+            && a.Status != Domain.Entities.Enums.AssignmentStatus.Failed))
         {
-            order.MarkAsPreparing();
-            _orderWriteOnlyRepository.Update(order);
+            throw new ErrorOnValidationException(["Esta entrega já foi aceita por outro entregador."]);
         }
 
+        var assignment = new Domain.Entities.DeliveryAssignment
+        {
+            OrderId = orderId,
+            CourierUserId = userId
+        };
+
+        // Instantly accept
+        assignment.Accept();
+
+        await _writeOnlyRepository.CreateAsync(assignment);
+        order.AssignCourier(assignment);
+        order.StopSearchingCourier();
+        
+        // Status can move to Preparing if it was Ready/Preparing? Wait, typically it moves to Preparing? Or if it was Ready it stays Ready?
+        // Let's keep it as is, or we just leave the status untouched and let the store manage it.
+        // Actually, Courier acceptance might not change the food status. But let's leave it as is or move to Preparing.
+
+        _orderWriteOnlyRepository.Update(order);
         await _unitOfWork.Commit();
 
         return assignment.Adapt<DeliveryAssignmentResponseDto>();
