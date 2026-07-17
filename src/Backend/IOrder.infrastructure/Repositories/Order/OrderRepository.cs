@@ -160,4 +160,25 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
             .AsNoTracking()
             .CountAsync(m => m.OrderId == orderId && m.UserId != userId && m.ReadAt == null);
     }
+
+    public async Task<IList<Domain.Entities.Order>> GetEligibleForAutoSearchAsync()
+    {
+        var now = DateTime.UtcNow;
+        var fiveMinutesBeforeEta = now.AddMinutes(5);
+
+        return await _context.Orders
+            .AsNoTracking()
+            .Include(o => o.Store)
+            .Include(o => o.Assignments)
+            .Where(o => o.Status == Domain.Entities.Enums.OrderStatus.Ready
+                && o.DeliveryType == Domain.Entities.Enums.DeliveryType.Delivery
+                && o.Store != null
+                && o.Store.DeliveryPartner == Domain.Entities.Enums.DeliveryPartner.App
+                && (o.RequestedEarlyDelivery
+                    || (o.DeliveryDate.HasValue && o.DeliveryDate.Value <= fiveMinutesBeforeEta))
+                && !o.Assignments.Any(a =>
+                    a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected
+                    && a.Status != Domain.Entities.Enums.AssignmentStatus.Failed))
+            .ToListAsync();
+    }
 }

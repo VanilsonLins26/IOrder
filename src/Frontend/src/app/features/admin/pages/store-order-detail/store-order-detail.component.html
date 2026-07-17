@@ -20,6 +20,13 @@
 
     <app-order-timeline [status]="o.status"></app-order-timeline>
 
+    @if (earlyDeliveryRequested()) {
+      <div class="store-order-detail__early-banner">
+        <span>⚡ O cliente quer receber antes!</span>
+        <button class="action-btn action-btn--primary" (click)="searchCouriers()">Buscar Entregador</button>
+      </div>
+    }
+
     <div class="store-order-detail__actions">
       @for (action of getNextStatuses(o.status); track action.status) {
         <button class="action-btn action-btn--primary" (click)="updateStatus(action.status)">
@@ -36,7 +43,31 @@
           {{ showAssignCourier() ? 'Cancelar' : '🛵 Atribuir Entregador' }}
         </button>
       }
+      @if (canSearchCouriers()) {
+        <button class="action-btn action-btn--secondary" (click)="searchCouriers()" [disabled]="searchingCouriers()">
+          {{ searchingCouriers() ? 'Buscando...' : '🔍 Buscar Entregador' }}
+        </button>
+      }
+      @if (canSendForDelivery()) {
+        <button class="action-btn action-btn--primary" (click)="markOutForDelivery()">
+          🚚 Saiu para Entrega
+        </button>
+      }
+      @if (canMarkDelivered()) {
+        <button class="action-btn action-btn--primary" (click)="markDelivered()">
+          ✅ Entregue
+        </button>
+      }
     </div>
+
+    @if (showSearchCouriers()) {
+      <app-search-couriers-dialog
+        [couriers]="availableCouriers()"
+        [searching]="searchingCouriers()"
+        (assign)="assignFromSearch($event)"
+        (closeDialog)="showSearchCouriers.set(false)"
+      ></app-search-couriers-dialog>
+    }
 
     @if (showAssignCourier()) {
       <div class="store-order-detail__negotiate">

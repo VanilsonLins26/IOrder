@@ -197,6 +197,18 @@
               <span>Taxa de entrega</span>
               <span>{{ computedDeliveryFee() | currency:'BRL' }}</span>
             </div>
+          } @else if (deliveryType() === 0 && computedDeliveryFee() === 0 && storeData()?.deliveryPartner === 1 && computedDistanceKm() > 0) {
+            <div class="cart-summary__line cart-summary__line--free-delivery">
+              <span>Entrega</span>
+              <span class="cart-summary__free-badge">Grátis</span>
+            </div>
+          }
+
+          @if (deliveryType() === 0 && storeData()) {
+            <div class="cart-summary__line cart-summary__line--partner">
+              <span>Entrega via</span>
+              <span>{{ storeData()!.deliveryPartner === 0 ? '🚗 App (rastreável)' : '🏪 Próprio' }}</span>
+            </div>
           }
 
           <div class="cart-summary__line cart-summary__line--total">
@@ -226,6 +238,12 @@
                   }
                 </select>
               </div>
+              @if (deliveryType() === 0 && deliveryDate() && deliveryTime()) {
+                <p class="cart-summary__delivery-window">
+                  Entrega entre {{ deliveryTime() }} — {{ deliveryTime() }}
+                  <span class="cart-summary__delivery-buffer">(±30min)</span>
+                </p>
+              }
             </div>
 
           <div class="cart-summary__section">

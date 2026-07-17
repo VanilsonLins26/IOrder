@@ -16,6 +16,7 @@ export interface DeliveryAssignmentResponseDto {
   assignedAt: string;
   acceptedAt: string | null;
   pickedUpAt: string | null;
+  inTransitAt: string | null;
   deliveredAt: string | null;
   courierNotes: string | null;
 }
@@ -34,4 +35,11 @@ export interface AssignCourierRequestDto {
 export interface UpdateCourierLocationRequestDto {
   latitude: number;
   longitude: number;
+}
+
+export interface AvailableCourierResponseDto {
+  courierUserId: string;
+  courierName?: string;
+  distanceKm?: number;
+  lastLocationAt: string;
 }

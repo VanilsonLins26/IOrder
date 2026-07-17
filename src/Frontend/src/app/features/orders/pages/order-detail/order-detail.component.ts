@@ -131,6 +131,12 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return getOrderStatusClass(status);
   }
 
+  readonly canRequestEarlyDelivery = computed(() => {
+    const o = this.store.currentOrder();
+    if (!o) return false;
+    return o.status === OrderStatusDto.Ready && o.deliveryType === 0 && !o.requestedEarlyDelivery;
+  });
+
   cancelOrder() {
     this.cancelling.set(true);
     this.orderApi.updateStatus(this.id(), { status: OrderStatusDto.Cancelled }).subscribe({
@@ -143,6 +149,21 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.cancelling.set(false);
         this.toast.error(err.error?.errors?.[0] || 'Erro ao cancelar pedido.');
+      },
+    });
+  }
+
+  requestEarlyDelivery() {
+    this.updatingStatus.set(true);
+    this.orderApi.requestEarlyDelivery(this.id()).subscribe({
+      next: () => {
+        this.updatingStatus.set(false);
+        this.toast.success('Solicitação enviada!');
+        this.store.loadById(this.id());
+      },
+      error: (err) => {
+        this.updatingStatus.set(false);
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao solicitar entrega antecipada.');
       },
     });
   }

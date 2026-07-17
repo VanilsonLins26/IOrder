@@ -9,7 +9,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
-import { calculateDeliveryFee } from '../../../../core/utils/delivery.utils';
+import { calculateDeliveryFee, calculateAppDeliveryFee } from '../../../../core/utils/delivery.utils';
 import { DeliveryTypeDto } from '../../../../core/models/order.model';
 import { AddressStore } from '../../../../core/stores/address.store';
 import type { OpeningHourResponse, StoreResponse } from '../../../../core/models';
@@ -102,6 +102,22 @@ export class CartPageComponent implements OnInit {
         return;
       }
 
+      if (store.deliveryPartner === 0) {
+        untracked(() => {
+          this.computedDeliveryFee.set(calculateAppDeliveryFee());
+          const addr = selectedFromStore;
+          if (addr?.latitude && addr?.longitude) {
+            const dist = Math.round(
+              (Math.abs(store.latitude! - addr.latitude) + Math.abs(store.longitude! - addr.longitude)) * 100
+            ) / 100;
+            this.computedDistanceKm.set(dist);
+          } else {
+            this.computedDistanceKm.set(0);
+          }
+        });
+        return;
+      }
+
       const addr = selectedFromStore;
       if (addr?.latitude && addr?.longitude) {
         const result = calculateDeliveryFee(
@@ -111,6 +127,7 @@ export class CartPageComponent implements OnInit {
           store.longitude,
           addr.latitude,
           addr.longitude,
+          store.freeDeliveryRadiusKm ?? 0,
         );
         untracked(() => {
           this.computedDeliveryFee.set(result.fee);

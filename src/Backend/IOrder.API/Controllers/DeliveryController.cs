@@ -133,4 +133,35 @@ public class DeliveryController : IOrderBaseController
         var response = await useCase.Execute(pageNumber, pageSize);
         return Ok(response);
     }
+
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(IReadOnlyList<AvailableCourierResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SearchAvailableCouriers(
+        [FromServices] ISearchAvailableCouriersUseCase useCase,
+        [FromQuery] Guid orderId)
+    {
+        var response = await useCase.Execute(orderId);
+        return Ok(response);
+    }
+
+    [HttpPatch("assignments/{assignmentId:guid}/start-transit")]
+    [ProducesResponseType(typeof(DeliveryAssignmentResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ResponseErrorDto), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> StartTransit(
+        [FromServices] ICourierStartTransitUseCase useCase,
+        [FromServices] IHubContext<ChatHub> hubContext,
+        [FromRoute] Guid assignmentId)
+    {
+        var response = await useCase.Execute(assignmentId);
+
+        await hubContext.Clients.Group(response.OrderId.ToString()).SendAsync(
+            "OrderStatusChanged",
+            new { OrderId = response.OrderId, Status = (int)9 });
+
+        return Ok(response);
+    }
 }

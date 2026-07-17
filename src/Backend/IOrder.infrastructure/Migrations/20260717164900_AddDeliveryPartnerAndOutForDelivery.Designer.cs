@@ -4,6 +4,7 @@ using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 
@@ -12,9 +13,11 @@ using NetTopologySuite.Geometries;
 namespace IOrder.infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717164900_AddDeliveryPartnerAndOutForDelivery")]
+    partial class AddDeliveryPartnerAndOutForDelivery
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,7 +156,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 10m,
-                            ExpiresAt = new DateTime(2027, 1, 17, 17, 40, 53, 845, DateTimeKind.Utc).AddTicks(1391),
+                            ExpiresAt = new DateTime(2027, 1, 17, 16, 48, 59, 271, DateTimeKind.Utc).AddTicks(3019),
                             MaxDiscountAmount = 30m,
                             MaxUsageCount = 100,
                             MinPurchaseAmount = 50m
@@ -166,7 +169,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "FixedAmount",
                             DiscountValue = 20m,
-                            ExpiresAt = new DateTime(2026, 10, 17, 17, 40, 53, 845, DateTimeKind.Utc).AddTicks(3280),
+                            ExpiresAt = new DateTime(2026, 10, 17, 16, 48, 59, 271, DateTimeKind.Utc).AddTicks(4318),
                             MaxUsageCount = 50,
                             MinPurchaseAmount = 80m
                         },
@@ -178,7 +181,7 @@ namespace IOrder.infrastructure.Migrations
                             CurrentUsageCount = 0,
                             DiscountType = "Percentage",
                             DiscountValue = 15m,
-                            ExpiresAt = new DateTime(2027, 7, 17, 17, 40, 53, 845, DateTimeKind.Utc).AddTicks(4946),
+                            ExpiresAt = new DateTime(2027, 7, 17, 16, 48, 59, 271, DateTimeKind.Utc).AddTicks(5507),
                             MaxDiscountAmount = 50m,
                             MaxUsageCount = 200
                         });
@@ -321,9 +324,6 @@ namespace IOrder.infrastructure.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("DeliveredAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("InTransitAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("OrderId")

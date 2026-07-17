@@ -26,8 +26,23 @@ export function calculateDeliveryFee(
   storeLon: number,
   userLat: number,
   userLon: number,
+  freeRadiusKm: number = 0,
 ): { distanceKm: number; fee: number } {
   const distanceKm = haversineDistance(storeLat, storeLon, userLat, userLon);
+  if (freeRadiusKm > 0 && distanceKm <= freeRadiusKm) {
+    return { distanceKm: Math.round(distanceKm * 10) / 10, fee: 0 };
+  }
   const fee = baseFee + feePerKm * distanceKm;
   return { distanceKm: Math.round(distanceKm * 10) / 10, fee: Math.round(fee * 100) / 100 };
+}
+
+export function calculateAppDeliveryFee(): number {
+  return 7.99;
+}
+
+export function getDeliveryTimeRange(deliveryDate: Date): { start: string; end: string } {
+  const start = deliveryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const endDate = new Date(deliveryDate.getTime() + 30 * 60 * 1000);
+  const end = endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return { start, end };
 }

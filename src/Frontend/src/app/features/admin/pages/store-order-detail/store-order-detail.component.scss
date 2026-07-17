@@ -488,3 +488,19 @@
   0% { transform: scale(0); }
   100% { transform: scale(1); }
 }
+
+.store-order-detail__early-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #92400e;
+}
+
+

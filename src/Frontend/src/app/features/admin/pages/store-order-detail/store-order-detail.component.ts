@@ -11,18 +11,18 @@ import { ChatSignalRService } from '../../../../core/services/chat-signalr.servi
 import { ToastService } from '../../../../core/services/toast.service';
 import { CurrencyInputDirective } from '../../../../shared/directives/currency-input.directive';
 import { OrderStatusDto, MessageTypeDto, OrderMessageResponseDto } from '../../../../core/models';
-import type { OrderResponseDto } from '../../../../core/models';
+import type { OrderResponseDto, AvailableCourierResponseDto } from '../../../../core/models';
 import { OrderChatOffcanvasComponent } from '../../../../shared/components/order-chat-offcanvas/order-chat-offcanvas.component';
 import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 import { AdminStore } from '../../store/admin.store';
 import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
-import { effect, untracked } from '@angular/core';
+import { effect, untracked } from '@angular/core';import { SearchCouriersDialogComponent } from '../../components/search-couriers-dialog/search-couriers-dialog.component';
 
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent, OrderTimelineComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent, OrderTimelineComponent, SearchCouriersDialogComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,6 +47,10 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly showAssignCourier = signal(false);
   readonly courierUserId = signal('');
   readonly assigningCourier = signal(false);
+  readonly earlyDeliveryRequested = signal(false);
+  readonly showSearchCouriers = signal(false);
+  readonly availableCouriers = signal<AvailableCourierResponseDto[]>([]);
+  readonly searchingCouriers = signal(false);
 
   readonly showNegotiate = signal(false);
   readonly proposedAmount = signal<number | null>(null);
@@ -87,13 +91,43 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
   });
 
+  readonly canMarkReady = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    return o.status === OrderStatusDto.Preparing;
+  });
+
   readonly canAssignCourier = computed(() => {
     const o = this.order();
     if (!o) return false;
     const assignableStatuses = [OrderStatusDto.Paid, OrderStatusDto.Preparing, OrderStatusDto.Ready];
     return assignableStatuses.includes(o.status)
       && o.deliveryType === 0
+      && o.deliveryPartner === 0
       && !o.activeAssignment;
+  });
+
+  readonly canSearchCouriers = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    return o.status === OrderStatusDto.Ready
+      && o.deliveryType === 0
+      && o.deliveryPartner === 0
+      && !o.activeAssignment;
+  });
+
+  readonly canSendForDelivery = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    return o.status === OrderStatusDto.Ready
+      && o.deliveryType === 0
+      && o.deliveryPartner === 1;
+  });
+
+  readonly canMarkDelivered = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    return o.status === OrderStatusDto.OutForDelivery;
   });
 
   ngOnInit() {
@@ -184,6 +218,14 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
       const eId = event.orderId || (event as any).OrderId;
       if (eId && eId.toLowerCase() === this.id().toLowerCase()) {
         this.loadOrder();
+      }
+    });
+
+    this.chatSignalr.onEarlyDeliveryRequested.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event.orderId.toLowerCase() === this.id().toLowerCase()) {
+        this.earlyDeliveryRequested.set(true);
+        this.loadOrder();
+        this.toast.info('O cliente quer receber o pedido antes!');
       }
     });
   }
@@ -364,4 +406,40 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
   protected readonly OrderStatusDto = OrderStatusDto;
   protected readonly MessageTypeDto = MessageTypeDto;
+
+  markOutForDelivery() {
+    this.orderApi.markAsOutForDelivery(this.id()).subscribe({
+      next: () => {
+        this.toast.success('Pedido saiu para entrega!');
+        this.loadOrder();
+      },
+      error: (err) => this.toast.error(err.error?.errors?.[0] || 'Erro ao marcar saída para entrega.'),
+    });
+  }
+
+  markDelivered() {
+    this.updateStatus(OrderStatusDto.Delivered);
+  }
+
+  searchCouriers() {
+    this.showSearchCouriers.set(true);
+    this.searchingCouriers.set(true);
+    this.deliveryApi.searchAvailableCouriers(this.id()).subscribe({
+      next: (couriers) => {
+        this.availableCouriers.set(couriers);
+        this.searchingCouriers.set(false);
+      },
+      error: (err) => {
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao buscar entregadores.');
+        this.searchingCouriers.set(false);
+        this.showSearchCouriers.set(false);
+      },
+    });
+  }
+
+  assignFromSearch(courierUserId: string) {
+    this.courierUserId.set(courierUserId);
+    this.assignCourier();
+    this.showSearchCouriers.set(false);
+  }
 }

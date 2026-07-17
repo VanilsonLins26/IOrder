@@ -36,6 +36,11 @@
           📦 Coletar Pedido
         </button>
       }
+      @if (canStartTransit()) {
+        <button class="action-btn action-btn--primary" (click)="startTransit()" [disabled]="processing()">
+          🚚 Saiu para Entrega
+        </button>
+      }
       @if (canDeliver()) {
         <button class="action-btn action-btn--success" (click)="deliverOrder()" [disabled]="processing()">
           🏁 Confirmar Entrega
@@ -150,6 +155,15 @@
             <div class="timeline__content">
               <span class="timeline__label">Coletado</span>
               <span class="timeline__date">{{ a.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}</span>
+            </div>
+          </div>
+        }
+        @if (a.inTransitAt) {
+          <div class="timeline__item timeline__item--done">
+            <div class="timeline__dot"></div>
+            <div class="timeline__content">
+              <span class="timeline__label">Saiu para Entrega</span>
+              <span class="timeline__date">{{ a.inTransitAt | date:"dd/MM/yyyy HH:mm" }}</span>
             </div>
           </div>
         }

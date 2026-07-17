@@ -476,3 +476,28 @@
   color: var(--text-muted);
   margin-top: var(--space-1);
 }
+
+.cart-summary__free-badge {
+  color: #16a34a;
+  font-weight: var(--font-weight-semibold);
+}
+
+.cart-summary__line--free-delivery {
+  color: #16a34a;
+}
+
+.cart-summary__line--partner {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.cart-summary__delivery-window {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.cart-summary__delivery-buffer {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}

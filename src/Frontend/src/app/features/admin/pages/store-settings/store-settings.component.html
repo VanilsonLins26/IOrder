@@ -174,41 +174,80 @@
         @if (activeTab() === 'delivery') {
           <form [formGroup]="deliveryForm" (ngSubmit)="saveDelivery()" class="settings-form">
             <p class="form-description">
-              Configure a política de entrega da sua loja. Esses valores serão usados para calcular o custo de entrega para os clientes.
+              Configure como sua loja faz entregas.
             </p>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="baseDeliveryFee">Taxa Base (R$)</label>
-                <input id="baseDeliveryFee" type="number" formControlName="baseDeliveryFee" class="form-control" step="0.50" min="0" max="100" />
-                <span class="form-hint">Valor fixo cobrado para entregas curtas.</span>
-              </div>
-              <div class="form-group">
-                <label for="feePerKm">Valor por Km (R$)</label>
-                <input id="feePerKm" type="number" formControlName="feePerKm" class="form-control" step="0.50" min="0" max="50" />
-                <span class="form-hint">Valor cobrado a cada km excedente.</span>
+            <div class="form-group">
+              <label>Como sua loja faz entregas?</label>
+              <div class="delivery-partner-toggle">
+                <button type="button"
+                  class="delivery-partner-option"
+                  [class.active]="deliveryForm.value.deliveryPartner === 0"
+                  (click)="deliveryForm.patchValue({ deliveryPartner: 0 })">
+                  <span class="delivery-partner-icon">🚗</span>
+                  <span class="delivery-partner-label">Entregador do App</span>
+                  <span class="delivery-partner-desc">O app cobra taxa fixa. Entregadores rastreados.</span>
+                </button>
+                <button type="button"
+                  class="delivery-partner-option"
+                  [class.active]="deliveryForm.value.deliveryPartner === 1"
+                  (click)="deliveryForm.patchValue({ deliveryPartner: 1 })">
+                  <span class="delivery-partner-icon">🏪</span>
+                  <span class="delivery-partner-label">Entregador Próprio</span>
+                  <span class="delivery-partner-desc">Você configura o frete. Sem rastreamento.</span>
+                </button>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="maxDeliveryDistanceKm">Distância Máxima (km)</label>
-                <input id="maxDeliveryDistanceKm" type="number" formControlName="maxDeliveryDistanceKm" class="form-control" step="1" min="1" max="100" />
-                <span class="form-hint">Distância máxima que a loja aceita entregar.</span>
+            @if (deliveryForm.value.deliveryPartner === 1) {
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="baseDeliveryFee">Taxa Base (R$)</label>
+                  <input id="baseDeliveryFee" type="number" formControlName="baseDeliveryFee" class="form-control" step="0.50" min="0" max="100" />
+                  <span class="form-hint">Valor fixo cobrado para entregas curtas.</span>
+                </div>
+                <div class="form-group">
+                  <label for="feePerKm">Valor por Km (R$)</label>
+                  <input id="feePerKm" type="number" formControlName="feePerKm" class="form-control" step="0.50" min="0" max="50" />
+                  <span class="form-hint">Valor cobrado a cada km excedente.</span>
+                </div>
               </div>
-            </div>
 
-            <div class="delivery-preview">
-              <h4 class="delivery-preview__title">Pré-visualização</h4>
-              <div class="delivery-preview__formula">
-                Entrega = {{ deliveryForm.value.baseDeliveryFee | currency:'BRL' }} + (distância × {{ deliveryForm.value.feePerKm | currency:'BRL' }}/km)
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="maxDeliveryDistanceKm">Distância Máxima (km)</label>
+                  <input id="maxDeliveryDistanceKm" type="number" formControlName="maxDeliveryDistanceKm" class="form-control" step="1" min="1" max="100" />
+                  <span class="form-hint">Distância máxima que a loja aceita entregar.</span>
+                </div>
+                <div class="form-group">
+                  <label for="freeDeliveryRadiusKm">Frete grátis até (km)</label>
+                  <input id="freeDeliveryRadiusKm" type="number" formControlName="freeDeliveryRadiusKm" class="form-control" step="0.5" min="0" max="50" />
+                  <span class="form-hint">Raio para entrega sem custo.</span>
+                </div>
               </div>
-              <div class="delivery-preview__examples">
-                <span>2 km: {{ (deliveryForm.value.baseDeliveryFee! + 2 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
-                <span>5 km: {{ (deliveryForm.value.baseDeliveryFee! + 5 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
-                <span>10 km: {{ (deliveryForm.value.baseDeliveryFee! + 10 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+
+              <div class="delivery-preview">
+                <h4 class="delivery-preview__title">Pré-visualização</h4>
+                @if (deliveryForm.value.freeDeliveryRadiusKm! > 0) {
+                  <div class="delivery-preview__formula">
+                    Entrega grátis até {{ deliveryForm.value.freeDeliveryRadiusKm }} km
+                  </div>
+                }
+                <div class="delivery-preview__formula">
+                  Entrega = {{ deliveryForm.value.baseDeliveryFee | currency:'BRL' }} + (distância × {{ deliveryForm.value.feePerKm | currency:'BRL' }}/km)
+                </div>
+                <div class="delivery-preview__examples">
+                  <span>2 km: {{ (deliveryForm.value.baseDeliveryFee! + 2 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                  <span>5 km: {{ (deliveryForm.value.baseDeliveryFee! + 5 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                  <span>10 km: {{ (deliveryForm.value.baseDeliveryFee! + 10 * deliveryForm.value.feePerKm!) | currency:'BRL' }}</span>
+                </div>
               </div>
-            </div>
+            } @else {
+              <div class="delivery-app-info">
+                <p>O app cobra uma taxa fixa de entrega dos clientes. Entregadores são rastreados em tempo real via GPS.</p>
+                <p class="form-hint">Entregadores disponíveis recebem notificações e aceitam pedidos próximos.</p>
+              </div>
+            }
 
             <div class="form-actions">
               <button type="submit" class="btn btn--primary" [disabled]="deliveryForm.invalid || isSaving()">

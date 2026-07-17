@@ -47,4 +47,12 @@ export class OrderApiService {
   sendMessage(id: string, dto: SendOrderMessageRequestDto): Observable<OrderResponseDto> {
     return this.http.post<OrderResponseDto>(`${this.baseUrl}/${id}/message`, dto);
   }
+
+  markAsOutForDelivery(id: string): Observable<OrderResponseDto> {
+    return this.http.patch<OrderResponseDto>(`${this.baseUrl}/${id}/out-for-delivery`, {});
+  }
+
+  requestEarlyDelivery(id: string): Observable<OrderResponseDto> {
+    return this.http.patch<OrderResponseDto>(`${this.baseUrl}/${id}/request-early-delivery`, {});
+  }
 }

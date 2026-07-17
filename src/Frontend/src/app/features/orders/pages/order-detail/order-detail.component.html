@@ -13,9 +13,14 @@
         <h1 class="order-detail__title">Pedido #{{ order.id | slice:0:8 }}</h1>
         <p class="order-detail__date">Realizado em {{ order.createdAt | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
       </div>
-      <span class="order-detail__status {{ getStatusClass(order.status) }}">
-        {{ getStatusLabel(order.status) }}
-      </span>
+      <div class="order-detail__status-group">
+        <span class="order-detail__status {{ getStatusClass(order.status) }}">
+          {{ getStatusLabel(order.status) }}
+        </span>
+        @if (order.requestedEarlyDelivery) {
+          <span class="order-detail__early-badge">⚡ Receber Antes</span>
+        }
+      </div>
     </header>
 
     <app-order-timeline [status]="order.status"></app-order-timeline>
@@ -29,6 +34,11 @@
       @if (order.status === OrderStatusDto.AwaitingPayment) {
         <button class="order-detail__pay-btn" (click)="openPaymentModal()">
           💳 Pagar Agora
+        </button>
+      }
+      @if (canRequestEarlyDelivery()) {
+        <button class="order-detail__early-btn" (click)="requestEarlyDelivery()" [disabled]="updatingStatus()">
+          {{ updatingStatus() ? 'Solicitando...' : '⚡ Receber Agora' }}
         </button>
       }
     </div>
@@ -74,7 +84,12 @@
           @if (order.deliveryDate) {
             <div class="order-detail__row">
               <span>{{ order.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span>
-              <span>{{ order.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span>
+              <span>
+                {{ order.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}
+                @if (order.deliveryDateEnd) {
+                  - {{ order.deliveryDateEnd | date:"HH:mm" }}
+                }
+              </span>
             </div>
           }
         </div>

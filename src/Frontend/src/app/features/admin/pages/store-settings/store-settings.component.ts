@@ -47,9 +47,11 @@ export class StoreSettingsComponent implements OnInit {
 
   // Formulário Entrega
   readonly deliveryForm = this.fb.nonNullable.group({
+    deliveryPartner: [0, [Validators.required]],
     baseDeliveryFee: [5.0, [Validators.required, Validators.min(0), Validators.max(100)]],
     feePerKm: [1.5, [Validators.required, Validators.min(0), Validators.max(50)]],
     maxDeliveryDistanceKm: [15.0, [Validators.required, Validators.min(1), Validators.max(100)]],
+    freeDeliveryRadiusKm: [0, [Validators.min(0), Validators.max(50)]],
   });
 
   readonly isSaving = signal(false);
@@ -95,9 +97,11 @@ export class StoreSettingsComponent implements OnInit {
 
         // Preencher Entrega
         this.deliveryForm.patchValue({
+          deliveryPartner: myStore.deliveryPartner ?? 0,
           baseDeliveryFee: myStore.baseDeliveryFee ?? 5.0,
           feePerKm: myStore.feePerKm ?? 1.5,
           maxDeliveryDistanceKm: myStore.maxDeliveryDistanceKm ?? 15.0,
+          freeDeliveryRadiusKm: myStore.freeDeliveryRadiusKm ?? 0,
         });
       }
     }, { allowSignalWrites: true });
@@ -206,9 +210,11 @@ export class StoreSettingsComponent implements OnInit {
       name: this.adminStore.myStore()!.name,
       about: this.adminStore.myStore()!.about,
       imageUrl: this.adminStore.myStore()!.imageUrl,
+      deliveryPartner: this.deliveryForm.value.deliveryPartner!,
       baseDeliveryFee: this.deliveryForm.value.baseDeliveryFee!,
       feePerKm: this.deliveryForm.value.feePerKm!,
       maxDeliveryDistanceKm: this.deliveryForm.value.maxDeliveryDistanceKm!,
+      freeDeliveryRadiusKm: this.deliveryForm.value.freeDeliveryRadiusKm!,
     }).subscribe({
       next: (res) => {
         this.adminStore.updateStoreInfo(res);

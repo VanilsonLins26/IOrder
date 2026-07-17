@@ -10,6 +10,7 @@ const LABELS: Record<number, string> = {
   [OrderStatusDto.Delivered]: 'Entregue',
   [OrderStatusDto.Cancelled]: 'Cancelado',
   [OrderStatusDto.Declined]: 'Recusado',
+  [OrderStatusDto.OutForDelivery]: 'Saiu para Entrega',
 };
 
 const STATUS_CLASSES: Record<number, string> = {
@@ -22,6 +23,7 @@ const STATUS_CLASSES: Record<number, string> = {
   [OrderStatusDto.Delivered]: 'status--delivered',
   [OrderStatusDto.Cancelled]: 'status--cancelled',
   [OrderStatusDto.Declined]: 'status--declined',
+  [OrderStatusDto.OutForDelivery]: 'status--out-for-delivery',
 };
 
 const NEXT_STATUSES: Record<number, { status: OrderStatusDto; label: string }[]> = {
@@ -39,9 +41,8 @@ const NEXT_STATUSES: Record<number, { status: OrderStatusDto; label: string }[]>
   [OrderStatusDto.Preparing]: [
     { status: OrderStatusDto.Ready, label: 'Marcar como Pronto' },
   ],
-  [OrderStatusDto.Ready]: [
-    { status: OrderStatusDto.Delivered, label: 'Confirmar Entrega' },
-  ],
+  [OrderStatusDto.Ready]: [],
+  [OrderStatusDto.OutForDelivery]: [],
 };
 
 export function getOrderStatusLabel(status: number): string {

@@ -19,6 +19,7 @@ import {
   canAccept,
   canReject,
   canPickup,
+  canStartTransit,
   canDeliver,
 } from '../../../../shared/utils/assignment-status.utils';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
@@ -120,6 +121,10 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
     return canPickup(this.assignment()?.status ?? -1);
   }
 
+  canStartTransit(): boolean {
+    return canStartTransit(this.assignment()?.status ?? -1);
+  }
+
   canDeliver(): boolean {
     return canDeliver(this.assignment()?.status ?? -1);
   }
@@ -171,6 +176,23 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.toast.error(err.error?.errors?.[0] || 'Erro ao coletar pedido.');
+        this.processing.set(false);
+      },
+    });
+  }
+
+  startTransit() {
+    const a = this.assignment();
+    if (!a) return;
+    this.processing.set(true);
+    this.api.startTransit(a.id).subscribe({
+      next: (updated) => {
+        this.assignment.set(updated);
+        this.toast.success('Saiu para entrega!');
+        this.processing.set(false);
+      },
+      error: (err) => {
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao iniciar trânsito.');
         this.processing.set(false);
       },
     });
