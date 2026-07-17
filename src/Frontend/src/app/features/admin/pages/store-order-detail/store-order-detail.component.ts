@@ -17,12 +17,12 @@ import { OrderTimelineComponent } from '../../../../shared/components/order-time
 import { getOrderStatusLabel, getOrderStatusClass, getOrderNextStatuses } from '../../../../shared/utils/order-status.utils';
 import { AdminStore } from '../../store/admin.store';
 import { generateAvailableDates, generateTimeSlots } from '../../../../core/utils/opening-hours.utils';
-import { effect, untracked } from '@angular/core';
+import { effect, untracked } from '@angular/core';import { SearchCouriersDialogComponent } from '../../components/search-couriers-dialog/search-couriers-dialog.component';
 
 @Component({
   selector: 'app-store-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent, OrderTimelineComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, CurrencyInputDirective, OrderChatOffcanvasComponent, OrderTimelineComponent, SearchCouriersDialogComponent],
   templateUrl: './store-order-detail.component.html',
   styleUrl: './store-order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,6 +89,12 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
     const uid = this.currentUser()?.sub;
     if (!o || !uid) return 0;
     return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
+  });
+
+  readonly canMarkReady = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    return o.status === OrderStatusDto.Preparing;
   });
 
   readonly canAssignCourier = computed(() => {

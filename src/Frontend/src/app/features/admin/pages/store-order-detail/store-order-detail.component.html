@@ -61,27 +61,12 @@
     </div>
 
     @if (showSearchCouriers()) {
-      <div class="store-order-detail__negotiate">
-        <h3>Entregadores Disponíveis</h3>
-        @if (searchingCouriers()) {
-          <p>Buscando entregadores próximos...</p>
-        } @else if (availableCouriers().length === 0) {
-          <p>Nenhum entregador encontrado na região.</p>
-        } @else {
-          <div class="courier-list">
-            @for (courier of availableCouriers(); track courier.courierUserId) {
-              <div class="courier-item">
-                <span class="courier-item__name">{{ courier.courierUserId | slice:0:12 }}...</span>
-                <span class="courier-item__distance">{{ courier.distanceKm }} km</span>
-                <button class="action-btn action-btn--primary" (click)="assignFromSearch(courier.courierUserId)">
-                  Atribuir
-                </button>
-              </div>
-            }
-          </div>
-        }
-        <button class="action-btn action-btn--secondary" (click)="showSearchCouriers.set(false)">Fechar</button>
-      </div>
+      <app-search-couriers-dialog
+        [couriers]="availableCouriers()"
+        [searching]="searchingCouriers()"
+        (assign)="assignFromSearch($event)"
+        (closeDialog)="showSearchCouriers.set(false)"
+      ></app-search-couriers-dialog>
     }
 
     @if (showAssignCourier()) {

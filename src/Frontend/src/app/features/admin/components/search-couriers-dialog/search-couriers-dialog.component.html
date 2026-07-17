@@ -1,0 +1,21 @@
+<div class="search-couriers-dialog">
+  <h3>Entregadores Disponíveis</h3>
+  @if (searching()) {
+    <p>Buscando entregadores próximos...</p>
+  } @else if (couriers().length === 0) {
+    <p>Nenhum entregador encontrado na região.</p>
+  } @else {
+    <div class="courier-list">
+      @for (courier of couriers(); track courier.courierUserId) {
+        <div class="courier-item">
+          <span class="courier-item__name">{{ courier.courierUserId | slice:0:12 }}...</span>
+          <span class="courier-item__distance">{{ courier.distanceKm }} km</span>
+          <button class="action-btn action-btn--primary" (click)="assign.emit(courier.courierUserId)">
+            Atribuir
+          </button>
+        </div>
+      }
+    </div>
+  }
+  <button class="action-btn action-btn--secondary" (click)="closeDialog.emit()">Fechar</button>
+</div>
