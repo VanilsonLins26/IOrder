@@ -134,6 +134,7 @@ public static class DependencyInjectionExtension
         services.AddHostedService<Workers.ChatConsumer>();
         services.AddHostedService<Workers.KafkaDomainEventConsumer>();
         services.AddHostedService<Workers.AbandonedCartWorker>();
+        services.AddHostedService<Workers.CourierAutoSearchService>();
     }
 
     public static async Task MigrateDatabaseAsync(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)

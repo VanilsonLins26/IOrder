@@ -17,6 +17,8 @@ public static class MapsterSettings
         TypeAdapterConfig<Store, StoreResponseDto>
             .NewConfig()
             .Map(dest => dest.IsOpen, src => src.IsOpen())
+            .Map(dest => dest.DeliveryPartner, src => (int)src.DeliveryPartner)
+            .Map(dest => dest.FreeDeliveryRadiusKm, src => src.FreeDeliveryRadiusKm)
             .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Y : (double?)null)
             .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.X : (double?)null);
 
@@ -48,7 +50,10 @@ public static class MapsterSettings
             .NewConfig()
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.DeliveryType, src => (Communication.Enums.DeliveryTypeDto)(int)src.DeliveryType)
+            .Map(dest => dest.DeliveryPartner, src => src.Store != null ? (int)src.Store.DeliveryPartner : 0)
             .Map(dest => dest.DeliveryFee, src => src.DeliveryFee)
+            .Map(dest => dest.RequestedEarlyDelivery, src => src.RequestedEarlyDelivery)
+            .Map(dest => dest.DeliveryDateEnd, src => src.DeliveryDate.HasValue ? src.DeliveryDate.Value.AddMinutes(30) : (DateTime?)null)
             .Map(dest => dest.ActiveAssignment, src => src.ActiveAssignment);
     }
 }
