@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard, Roles } from './core/auth/role.guard';
+import { roleRedirectGuard } from './core/auth/role-redirect.guard';
 import { storeGuard } from './core/guards/store.guard';
 
 export const routes: Routes = [
@@ -15,6 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        canActivate: [roleRedirectGuard],
         loadComponent: () =>
           import('./features/home/pages/home-page/home-page.component').then(
             (m) => m.HomePageComponent,
