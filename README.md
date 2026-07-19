@@ -48,6 +48,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Worker de carrinhos abandonados (a cada 5min,- ✔️ Estrutura Clean Architecture + DDD com SeedWork
 - ✔️ Integração com Stripe (cartão, PIX, boleto)
 - ✔️ Módulo de Delivery com Rastreamento em Tempo Real
+- ✅ Sistema de Avaliações (Rating Store + Courier)
 
 ### Frontend (Angular 20)
 
@@ -66,6 +67,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Integração com carrinho
 - ✅ Customização avançada com opções estruturadas e price modifiers
 - ✅ Chat em tempo real (SignalR + REST)
+- ✅ Sistema de Avaliações (Review Modal + Atualização Automática da Loja)
 
 ### Infraestrutura
 
