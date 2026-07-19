@@ -14,8 +14,6 @@ import { StoreApiService } from '../../../../core/services/api/store-api.service
 import { AddressStore } from '../../../../core/stores/address.store';
 import { AddressBarComponent } from '../../../../shared/components/address-bar/address-bar.component';
 import { AddressDrawerComponent } from '../../../../shared/components/address-drawer/address-drawer.component';
-import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { StoreCardComponent } from '../../../../shared/components/store-card/store-card';
 import type { StoreCategoryResponse } from '../../../../core/models/store-category.model';
 import type { StoreResponse } from '../../../../core/models/store.model';
@@ -27,8 +25,6 @@ import type { PagedList } from '../../../../core/models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
-    LoadingSkeletonComponent,
-    EmptyStateComponent,
     StoreCardComponent,
     AddressBarComponent,
     AddressDrawerComponent,

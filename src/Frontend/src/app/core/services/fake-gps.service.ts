@@ -60,7 +60,6 @@ export class FakeGpsService implements OnDestroy {
 
   private sendLocation(courierUserId: string, pos: Coordinates) {
     this.deliveryApi.updateLocation({
-      courierUserId: courierUserId,
       latitude: pos.lat,
       longitude: pos.lng
     }).subscribe({

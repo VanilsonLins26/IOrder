@@ -45,13 +45,15 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Notificação por WhatsApp (Evolution API/Baileys): apenas eventos acionáveis (pedidos, status, carrinho abandonado)
 - ✅ Notificação de novas mensagens no chat com dedup de 10min via Redis
 - ✅ Notificação de cupom criado, promoção ativada/desativada e carrinho abandonado
-- ✅ Worker de carrinhos abandonados (a cada 5min, verifica Redis, remove e notifica)
-- ✅ Integração com Stripe (cartão, PIX, boleto)
+- ✅ Worker de carrinhos abandonados (a cada 5min,- ✔️ Estrutura Clean Architecture + DDD com SeedWork
+- ✔️ Integração com Stripe (cartão, PIX, boleto)
+- ✔️ Módulo de Delivery com Rastreamento em Tempo Real
 
 ### Frontend (Angular 20)
 
-- ✅ Home page com listagem de lojas
-- ✅ Catálogo de lojas com detalhes
+- ✔️ Home page com listagem de lojas
+- ✔️ Chat em tempo real (SignalR + REST)
+- ✔️ Delivery Courier App com Mapas Dinâmicos (Leaflet)com detalhes
 - ✅ Painel Admin (lazy loading) com:
   - ✅ Setup de Loja
   - ✅ Dashboard

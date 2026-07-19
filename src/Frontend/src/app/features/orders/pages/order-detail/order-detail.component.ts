@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal, DestroyRef, effect } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -69,6 +69,16 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return o.messages.filter(m => m.readAt == null && m.userId !== uid).length;
   });
 
+  constructor() {
+    // Watch store changes to trigger map setup
+    effect(() => {
+      const o = this.store.currentOrder();
+      if (o) {
+        this.checkMapRequirements(o);
+      }
+    });
+  }
+
   ngOnInit() {
     this.store.loadById(this.id());
     this.initChat();
@@ -134,13 +144,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       this.store.loadById(this.id());
     });
     
-    // Watch store changes to trigger map setup
-    effect(() => {
-      const o = this.store.currentOrder();
-      if (o) {
-        this.checkMapRequirements(o);
-      }
-    });
   }
 
   private checkMapRequirements(order: any) {

@@ -5,15 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { ChatNotificationService } from '../../../../core/services/chat-notification.service';
 import { OrdersStore } from '../../store/orders.store';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 import type { OrderResponseDto } from '../../../../core/models';
 
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, EmptyStateComponent, LoadingSkeletonComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink],
   templateUrl: './my-orders.component.html',
   styleUrl: './my-orders.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

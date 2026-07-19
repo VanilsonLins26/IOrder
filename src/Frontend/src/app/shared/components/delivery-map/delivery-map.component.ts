@@ -41,9 +41,18 @@ export class DeliveryMapComponent implements AfterViewInit, OnDestroy, OnChanges
   private clientMarker: L.Marker | null = null;
   private courierMarker: L.Marker | null = null;
   private routeLine: L.Polyline | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   ngAfterViewInit() {
     this.initMap();
+    
+    // Robust solution for Leaflet grey tile issue (container resizing)
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    });
+    this.resizeObserver.observe(this.mapElement.nativeElement);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -55,6 +64,11 @@ export class DeliveryMapComponent implements AfterViewInit, OnDestroy, OnChanges
   }
 
   ngOnDestroy() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    
     if (this.map) {
       this.map.remove();
       this.map = null;
