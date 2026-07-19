@@ -81,7 +81,6 @@
           <table class="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Cliente</th>
                 <th>Total</th>
                 <th>Status</th>
@@ -90,8 +89,7 @@
             <tbody>
               @for (order of recentOrders(); track order.id) {
                 <tr>
-                  <td class="font-mono">#{{ order.id.substring(0, 8).toUpperCase() }}</td>
-                  <td>{{ order.userId.substring(0, 8) || 'Cliente' }}</td>
+                  <td>{{ order.customerEmail ? order.customerEmail.split('@')[0] : (order.userId.substring(0, 8) || 'Cliente') }}</td>
                   <td class="font-bold">{{ order.totalAmount | currency:'BRL' }}</td>
                   <td>
                     <span class="status-badge" [class]="getStatusClass(order.status)">
