@@ -95,6 +95,16 @@ import { ChatNotificationService } from '../../core/services/chat-notification.s
             @if (!sidebarCollapsed()) { <span class="admin-sidebar__link-label">Categorias</span> }
           </a>
 
+          <a routerLink="/admin/coupons" routerLinkActive="admin-sidebar__link--active"
+             class="admin-sidebar__link" [title]="sidebarCollapsed() ? 'Cupons' : ''">
+            <span class="admin-sidebar__link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+              </svg>
+            </span>
+            @if (!sidebarCollapsed()) { <span class="admin-sidebar__link-label">Cupons</span> }
+          </a>
+
           <a routerLink="/admin/store" routerLinkActive="admin-sidebar__link--active"
              class="admin-sidebar__link" [title]="sidebarCollapsed() ? 'Minha Loja' : ''">
             <span class="admin-sidebar__link-icon">

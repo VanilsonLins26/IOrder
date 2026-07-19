@@ -113,6 +113,13 @@ export const routes: Routes = [
             (m) => m.CategoryManagementComponent,
           ),
       },
+      {
+        path: 'coupons',
+        loadComponent: () =>
+          import('./features/admin/pages/coupon-management/coupon-management.component').then(
+            (m) => m.CouponManagementComponent,
+          ),
+      },
           {
             path: 'orders',
             loadComponent: () =>

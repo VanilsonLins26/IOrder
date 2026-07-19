@@ -1,0 +1,185 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div class="admin-header-main">
+      <div>
+        <h1 class="admin-title">Cupons de Desconto</h1>
+        <p class="admin-subtitle">Crie e gerencie cupons para atrair clientes e aumentar vendas</p>
+      </div>
+      <button class="btn btn--primary" (click)="openCreateModal()">
+        + Novo Cupom
+      </button>
+    </div>
+  </header>
+
+  @if (loadingCoupons()) {
+    <div class="settings-skeleton">
+      <app-loading-skeleton height="48px" />
+      <app-loading-skeleton height="150px" />
+    </div>
+  } @else if (coupons().length === 0) {
+    <div class="empty-list">
+      <span class="empty-icon">🎟️</span>
+      <h3>Nenhum cupom cadastrado</h3>
+      <p>Crie seu primeiro cupom para oferecer descontos.</p>
+      <button class="btn btn--outline" (click)="openCreateModal()">Criar Cupom</button>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Desconto</th>
+            <th>Status</th>
+            <th>Validade</th>
+            <th>Usos</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of coupons(); track coupon.id) {
+            <tr>
+              <td>
+                <span class="coupon-code">{{ coupon.code }}</span>
+              </td>
+              <td>
+                @if (coupon.discountType === 'Percentage') {
+                  {{ coupon.discountValue }}%
+                  @if (coupon.maxDiscountAmount) {
+                    <small class="text-muted">(Máx: {{ coupon.maxDiscountAmount | currency:'BRL' }})</small>
+                  }
+                } @else {
+                  {{ coupon.discountValue | currency:'BRL' }}
+                }
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="coupon.active ? 'status-badge--active' : 'status-badge--inactive'">
+                  {{ coupon.active ? 'Ativo' : 'Expirado/Esgotado' }}
+                </span>
+              </td>
+              <td>
+                {{ coupon.expiresAt ? (coupon.expiresAt | date:'shortDate') : 'Sem validade' }}
+              </td>
+              <td>
+                {{ coupon.currentUsageCount }} {{ coupon.maxUsageCount > 0 ? '/ ' + coupon.maxUsageCount : 'ilimitado' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-modal [isOpen]="isModalOpen()" title="Novo Cupom" (close)="closeModal()">
+  <form [formGroup]="couponForm" (ngSubmit)="saveCoupon()" class="form">
+    
+    @if (apiError()) {
+      <div class="alert alert--error">
+        {{ apiError() }}
+      </div>
+    }
+
+    <div class="form-group">
+      <label class="form-label" for="code">Código do Cupom *</label>
+      <input
+        type="text"
+        id="code"
+        formControlName="code"
+        class="form-input"
+        placeholder="EX: BEMVINDO10"
+        style="text-transform: uppercase"
+      />
+      @if (couponForm.get('code')?.invalid && couponForm.get('code')?.touched) {
+        <span class="form-error">Código é obrigatório (máx 20 caracteres).</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="discountType">Tipo de Desconto *</label>
+        <select id="discountType" formControlName="discountType" class="form-input">
+          <option value="Percentage">Porcentagem (%)</option>
+          <option value="Fixed">Valor Fixo (R$)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="discountValue">Valor do Desconto *</label>
+        <input
+          type="number"
+          id="discountValue"
+          formControlName="discountValue"
+          class="form-input"
+          min="0"
+          step="0.01"
+        />
+        @if (couponForm.get('discountValue')?.invalid && couponForm.get('discountValue')?.touched) {
+          <span class="form-error">Valor inválido.</span>
+        }
+      </div>
+    </div>
+
+    @if (couponForm.get('discountType')?.value === 'Percentage') {
+      <div class="form-group">
+        <label class="form-label" for="maxDiscountAmount">Desconto Máximo (R$) (Opcional)</label>
+        <input
+          type="number"
+          id="maxDiscountAmount"
+          formControlName="maxDiscountAmount"
+          class="form-input"
+          placeholder="Ex: 50.00"
+          min="0"
+          step="0.01"
+        />
+      </div>
+    }
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="minPurchaseAmount">Compra Mínima (R$) (Opcional)</label>
+        <input
+          type="number"
+          id="minPurchaseAmount"
+          formControlName="minPurchaseAmount"
+          class="form-input"
+          placeholder="Ex: 100.00"
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="maxUsageCount">Limite de Usos (Opcional)</label>
+        <input
+          type="number"
+          id="maxUsageCount"
+          formControlName="maxUsageCount"
+          class="form-input"
+          placeholder="0 = ilimitado"
+          min="0"
+          step="1"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="expiresAt">Data de Validade (Opcional)</label>
+      <input
+        type="datetime-local"
+        id="expiresAt"
+        formControlName="expiresAt"
+        class="form-input"
+      />
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn--outline" (click)="closeModal()">Cancelar</button>
+      <button type="submit" class="btn btn--primary" [disabled]="isSaving() || couponForm.invalid">
+        @if (isSaving()) {
+          <span class="spinner spinner--sm"></span>
+        }
+        Criar Cupom
+      </button>
+    </div>
+  </form>
+</app-modal>
