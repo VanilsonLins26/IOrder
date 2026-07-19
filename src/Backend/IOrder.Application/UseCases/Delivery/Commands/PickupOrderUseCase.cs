@@ -52,7 +52,7 @@ public class PickupOrderUseCase : IPickupOrderUseCase
         var order = await _orderWriteOnlyRepository.GetByIdTracking(assignment.OrderId);
         if (order is not null)
         {
-            order.MarkAsReady();
+            order.MarkAsOutForDelivery();
             _orderWriteOnlyRepository.Update(order);
         }
 

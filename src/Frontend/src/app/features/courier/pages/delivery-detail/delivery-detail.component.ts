@@ -6,13 +6,18 @@ import {
   inject,
   signal,
   input,
+  effect,
+  DestroyRef
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrencyPipe, DatePipe, SlicePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { DeliveryApiService } from '../../../../core/services/api/delivery-api.service';
 import { OrderApiService } from '../../../../core/services/api/order-api.service';
+import { StoreApiService } from '../../../../core/services/api/store-api.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { GeolocationService } from '../../../../core/services/geolocation.service';
+import { FakeGpsService, Coordinates } from '../../../../core/services/fake-gps.service';
+import { DeliveryMapComponent } from '../../../../shared/components/delivery-map/delivery-map.component';
 import {
   getAssignmentStatusLabel,
   getAssignmentStatusClass,
@@ -29,7 +34,7 @@ import type { DeliveryAssignmentResponseDto, OrderResponseDto } from '../../../.
 @Component({
   selector: 'app-delivery-detail',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, SlicePipe],
+  imports: [CurrencyPipe, DatePipe, SlicePipe, DeliveryMapComponent],
   templateUrl: './delivery-detail.component.html',
   styleUrl: './delivery-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,29 +44,37 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
 
   private readonly api = inject(DeliveryApiService);
   private readonly orderApi = inject(OrderApiService);
+  private readonly storeApi = inject(StoreApiService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
-  private readonly geolocation = inject(GeolocationService);
+  private readonly fakeGps = inject(FakeGpsService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly assignment = signal<DeliveryAssignmentResponseDto | null>(null);
   readonly order = signal<OrderResponseDto | null>(null);
   readonly processing = signal(false);
 
-  private locationInterval: ReturnType<typeof setInterval> | null = null;
+  readonly storeLocation = signal<Coordinates | null>(null);
+  readonly clientLocation = signal<Coordinates | null>(null);
+  readonly courierLocation = signal<Coordinates | null>(null);
+
+  constructor() {
+    this.fakeGps.currentPos$.pipe(takeUntilDestroyed()).subscribe(pos => {
+      this.courierLocation.set(pos);
+    });
+  }
 
   ngOnInit() {
     this.loadAssignment();
   }
 
   ngOnDestroy() {
-    this.stopLocationPolling();
+    this.fakeGps.stopTracking();
   }
 
   loadAssignment() {
     this.loading.set(true);
-    // The my-deliveries endpoint returns assignments, but we need to get one by id
-    // We'll fetch from my-deliveries and find by id, or use the order endpoint
     this.api.getMyDeliveries(1, 100).subscribe({
       next: (res) => {
         const found = res.items.find(a => a.id === this.id());
@@ -71,8 +84,9 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
             next: (order) => {
               this.order.set(order);
               this.loading.set(false);
-              if (this.isActive()) {
-                this.startLocationPolling();
+              
+              if (this.isOutForDelivery()) {
+                this.initLocations(order.storeId, found.courierUserId);
               }
             },
             error: () => this.loading.set(false),
@@ -91,6 +105,12 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
     return a.status === AssignmentStatusDto.Accepted ||
            a.status === AssignmentStatusDto.PickedUp ||
            a.status === AssignmentStatusDto.InTransit;
+  }
+
+  isOutForDelivery(): boolean {
+    const a = this.assignment();
+    if (!a) return false;
+    return a.status === AssignmentStatusDto.PickedUp || a.status === AssignmentStatusDto.InTransit;
   }
 
   getStatusLabel(status: number): string {
@@ -137,7 +157,6 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
       next: (updated) => {
         this.assignment.set(updated);
         this.toast.success('Entrega aceita com sucesso!');
-        this.startLocationPolling();
         this.processing.set(false);
       },
       error: (err) => {
@@ -173,6 +192,10 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
         this.assignment.set(updated);
         this.toast.success('Pedido coletado! Siga para a entrega.');
         this.processing.set(false);
+        const orderInfo = this.order();
+        if (orderInfo) {
+          this.initLocations(orderInfo.storeId, updated.courierUserId);
+        }
       },
       error: (err) => {
         this.toast.error(err.error?.errors?.[0] || 'Erro ao coletar pedido.');
@@ -192,7 +215,7 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
         this.processing.set(false);
       },
       error: (err) => {
-        this.toast.error(err.error?.errors?.[0] || 'Erro ao iniciar trânsito.');
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao iniciar trǽnsito.');
         this.processing.set(false);
       },
     });
@@ -205,7 +228,7 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
     this.api.deliverOrder(a.id).subscribe({
       next: (updated) => {
         this.assignment.set(updated);
-        this.stopLocationPolling();
+        this.fakeGps.stopTracking();
         this.toast.success('Entrega confirmada!');
         this.processing.set(false);
       },
@@ -220,27 +243,20 @@ export class DeliveryDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/courier/deliveries']);
   }
 
-  private startLocationPolling() {
-    this.stopLocationPolling();
-    this.sendLocation();
-    this.locationInterval = setInterval(() => this.sendLocation(), 5000);
-  }
+  private initLocations(storeId: string, courierUserId: string) {
+    this.storeApi.getById(storeId).subscribe({
+      next: (store) => {
+        if (store.latitude && store.longitude) {
+          const sLoc = { lat: store.latitude, lng: store.longitude };
+          this.storeLocation.set(sLoc);
+          
+          // Fake client location (portfolio sim)
+          const cLoc = { lat: store.latitude - 0.015, lng: store.longitude + 0.020 };
+          this.clientLocation.set(cLoc);
 
-  private stopLocationPolling() {
-    if (this.locationInterval) {
-      clearInterval(this.locationInterval);
-      this.locationInterval = null;
-    }
-  }
-
-  private sendLocation() {
-    this.geolocation.getCurrentPosition().subscribe({
-      next: (pos) => {
-        this.api.updateLocation({
-          latitude: pos.latitude,
-          longitude: pos.longitude,
-        }).subscribe();
-      },
+          this.fakeGps.startTracking(courierUserId, sLoc, cLoc, 1.5);
+        }
+      }
     });
   }
 

@@ -1,107 +1,137 @@
 @let o = order();
 
 <div class="store-order-detail">
-  <a routerLink="/admin/orders" class="store-order-detail__back">← Voltar para Pedidos</a>
+
+  <!-- Back -->
+  <a routerLink="/admin/orders" class="sod__back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Voltar para Pedidos
+  </a>
 
   @if (loading() && !o) {
-    <p class="store-order-detail__loading">Carregando...</p>
-  } @else if (!o) {
-    <p class="store-order-detail__not-found">Pedido não encontrado.</p>
-  } @else {
-    <header class="store-order-detail__header">
-      <div>
-        <h1 class="store-order-detail__title">Pedido #{{ o.id | slice:0:8 }}</h1>
-        <p class="store-order-detail__date">{{ o.createdAt | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
+    <!-- Loading skeleton -->
+    <div class="sod__skeleton">
+      <div class="sod__skeleton-header"></div>
+      <div class="sod__skeleton-body">
+        <div class="sod__skeleton-line sod__skeleton-line--wide"></div>
+        <div class="sod__skeleton-line sod__skeleton-line--medium"></div>
+        <div class="sod__skeleton-line sod__skeleton-line--short"></div>
       </div>
-      <span class="store-order-detail__status {{ getStatusClass(o.status) }}">
-        {{ getStatusLabel(o.status) }}
-      </span>
+    </div>
+  } @else if (!o) {
+    <div class="sod__not-found">
+      <div class="sod__not-found-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <p class="sod__not-found-title">Pedido não encontrado</p>
+    </div>
+  } @else {
+
+    <!-- Header -->
+    <header class="sod__header">
+      <div class="sod__header-left">
+        <h1 class="sod__title">Pedido <span class="sod__title-id">#{{ o.id | slice:0:8 }}</span></h1>
+        <p class="sod__date">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {{ o.createdAt | date:"dd/MM/yyyy 'às' HH:mm" }}
+        </p>
+      </div>
+      <span class="sod__status-pill {{ getStatusClass(o.status) }}">{{ getStatusLabel(o.status) }}</span>
     </header>
 
+    <!-- Timeline -->
     <app-order-timeline [status]="o.status"></app-order-timeline>
 
-    @if (earlyDeliveryRequested()) {
-      <div class="store-order-detail__early-banner">
-        <span>⚡ O cliente quer receber antes!</span>
-        <button class="action-btn action-btn--primary" (click)="broadcastDeliveryOffer()">Buscar Entregador</button>
+    <!-- Early delivery banner -->
+    @if (earlyDeliveryRequested() && !order()?.activeAssignment) {
+      <div class="sod__early-banner">
+        <div class="sod__early-banner-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="sod__early-banner-text">
+          <p class="sod__early-banner-title">O cliente quer receber antes!</p>
+          <p class="sod__early-banner-sub">Solicite um entregador agora.</p>
+        </div>
+        <button class="sod__btn sod__btn--orange" (click)="broadcastDeliveryOffer()"
+                [disabled]="broadcastingOffer() || isSearchingCourier()">
+          {{ broadcastingOffer() ? 'Enviando...' : (isSearchingCourier() ? 'Buscando...' : 'Buscar Entregador') }}
+        </button>
       </div>
     }
 
-    <div class="store-order-detail__actions">
+    <!-- Actions -->
+    <div class="sod__actions">
       @for (action of getNextStatuses(o.status); track action.status) {
-        <button class="action-btn action-btn--primary" (click)="updateStatus(action.status)">
-          {{ action.label }}
-        </button>
+        <button class="sod__btn sod__btn--primary" (click)="updateStatus(action.status)">{{ action.label }}</button>
       }
       @if (o.status === OrderStatusDto.Pending || o.status === OrderStatusDto.Negotiating) {
-        <button class="action-btn action-btn--secondary" (click)="toggleNegotiate()">
+        <button class="sod__btn sod__btn--secondary" (click)="toggleNegotiate()">
           {{ showNegotiate() ? 'Cancelar' : 'Negociar' }}
         </button>
       }
-
-      @if (isSearchingCourier()) {
-        <button class="action-btn action-btn--secondary" disabled>
-          Buscando Entregador...
-        </button>
+      @if (isSearchingCourier() && !earlyDeliveryRequested()) {
+        <button class="sod__btn sod__btn--secondary" disabled>Buscando Entregador...</button>
       }
-      @if (canBroadcastDeliveryOffer()) {
-        <button class="action-btn action-btn--secondary" (click)="broadcastDeliveryOffer()" [disabled]="broadcastingOffer()">
-          {{ broadcastingOffer() ? 'Enviando...' : '📡 Solicitar Entregador' }}
+      @if (canBroadcastDeliveryOffer() && !earlyDeliveryRequested()) {
+        <button class="sod__btn sod__btn--secondary" (click)="broadcastDeliveryOffer()" [disabled]="broadcastingOffer()">
+          {{ broadcastingOffer() ? 'Enviando...' : 'Solicitar Entregador' }}
         </button>
       }
       @if (canSendForDelivery()) {
-        <button class="action-btn action-btn--primary" (click)="markOutForDelivery()">
-          🚚 Saiu para Entrega
-        </button>
+        <button class="sod__btn sod__btn--primary" (click)="markOutForDelivery()">Saiu para Entrega</button>
       }
       @if (canMarkDelivered()) {
-        <button class="action-btn action-btn--primary" (click)="markDelivered()">
-          ✅ Entregue
-        </button>
+        <button class="sod__btn sod__btn--green" (click)="markDelivered()">Marcar Entregue</button>
       }
+
+      <button class="sod__chat-btn" (click)="openChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+        Chat / Negociação
+        @if (unreadMessagesCount() > 0) {
+          <span class="sod__chat-badge">{{ unreadMessagesCount() }}</span>
+        }
+      </button>
     </div>
 
-
-
-
-
+    <!-- Negotiate form -->
     @if (showNegotiate()) {
-      <div class="store-order-detail__negotiate">
-        <h3>Nova Proposta</h3>
-        <div class="negotiate__fields">
-          <label>
-            Valor proposto
-            <input type="text" appCurrencyInput [ngModel]="proposedAmount()" (ngModelChange)="proposedAmount.set($event)" placeholder="0,00" />
+      <div class="sod__negotiate">
+        <h3 class="sod__negotiate-title">Nova Proposta</h3>
+        <div class="sod__negotiate-fields">
+          <label class="sod__field">
+            <span class="sod__field-label">Valor proposto</span>
+            <input type="text" class="sod__input" appCurrencyInput [ngModel]="proposedAmount()" (ngModelChange)="proposedAmount.set($event)" placeholder="0,00" />
           </label>
-          <label>
-            Data de entrega
-            <div class="store-order-detail__date-time-row" style="display: flex; gap: 8px;">
-              <select
-                class="form-control"
-                [ngModel]="proposedDateString()"
-                (ngModelChange)="proposedDateString.set($event)"
-              >
+          <label class="sod__field">
+            <span class="sod__field-label">Data de entrega</span>
+            <div class="sod__field-row">
+              <select class="sod__input" [ngModel]="proposedDateString()" (ngModelChange)="proposedDateString.set($event)">
                 @for (date of availableDates(); track date.date) {
                   <option [value]="date.date">{{ date.label }}</option>
                 }
               </select>
-              <select
-                class="form-control"
-                [ngModel]="proposedTimeString()"
-                (ngModelChange)="proposedTimeString.set($event)"
-              >
-                @for (time of availableTimes(); track time) {
-                  <option [value]="time">{{ time }}</option>
+              <select class="sod__input" [ngModel]="proposedTimeString()" (ngModelChange)="proposedTimeString.set($event)">
+                @for (slot of availableTimes(); track slot.value) {
+                  <option [value]="slot.value">{{ slot.label }}</option>
                 }
               </select>
             </div>
           </label>
-          <label>
-            Observações
-            <textarea [ngModel]="shopkeeperNotes()" (ngModelChange)="shopkeeperNotes.set($event)" rows="3" placeholder="Observações para o cliente..."></textarea>
+          <label class="sod__field">
+            <span class="sod__field-label">Observações</span>
+            <textarea class="sod__input sod__textarea" [ngModel]="shopkeeperNotes()" (ngModelChange)="shopkeeperNotes.set($event)" rows="3" placeholder="Observações para o cliente..."></textarea>
           </label>
-          <button class="action-btn action-btn--primary" 
-                  (click)="sendProposal()" 
+          <button class="sod__btn sod__btn--primary" (click)="sendProposal()"
                   [disabled]="!proposedDateString() || !proposedTimeString()">
             Enviar Proposta
           </button>
@@ -109,80 +139,153 @@
       </div>
     }
 
-    <section class="store-order-detail__section">
-      <h2>Resumo</h2>
-      <div class="info-grid">
-        <div class="info-row"><span>Valor original</span><span>{{ o.originalAmount | currency:'BRL' }}</span></div>
+    <!-- Delivery assignment -->
+    @if (o.activeAssignment) {
+      <div class="sod__section sod__section--delivery">
+        <div class="sod__section-header">
+          <div class="sod__section-icon sod__section-icon--indigo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+              <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+            </svg>
+          </div>
+          <h2 class="sod__section-title">Entregador Atribuído</h2>
+        </div>
+        <div class="sod__info-grid">
+          <div class="sod__info-row">
+            <span class="sod__info-label">Status da Entrega</span>
+            <span class="sod__info-value">
+              {{ o.activeAssignment.status === 1 ? 'Aceito — A caminho da loja' :
+                 o.activeAssignment.status === 3 ? 'Pedido Coletado' :
+                 o.activeAssignment.status === 4 ? 'Saiu para Entrega' :
+                 o.activeAssignment.status === 5 ? 'Entregue' : 'Pendente' }}
+            </span>
+          </div>
+          <div class="sod__info-row">
+            <span class="sod__info-label">Código de Entrega</span>
+            <span class="sod__info-value sod__info-value--mono">#{{ o.activeAssignment.id | slice:0:8 }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Summary section -->
+    <div class="sod__section">
+      <div class="sod__section-header">
+        <div class="sod__section-icon sod__section-icon--blue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </div>
+        <h2 class="sod__section-title">Resumo Financeiro</h2>
+      </div>
+      <div class="sod__info-grid">
+        <div class="sod__info-row">
+          <span class="sod__info-label">Valor original</span>
+          <span class="sod__info-value">{{ o.originalAmount | currency:'BRL' }}</span>
+        </div>
         @if (o.couponCode) {
-          <div class="info-row info-row--discount"><span>Desconto ({{ o.couponCode }})</span><span>-{{ o.discountValue | currency:'BRL' }}</span></div>
+          <div class="sod__info-row sod__info-row--success">
+            <span class="sod__info-label">Desconto ({{ o.couponCode }})</span>
+            <span class="sod__info-value">−{{ o.discountValue | currency:'BRL' }}</span>
+          </div>
         }
         @let itemsTotal = o.totalAmount - o.deliveryFee;
         @let baseItemsTotal = o.discountedTotal ?? o.originalAmount;
         @if (itemsTotal !== baseItemsTotal) {
-          <div class="info-row info-row--negotiated"><span>Valor negociado</span><span>{{ itemsTotal | currency:'BRL' }}</span></div>
+          <div class="sod__info-row sod__info-row--highlight">
+            <span class="sod__info-label">Valor negociado</span>
+            <span class="sod__info-value">{{ itemsTotal | currency:'BRL' }}</span>
+          </div>
         }
         @if (o.deliveryFee > 0) {
-          <div class="info-row"><span>Taxa de entrega</span><span>{{ o.deliveryFee | currency:'BRL' }}</span></div>
+          <div class="sod__info-row">
+            <span class="sod__info-label">Taxa de entrega</span>
+            <span class="sod__info-value">{{ o.deliveryFee | currency:'BRL' }}</span>
+          </div>
         }
-        <div class="info-row info-row--total"><span>Total</span><span>{{ o.totalAmount | currency:'BRL' }}</span></div>
+        <div class="sod__info-row sod__info-row--total">
+          <span class="sod__info-label">Total</span>
+          <span class="sod__info-value">{{ o.totalAmount | currency:'BRL' }}</span>
+        </div>
         @if (o.deliveryDate) {
-          <div class="info-row"><span>{{ o.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span><span>{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span></div>
+          <div class="sod__info-row">
+            <span class="sod__info-label">{{ o.deliveryType === 1 ? 'Retirada prevista' : 'Entrega prevista' }}</span>
+            <span class="sod__info-value">{{ o.deliveryDate | date:"dd/MM/yyyy 'às' HH:mm" }}</span>
+          </div>
         }
       </div>
+
       @if (o.customerNotes) {
-        <div class="notes-box"><strong>Cliente:</strong> {{ o.customerNotes }}</div>
+        <div class="sod__notes-box">
+          <span class="sod__notes-label">Observação do cliente</span>
+          <p>{{ o.customerNotes }}</p>
+        </div>
       }
       @if (o.shopkeeperNotes) {
-        <div class="notes-box"><strong>Lojista:</strong> {{ o.shopkeeperNotes }}</div>
+        <div class="sod__notes-box sod__notes-box--store">
+          <span class="sod__notes-label">Observação da loja</span>
+          <p>{{ o.shopkeeperNotes }}</p>
+        </div>
       }
-    </section>
+    </div>
 
-    <section class="store-order-detail__section">
-      <h2>Itens ({{ o.items.length }})</h2>
-      <div class="items-list">
+    <!-- Items section -->
+    <div class="sod__section">
+      <div class="sod__section-header">
+        <div class="sod__section-icon sod__section-icon--orange">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+          </svg>
+        </div>
+        <h2 class="sod__section-title">Itens <span class="sod__section-count">{{ o.items.length }}</span></h2>
+      </div>
+
+      <div class="sod__items">
         @for (item of o.items; track item.id) {
-          <div class="item-row">
-            <div class="item-row__image">
-              @if (item.productImageUrl) { <img [src]="item.productImageUrl" alt="" (click)="openImage(item.productImageUrl)" style="cursor: pointer" /> }
-              @else if (item.imageUrls[0]) { <img [src]="item.imageUrls[0]" alt="" (click)="openImage(item.imageUrls[0])" style="cursor: pointer" /> }
-              @else { <div class="item-row__placeholder">📦</div> }
+          <div class="sod__item">
+            <div class="sod__item-img">
+              @if (item.productImageUrl) {
+                <img [src]="item.productImageUrl" alt="" (click)="openImage(item.productImageUrl)" />
+              } @else if (item.imageUrls[0]) {
+                <img [src]="item.imageUrls[0]" alt="" (click)="openImage(item.imageUrls[0])" />
+              } @else {
+                <div class="sod__item-placeholder">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                  </svg>
+                </div>
+              }
             </div>
-            <div class="item-row__info">
-              <p class="item-row__name">{{ item.productName }}</p>
+            <div class="sod__item-info">
+              <p class="sod__item-name">{{ item.productName }}</p>
               @if (item.selectedOptions.length) {
-                <div class="item-row__selected-options">
+                <div class="sod__item-options">
                   @for (opt of item.selectedOptions; track opt.optionId) {
-                    <span class="item-row__option-tag">
+                    <span class="sod__item-option-tag">
                       {{ opt.groupName }}: {{ opt.optionName }}
-                      @if (opt.priceModifier) { <span class="item-row__option-price">+{{ opt.priceModifier | currency:'BRL' }}</span> }
+                      @if (opt.priceModifier) { <span>+{{ opt.priceModifier | currency:'BRL' }}</span> }
                     </span>
                   }
                 </div>
               }
-              @if (item.customize) { <p class="item-row__customize">{{ item.customize }}</p> }
+              @if (item.customize) { <p class="sod__item-notes">{{ item.customize }}</p> }
               @if (item.imageUrls.length) {
-                <div class="item-row__customize-images">
+                <div class="sod__item-thumbs">
                   @for (url of item.imageUrls; track url) {
-                    <img [src]="url" alt="Customização" class="item-row__customize-thumb" (click)="openImage(url)" style="cursor: pointer" />
+                    <img [src]="url" alt="Customização" class="sod__item-thumb" (click)="openImage(url)" />
                   }
                 </div>
               }
             </div>
-            <span class="item-row__qty">{{ item.quantity }}x</span>
-            <span class="item-row__price">{{ item.unitPrice | currency:'BRL' }}</span>
-            <span class="item-row__total">{{ item.totalPrice | currency:'BRL' }}</span>
+            <div class="sod__item-pricing">
+              <span class="sod__item-qty">{{ item.quantity }}×</span>
+              <span class="sod__item-unit">{{ item.unitPrice | currency:'BRL' }}</span>
+              <span class="sod__item-total">{{ item.totalPrice | currency:'BRL' }}</span>
+            </div>
           </div>
         }
       </div>
-    </section>
-    
-    <div class="order-detail__chat-cta">
-      <button class="order-detail__chat-btn" (click)="openChat()">
-        💬 Negociação / Chat
-        @if (unreadMessagesCount() > 0) {
-          <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
-        }
-      </button>
     </div>
   }
 </div>
@@ -202,11 +305,15 @@
   ></app-order-chat-offcanvas>
 }
 
-  @if (expandedImage()) {
-    <div class="image-modal" (click)="closeImage()">
-      <div class="image-modal__content" (click)="$event.stopPropagation()">
-        <button class="image-modal__close" (click)="closeImage()">&times;</button>
-        <img [src]="expandedImage()" alt="Imagem ampliada" class="image-modal__img" />
-      </div>
+@if (expandedImage()) {
+  <div class="sod__image-modal" (click)="closeImage()">
+    <div class="sod__image-modal-content" (click)="$event.stopPropagation()">
+      <button class="sod__image-modal-close" (click)="closeImage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <img [src]="expandedImage()" alt="Imagem ampliada" class="sod__image-modal-img" />
     </div>
-  }
+  </div>
+}

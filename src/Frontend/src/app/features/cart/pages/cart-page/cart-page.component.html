@@ -233,8 +233,8 @@
                   [ngModel]="deliveryTime()"
                   (ngModelChange)="deliveryTime.set($event)"
                 >
-                  @for (time of availableTimes(); track time) {
-                    <option [value]="time">{{ time }}</option>
+                  @for (slot of availableTimes(); track slot.value) {
+                    <option [value]="slot.value">{{ slot.label }}</option>
                   }
                 </select>
               </div>

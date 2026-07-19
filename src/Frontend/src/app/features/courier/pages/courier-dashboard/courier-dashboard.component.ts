@@ -1,12 +1,10 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, inject, signal, DestroyRef } from '@angular/core';
-import { DatePipe, SlicePipe, CurrencyPipe } from '@angular/common';
+import { DatePipe, SlicePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { DeliveryApiService } from '../../../../core/services/api/delivery-api.service';
 import { ChatSignalRService } from '../../../../core/services/chat-signalr.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { getAssignmentStatusLabel, getAssignmentStatusClass } from '../../../../shared/utils/assignment-status.utils';
 import { AssignmentStatusDto } from '../../../../core/models';
 import type { DeliveryAssignmentResponseDto } from '../../../../core/models';
@@ -14,7 +12,7 @@ import type { DeliveryAssignmentResponseDto } from '../../../../core/models';
 @Component({
   selector: 'app-courier-dashboard',
   standalone: true,
-  imports: [DatePipe, SlicePipe, CurrencyPipe, EmptyStateComponent, LoadingSkeletonComponent],
+  imports: [DatePipe, SlicePipe, CurrencyPipe, DecimalPipe],
   templateUrl: './courier-dashboard.component.html',
   styleUrl: './courier-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,68 +1,120 @@
 <div class="my-deliveries">
-  <header class="my-deliveries__header">
-    <h1 class="my-deliveries__title">Minhas Entregas</h1>
-  </header>
+
+  <!-- Header -->
+  <div class="my-deliveries__header">
+    <div>
+      <h1 class="my-deliveries__title">Minhas Entregas</h1>
+      <p class="my-deliveries__sub">Histórico completo das suas entregas</p>
+    </div>
+    @if (!loading() && assignments().length > 0) {
+      <div class="my-deliveries__total-badge">
+        <span>{{ assignments().length }}</span> entrega{{ assignments().length !== 1 ? 's' : '' }}
+      </div>
+    }
+  </div>
 
   @if (loading() && assignments().length === 0) {
-    <div class="my-deliveries__skeleton">
-      @for (i of [1,2,3]; track i) {
-        <app-loading-skeleton height="100px" border-radius="var(--radius-2xl)" />
+    <!-- Skeletons -->
+    <div class="my-deliveries__skeletons">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="delivery-skeleton" [style.animation-delay]="i * 60 + 'ms'">
+          <div class="delivery-skeleton__left">
+            <div class="delivery-skeleton__avatar"></div>
+            <div class="delivery-skeleton__lines">
+              <div class="delivery-skeleton__line delivery-skeleton__line--wide"></div>
+              <div class="delivery-skeleton__line delivery-skeleton__line--short"></div>
+            </div>
+          </div>
+          <div class="delivery-skeleton__badge"></div>
+        </div>
       }
     </div>
+
   } @else if (assignments().length === 0) {
-    <app-empty-state
-      icon="📦"
-      title="Nenhuma entrega"
-      description="Atribuições de entrega aparecerão aqui."
-    />
+    <div class="my-deliveries__empty">
+      <div class="my-deliveries__empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <p class="my-deliveries__empty-title">Nenhuma entrega ainda</p>
+      <p class="my-deliveries__empty-sub">Suas atribuições de entrega aparecerão aqui.</p>
+    </div>
+
   } @else {
     <div class="my-deliveries__list">
-      @for (assignment of assignments(); track trackById($index, assignment)) {
-        <div class="delivery-card" (click)="goToDetail(assignment.id)">
-          <div class="delivery-card__header">
-            <span class="delivery-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
-            <span class="delivery-card__status {{ getStatusClass(assignment.status) }}">
-              {{ getStatusLabel(assignment.status) }}
-            </span>
-          </div>
+      @for (assignment of assignments(); track trackById($index, assignment); let i = $index) {
+        <div class="delivery-card" (click)="goToDetail(assignment.id)" [style.animation-delay]="i * 40 + 'ms'">
+
+          <!-- Color bar based on status -->
+          <div class="delivery-card__bar {{ getStatusClass(assignment.status) }}"></div>
+
           <div class="delivery-card__body">
-            <span class="delivery-card__date">
-              @if (assignment.deliveredAt) {
-                Entregue em {{ assignment.deliveredAt | date:"dd/MM/yyyy HH:mm" }}
-              } @else if (assignment.pickedUpAt) {
-                Coletado em {{ assignment.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}
-              } @else if (assignment.acceptedAt) {
-                Aceito em {{ assignment.acceptedAt | date:"dd/MM/yyyy HH:mm" }}
-              } @else {
-                Atribuído em {{ assignment.assignedAt | date:"dd/MM/yyyy HH:mm" }}
-              }
-            </span>
-          </div>
-          <div class="delivery-card__footer">
-            <span class="delivery-card__arrow">Ver detalhes →</span>
+            <!-- Store avatar + info -->
+            <div class="delivery-card__main">
+              <div class="delivery-card__avatar {{ getStatusClass(assignment.status) }}">
+                @if (assignment.storeName) {
+                  {{ assignment.storeName[0] }}
+                } @else {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>
+                }
+              </div>
+
+              <div class="delivery-card__info">
+                <p class="delivery-card__store">{{ assignment.storeName || 'Entrega' }}</p>
+                <p class="delivery-card__id">#{{ assignment.orderId | slice:0:8 }}</p>
+                <p class="delivery-card__time">
+                  @if (assignment.deliveredAt) {
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Entregue em {{ assignment.deliveredAt | date:"dd/MM/yyyy 'às' HH:mm" }}
+                  } @else if (assignment.inTransitAt) {
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/></svg>
+                    Em trânsito desde {{ assignment.inTransitAt | date:"dd/MM HH:mm" }}
+                  } @else if (assignment.pickedUpAt) {
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>
+                    Coletado em {{ assignment.pickedUpAt | date:"dd/MM HH:mm" }}
+                  } @else if (assignment.acceptedAt) {
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Aceito em {{ assignment.acceptedAt | date:"dd/MM HH:mm" }}
+                  } @else {
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Atribuído em {{ assignment.assignedAt | date:"dd/MM HH:mm" }}
+                  }
+                </p>
+              </div>
+            </div>
+
+            <!-- Right side: badge + chevron -->
+            <div class="delivery-card__right">
+              <span class="delivery-card__badge {{ getStatusClass(assignment.status) }}">
+                {{ getStatusLabel(assignment.status) }}
+              </span>
+              <svg class="delivery-card__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
           </div>
         </div>
       }
     </div>
 
+    <!-- Pagination -->
     @if (totalPages() > 1) {
       <div class="my-deliveries__pagination">
-        <button
-          class="pagination__btn"
-          [disabled]="!hasPrevious()"
-          (click)="changePage(currentPage() - 1)"
-        >
-          &larr; Anterior
+        <button class="my-deliveries__page-btn" [disabled]="!hasPrevious()" (click)="changePage(currentPage() - 1)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Anterior
         </button>
-        <span class="pagination__info">
-          Página {{ currentPage() }} de {{ totalPages() }}
-        </span>
-        <button
-          class="pagination__btn"
-          [disabled]="!hasNext()"
-          (click)="changePage(currentPage() + 1)"
-        >
-          Pr&oacute;xima &rarr;
+        <div class="my-deliveries__page-pills">
+          @for (p of getPageRange(); track p) {
+            <button class="my-deliveries__page-pill" [class.my-deliveries__page-pill--active]="p === currentPage()" (click)="changePage(p)">
+              {{ p }}
+            </button>
+          }
+        </div>
+        <button class="my-deliveries__page-btn" [disabled]="!hasNext()" (click)="changePage(currentPage() + 1)">
+          Próxima
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </div>
     }

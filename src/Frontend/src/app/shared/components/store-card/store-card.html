@@ -1,42 +1,64 @@
 <a [routerLink]="['/stores', store().id]" class="store-card" [attr.aria-label]="'Ver loja ' + store().name">
-  <!-- Image -->
-  <div class="store-card__image-wrapper">
+
+  <!-- Cover image -->
+  <div class="store-card__cover">
     @if (store().imageUrl) {
-      <img [src]="store().imageUrl" [alt]="store().name" class="store-card__image" loading="lazy" />
+      <img [src]="store().imageUrl" [alt]="store().name" class="store-card__img" loading="lazy" />
     } @else {
-      <div class="store-card__image-placeholder">🏪</div>
+      <div class="store-card__img-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
     }
-    <!-- Open badge -->
+
+    <!-- Gradient overlay -->
+    <div class="store-card__cover-overlay"></div>
+
+    <!-- Status badge -->
     <span class="store-card__status" [class.store-card__status--open]="store().isOpen">
+      <span class="store-card__status-dot"></span>
       {{ store().isOpen ? 'Aberto' : 'Fechado' }}
     </span>
-    
+
     <!-- Category badge -->
     @if (store().categoryName) {
-      <span class="store-card__category">
-        {{ store().categoryName }}
-      </span>
+      <span class="store-card__category">{{ store().categoryName }}</span>
     }
   </div>
 
   <!-- Body -->
   <div class="store-card__body">
     <h3 class="store-card__name">{{ store().name }}</h3>
+
     @if (store().about) {
       <p class="store-card__about">{{ store().about }}</p>
     }
-    <div class="store-card__meta">
-      @if (store().address) {
-        <span class="store-card__location">
-          {{ store().address.city }}, {{ store().address.state }}
+
+    <div class="store-card__footer">
+      <div class="store-card__meta">
+        @if (store().address) {
+          <span class="store-card__location">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ store().address.city }}, {{ store().address.state }}
+          </span>
+        }
+        @if (store().distanceKm !== undefined && store().distanceKm !== null) {
+          <span class="store-card__distance">{{ store().distanceKm | number:'1.1-1' }} km</span>
+        }
+      </div>
+
+      @if (store().deliveryFee !== undefined && store().deliveryFee !== null) {
+        <span class="store-card__delivery">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+            <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+          </svg>
+          {{ store().deliveryFee | currency:'BRL' }}
         </span>
       }
-      @if (store().distanceKm !== undefined && store().distanceKm !== null) {
-        <span class="store-card__distance">{{ store().distanceKm | number:'1.1-1' }} km</span>
-      }
     </div>
-    @if (store().deliveryFee !== undefined && store().deliveryFee !== null) {
-      <span class="store-card__delivery">Entrega: {{ store().deliveryFee | currency:'BRL' }}</span>
-    }
   </div>
 </a>

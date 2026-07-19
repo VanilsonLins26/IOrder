@@ -3,7 +3,7 @@ import { RouterOutlet, Router } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { AuthService } from '@auth0/auth0-angular';
-import { Roles } from '../../core/auth/role.guard';
+import { Roles, getUserRoles } from '../../core/auth/role.guard';
 
 @Component({
   selector: 'app-client-layout',
@@ -36,9 +36,11 @@ export class ClientLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.user$.subscribe((user: any) => {
-      const roles: string[] = user?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
+      const roles = getUserRoles(user);
       if (roles.includes(Roles.ShopKeeper)) {
         this.router.navigate(['/admin']);
+      } else if (roles.includes(Roles.Delivery)) {
+        this.router.navigate(['/courier']);
       }
     });
   }

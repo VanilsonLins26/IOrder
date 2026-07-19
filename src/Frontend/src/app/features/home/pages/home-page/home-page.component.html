@@ -8,15 +8,20 @@
 
 <!-- ======================= HERO ======================= -->
 <section class="hero" aria-label="Bem-vindo ao IOrder">
-  <div class="hero__bg-shapes" aria-hidden="true">
-    <div class="hero__shape hero__shape--1"></div>
-    <div class="hero__shape hero__shape--2"></div>
-    <div class="hero__shape hero__shape--3"></div>
+  <div class="hero__bg" aria-hidden="true">
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+    <div class="hero__grid"></div>
   </div>
 
   <div class="hero__container">
     <div class="hero__content">
-      <span class="hero__badge">🚀 Marketplace de Encomendas</span>
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        Marketplace de Encomendas
+      </div>
+
       <h1 class="hero__title">
         Encomendas sob medida,<br />
         <span class="hero__title-highlight">do seu jeito</span>
@@ -25,9 +30,13 @@
         Descubra lojas incríveis, personalize seus produtos favoritos e acompanhe tudo em tempo real.
       </p>
 
-      <!-- Search bar -->
+      <!-- Search -->
       <div class="hero__search">
-        <span class="hero__search-icon">🔍</span>
+        <div class="hero__search-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
         <input
           id="home-search"
           type="search"
@@ -59,20 +68,31 @@
       </div>
     </div>
 
-    <div class="hero__illustration" aria-hidden="true">
-      <div class="hero__card hero__card--1">
-        <span>🍕</span>
-        <span>Pizza artesanal</span>
-        <span class="hero__card-badge">Novo</span>
+    <!-- Floating cards -->
+    <div class="hero__cards" aria-hidden="true">
+      <div class="hero__float-card hero__float-card--1">
+        <div class="hero__float-card-icon">🍕</div>
+        <div>
+          <p class="hero__float-card-title">Pizza artesanal</p>
+          <p class="hero__float-card-sub">Loja do João</p>
+        </div>
+        <span class="hero__float-badge hero__float-badge--blue">Novo</span>
       </div>
-      <div class="hero__card hero__card--2">
-        <span>👗</span>
-        <span>Roupa customizada</span>
+      <div class="hero__float-card hero__float-card--2">
+        <div class="hero__float-card-icon">🎂</div>
+        <div>
+          <p class="hero__float-card-title">Bolo personalizado</p>
+          <p class="hero__float-card-sub">Doce Lar</p>
+        </div>
+        <span class="hero__float-badge hero__float-badge--orange">Popular</span>
       </div>
-      <div class="hero__card hero__card--3">
-        <span>🎂</span>
-        <span>Bolo personalizado</span>
-        <span class="hero__card-badge hero__card-badge--orange">Popular</span>
+      <div class="hero__float-card hero__float-card--3">
+        <div class="hero__float-card-icon">👗</div>
+        <div>
+          <p class="hero__float-card-title">Roupa customizada</p>
+          <p class="hero__float-card-sub">Estilo Único</p>
+        </div>
+        <span class="hero__float-badge hero__float-badge--green">★ 4.9</span>
       </div>
     </div>
   </div>
@@ -82,12 +102,14 @@
 <section class="categories" aria-label="Categorias de lojas">
   <div class="section-container">
     <div class="section-header">
-      <h2 class="section-title">O que você procura?</h2>
-      <p class="section-subtitle">Explore por categoria</p>
+      <div>
+        <h2 class="section-title">O que você procura?</h2>
+        <p class="section-subtitle">Explore por categoria</p>
+      </div>
     </div>
 
-    <div 
-      class="categories__scroll" 
+    <div
+      class="categories__scroll"
       role="list"
       #scrollContainer
       (mousedown)="onMouseDown($event)"
@@ -96,34 +118,32 @@
       (mousemove)="onMouseMove($event)"
     >
       <!-- All -->
-      <button
-        class="category-chip"
-        [class.category-chip--active]="selectedCatId() === null"
-        (click)="selectCategory(null)"
-        role="listitem"
-      >
-        <span class="category-chip__icon">🏪</span>
+      <button class="category-chip" [class.category-chip--active]="selectedCatId() === null"
+              (click)="selectCategory(null)" role="listitem">
+        <span class="category-chip__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+        </span>
         <span>Todas</span>
       </button>
 
       @if (loadingCats()) {
         @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="category-chip category-chip--skeleton">
-            <app-loading-skeleton width="80px" height="16px" />
-          </div>
+          <div class="category-chip category-chip--skeleton"></div>
         }
       } @else {
         @for (cat of categories(); track cat.id) {
-          <button
-            class="category-chip"
-            [class.category-chip--active]="selectedCatId() === cat.id"
-            (click)="selectCategory(cat.id)"
-            role="listitem"
-          >
+          <button class="category-chip" [class.category-chip--active]="selectedCatId() === cat.id"
+                  (click)="selectCategory(cat.id)" role="listitem">
             @if (cat.imageUrl) {
-              <img [src]="cat.imageUrl" [alt]="cat.name" class="category-chip__img" width="24" height="24" />
+              <img [src]="cat.imageUrl" [alt]="cat.name" class="category-chip__img" width="20" height="20" />
             } @else {
-              <span class="category-chip__icon">🏷️</span>
+              <span class="category-chip__icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+              </span>
             }
             <span>{{ cat.name }}</span>
           </button>
@@ -137,34 +157,41 @@
 <section class="stores" aria-label="Lojas disponíveis">
   <div class="section-container">
     <div class="section-header">
-      <h2 class="section-title">
-        {{ selectedCategoryName() }}
-      </h2>
-      <a routerLink="/stores" class="section-link">Ver todas →</a>
+      <div>
+        <h2 class="section-title">{{ selectedCategoryName() }}</h2>
+      </div>
+      <a routerLink="/stores" class="section-link">
+        Ver todas
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
     </div>
 
     @if (loadingStores()) {
-      <!-- Skeleton grid -->
       <div class="stores__grid">
         @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="store-card store-card--skeleton">
-            <app-loading-skeleton height="180px" border-radius="var(--radius-xl) var(--radius-xl) 0 0" />
-            <div class="store-card__body">
-              <app-loading-skeleton height="20px" width="60%" />
-              <app-loading-skeleton height="14px" width="80%" />
-              <app-loading-skeleton height="14px" width="40%" />
+          <div class="store-card-skeleton">
+            <div class="store-card-skeleton__cover"></div>
+            <div class="store-card-skeleton__body">
+              <div class="store-card-skeleton__line store-card-skeleton__line--title"></div>
+              <div class="store-card-skeleton__line store-card-skeleton__line--sub"></div>
+              <div class="store-card-skeleton__line store-card-skeleton__line--tag"></div>
             </div>
           </div>
         }
       </div>
     } @else if (filteredStores().length === 0) {
-      <app-empty-state
-        icon="🏪"
-        title="Nenhuma loja encontrada"
-        description="Tente buscar por outro termo ou explore outras categorias."
-        actionLabel="Ver todas as lojas"
-        (action)="selectCategory(null)"
-      />
+      <div class="stores__empty">
+        <div class="stores__empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <p class="stores__empty-title">Nenhuma loja encontrada</p>
+        <p class="stores__empty-sub">Tente buscar por outro termo ou explore outras categorias.</p>
+        <button class="stores__empty-btn" (click)="selectCategory(null)">Ver todas as lojas</button>
+      </div>
     } @else {
       <div class="stores__grid">
         @for (store of filteredStores(); track store.id) {
@@ -179,31 +206,66 @@
 <section class="how-it-works" aria-label="Como funciona o IOrder">
   <div class="section-container">
     <div class="section-header">
-      <h2 class="section-title">Como funciona</h2>
-      <p class="section-subtitle">Em 4 passos simples</p>
+      <div>
+        <h2 class="section-title">Como funciona</h2>
+        <p class="section-subtitle">Em 4 passos simples</p>
+      </div>
     </div>
 
     <div class="steps">
       <div class="step">
-        <div class="step__icon">🔍</div>
+        <div class="step__icon-wrap step__icon-wrap--blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <div class="step__num">01</div>
         <h3 class="step__title">Explore</h3>
         <p class="step__desc">Descubra lojas e produtos únicos na sua cidade</p>
       </div>
-      <div class="step__arrow" aria-hidden="true">→</div>
+
+      <div class="step__connector" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
       <div class="step">
-        <div class="step__icon">✏️</div>
+        <div class="step__icon-wrap step__icon-wrap--purple">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+        <div class="step__num">02</div>
         <h3 class="step__title">Personalize</h3>
         <p class="step__desc">Customize seu pedido com os detalhes que você quer</p>
       </div>
-      <div class="step__arrow" aria-hidden="true">→</div>
+
+      <div class="step__connector" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
       <div class="step">
-        <div class="step__icon">💬</div>
+        <div class="step__icon-wrap step__icon-wrap--green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div class="step__num">03</div>
         <h3 class="step__title">Negocie</h3>
         <p class="step__desc">Converse diretamente com o lojista pelo chat</p>
       </div>
-      <div class="step__arrow" aria-hidden="true">→</div>
+
+      <div class="step__connector" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
       <div class="step">
-        <div class="step__icon">🚀</div>
+        <div class="step__icon-wrap step__icon-wrap--orange">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+            <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+          </svg>
+        </div>
+        <div class="step__num">04</div>
         <h3 class="step__title">Receba</h3>
         <p class="step__desc">Acompanhe o preparo e receba seu pedido</p>
       </div>

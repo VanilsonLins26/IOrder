@@ -68,8 +68,8 @@ export class CartPageComponent implements OnInit {
 
     effect(() => {
       const times = this.availableTimes();
-      if (times.length > 0 && !times.includes(this.deliveryTime())) {
-        untracked(() => this.deliveryTime.set(times[0]));
+      if (times.length > 0 && !times.some(t => t.value === this.deliveryTime())) {
+        untracked(() => this.deliveryTime.set(times[0].value));
       }
     });
 

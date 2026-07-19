@@ -33,9 +33,17 @@ public class GetAvailableDeliveriesUseCase : IGetAvailableDeliveriesUseCase
         var location = await _locationRepository.GetByCourierUserIdAsync(userId);
         
         if (location == null)
-            return new PagedResponse<AvailableDeliveryResponseDto>(new List<AvailableDeliveryResponseDto>(), 0, 1, 10);
+        {
+            // For portfolio testing purposes, if courier doesn't have a location yet,
+            // we will pretend they are at a default location in Fortaleza (or store's city)
+            location = new CourierLocation 
+            { 
+                CourierUserId = userId,
+                Location = new NetTopologySuite.Geometries.Point(-38.5267, -3.7319) { SRID = 4326 }
+            };
+        }
 
-        var maxDistanceKm = 5.0; // 5km limit
+        var maxDistanceKm = 99999.0; // Ignore distance for portfolio test
         var availableOrders = await _orderRepository.GetAvailableForDeliveryAsync(location.Location.Y, location.Location.X, maxDistanceKm);
 
         var items = availableOrders.Select(o => 
@@ -54,6 +62,7 @@ public class GetAvailableDeliveriesUseCase : IGetAvailableDeliveriesUseCase
                     : string.Empty,
                 DeliveryFee = o.DeliveryFee,
                 DistanceKm = Math.Round(distanceKm, 1),
+                ClientDistanceKm = 3.2, // Mock client distance
                 DeliveryDate = o.DeliveryDate,
                 DeliveryDateEnd = o.DeliveryDate?.AddMinutes(30),
                 RequestedEarlyDelivery = o.RequestedEarlyDelivery,

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SlicePipe, DatePipe, CurrencyPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { ChatNotificationService } from '../../../../core/services/chat-notification.service';
 import { OrdersStore } from '../../../orders/store/orders.store';
@@ -25,6 +25,7 @@ export class StoreOrdersComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
   private readonly chatNotification = inject(ChatNotificationService);
+  private readonly router = inject(Router);
 
   readonly currentUser = toSignal(this.auth.user$);
 
@@ -90,4 +91,5 @@ export class StoreOrdersComponent implements OnInit {
 
   protected readonly trackByOrderId = (_: number, item: { id: string }) => item.id;
   protected readonly OrderStatusDto = OrderStatusDto;
+  navigateToOrder(id: string) { this.router.navigate(['/admin/orders', id]); }
 }

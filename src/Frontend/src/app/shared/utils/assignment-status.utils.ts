@@ -4,7 +4,7 @@ const LABELS: Record<number, string> = {
   [AssignmentStatusDto.Pending]: 'Pendente',
   [AssignmentStatusDto.Accepted]: 'Aceita',
   [AssignmentStatusDto.Rejected]: 'Rejeitada',
-  [AssignmentStatusDto.PickedUp]: 'Coletado',
+  [AssignmentStatusDto.PickedUp]: 'Saiu para Entrega',
   [AssignmentStatusDto.InTransit]: 'Em Trânsito',
   [AssignmentStatusDto.Delivered]: 'Entregue',
   [AssignmentStatusDto.Failed]: 'Falhou',
@@ -14,7 +14,7 @@ const STATUS_CLASSES: Record<number, string> = {
   [AssignmentStatusDto.Pending]: 'status--pending',
   [AssignmentStatusDto.Accepted]: 'status--accepted',
   [AssignmentStatusDto.Rejected]: 'status--rejected',
-  [AssignmentStatusDto.PickedUp]: 'status--picked-up',
+  [AssignmentStatusDto.PickedUp]: 'status--in-transit',
   [AssignmentStatusDto.InTransit]: 'status--in-transit',
   [AssignmentStatusDto.Delivered]: 'status--delivered',
   [AssignmentStatusDto.Failed]: 'status--failed',
@@ -41,7 +41,7 @@ export function canPickup(status: number): boolean {
 }
 
 export function canStartTransit(status: number): boolean {
-  return status === AssignmentStatusDto.PickedUp;
+  return false; // Merged with pickup
 }
 
 export function canDeliver(status: number): boolean {

@@ -1,76 +1,132 @@
 <div class="courier-dashboard">
-  <header class="courier-dashboard__header">
-    <h1 class="courier-dashboard__title">Dashboard</h1>
-    @if (user(); as u) {
-      <p class="courier-dashboard__subtitle">Olá, {{ u.name }}</p>
-    }
-  </header>
+
+  <!-- ============ HERO HEADER ============ -->
+  <div class="courier-dashboard__hero">
+    <div class="courier-dashboard__hero-content">
+      <div class="courier-dashboard__hero-text">
+        <p class="courier-dashboard__greeting">Bem-vindo de volta 👋</p>
+        @if (user(); as u) {
+          <h1 class="courier-dashboard__name">{{ (u.name ?? '').split(' ')[0] }}</h1>
+        } @else {
+          <h1 class="courier-dashboard__name">Entregador</h1>
+        }
+        <p class="courier-dashboard__tagline">Pronto para uma nova entrega hoje?</p>
+      </div>
+      <div class="courier-dashboard__hero-badge">
+        <div class="courier-dashboard__online-ring">
+          <div class="courier-dashboard__online-dot"></div>
+        </div>
+        <span>Online</span>
+      </div>
+    </div>
+
+    <!-- Quick Stats Strip -->
+    <div class="courier-dashboard__stats-strip">
+      <div class="courier-dashboard__stat">
+        <div class="courier-dashboard__stat-icon courier-dashboard__stat-icon--orange">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="courier-dashboard__stat-value">{{ availableDeliveries().length }}</span>
+          <span class="courier-dashboard__stat-label">Disponíveis</span>
+        </div>
+      </div>
+      <div class="courier-dashboard__stat-divider"></div>
+      <div class="courier-dashboard__stat">
+        <div class="courier-dashboard__stat-icon courier-dashboard__stat-icon--blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+            <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+          </svg>
+        </div>
+        <div>
+          <span class="courier-dashboard__stat-value">{{ activeAssignments().length }}</span>
+          <span class="courier-dashboard__stat-label">Em Andamento</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   @if (loading()) {
-    <div class="courier-dashboard__skeleton">
-      @for (i of [1,2]; track i) {
-        <app-loading-skeleton height="120px" border-radius="var(--radius-2xl)" />
+    <!-- Skeletons -->
+    <div class="courier-dashboard__skeleton-section">
+      @for (i of [1,2,3]; track i) {
+        <div class="courier-dashboard__skeleton-card">
+          <div class="courier-dashboard__skeleton-line courier-dashboard__skeleton-line--wide"></div>
+          <div class="courier-dashboard__skeleton-line courier-dashboard__skeleton-line--short"></div>
+          <div class="courier-dashboard__skeleton-line courier-dashboard__skeleton-line--mid"></div>
+        </div>
       }
     </div>
   } @else {
-    <!-- Available deliveries -->
-    @if (availableDeliveries().length > 0) {
-      <section class="courier-dashboard__section">
-        <h2 class="courier-dashboard__section-title">
-          📦 Entregas Disponíveis
-          <span class="courier-dashboard__badge">{{ availableDeliveries().length }}</span>
-        </h2>
-        <div class="courier-dashboard__list">
-          @for (delivery of availableDeliveries(); track delivery.orderId) {
-            <div class="assignment-card assignment-card--pending">
-              <div class="assignment-card__header">
-                <span class="assignment-card__order-id">{{ delivery.storeName }}</span>
-                <span class="assignment-card__status status-pill status-pill--info">
-                  {{ delivery.distanceKm }} km
-                </span>
-              </div>
-              <div class="assignment-card__body">
-                <span class="assignment-card__date">Valor: {{ delivery.deliveryFee | currency:'BRL' }}</span>
-              </div>
-              <div class="assignment-card__action">
-                <button class="action-btn action-btn--primary" style="padding: 4px 12px;" (click)="acceptDelivery(delivery.orderId)">
-                  Aceitar
-                </button>
-              </div>
-            </div>
+
+    <!-- ============ ENTREGAS DISPONÍVEIS ============ -->
+    <section class="courier-dashboard__section">
+      <div class="courier-dashboard__section-header">
+        <div class="courier-dashboard__section-title-wrap">
+          <div class="courier-dashboard__section-icon courier-dashboard__section-icon--urgent">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <h2 class="courier-dashboard__section-title">Entregas Disponíveis</h2>
+          @if (availableDeliveries().length > 0) {
+            <span class="courier-dashboard__badge">{{ availableDeliveries().length }}</span>
           }
         </div>
-      </section>
-    }
+      </div>
 
-    <!-- Active assignments -->
-    <section class="courier-dashboard__section">
-      <h2 class="courier-dashboard__section-title">🚚 Entregas Ativas</h2>
-      @if (activeAssignments().length === 0) {
-        <app-empty-state
-          icon="📦"
-          title="Nenhuma entrega ativa"
-          description="Atribuições aceitas e em andamento aparecerão aqui."
-        />
+      @if (availableDeliveries().length === 0) {
+        <div class="courier-dashboard__empty">
+          <div class="courier-dashboard__empty-icon">📭</div>
+          <p class="courier-dashboard__empty-title">Nenhuma entrega disponível</p>
+          <p class="courier-dashboard__empty-sub">As solicitações das lojas aparecerão aqui em tempo real.</p>
+        </div>
       } @else {
-        <div class="courier-dashboard__list">
-          @for (assignment of activeAssignments(); track assignment.id) {
-            <div class="assignment-card" (click)="goToDeliveryDetail(assignment.id)">
-              <div class="assignment-card__header">
-                <span class="assignment-card__order-id">#{{ assignment.orderId | slice:0:8 }}</span>
-                <span class="assignment-card__status {{ getStatusClass(assignment.status) }}">
-                  {{ getStatusLabel(assignment.status) }}
-                </span>
-              </div>
+        <div class="courier-dashboard__cards">
+          @for (delivery of availableDeliveries(); track delivery.orderId; let i = $index) {
+            <div class="assignment-card assignment-card--available" [style.animation-delay]="i * 60 + 'ms'">
+              <div class="assignment-card__urgent-bar"></div>
               <div class="assignment-card__body">
-                @if (assignment.pickedUpAt) {
-                  <span class="assignment-card__date">Coletado em {{ assignment.pickedUpAt | date:"dd/MM/yyyy HH:mm" }}</span>
-                } @else if (assignment.acceptedAt) {
-                  <span class="assignment-card__date">Aceito em {{ assignment.acceptedAt | date:"dd/MM/yyyy HH:mm" }}</span>
-                }
-              </div>
-              <div class="assignment-card__action">
-                <span>Ver detalhes →</span>
+                <div class="assignment-card__top">
+                  <div class="assignment-card__store">
+                    <div class="assignment-card__store-avatar">
+                      {{ delivery.storeName?.[0] }}
+                    </div>
+                    <div>
+                      <p class="assignment-card__store-name">{{ delivery.storeName }}</p>
+                      <p class="assignment-card__meta">Nova solicitação</p>
+                    </div>
+                  </div>
+                  <div class="assignment-card__fee">
+                    <span class="assignment-card__fee-value">{{ delivery.deliveryFee | currency:'BRL' }}</span>
+                    <span class="assignment-card__fee-label">Taxa</span>
+                  </div>
+                </div>
+
+                <div class="assignment-card__distances">
+                  <div class="assignment-card__distance-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3"/></svg>
+                    <span>Loja: <strong>{{ delivery.distanceKm | number:'1.1-1' }} km</strong></span>
+                  </div>
+                  <div class="assignment-card__distance-sep">→</div>
+                  <div class="assignment-card__distance-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Cliente: <strong>{{ delivery.clientDistanceKm | number:'1.1-1' }} km</strong></span>
+                  </div>
+                  <div class="assignment-card__distance-total">
+                    {{ (delivery.distanceKm + delivery.clientDistanceKm) | number:'1.1-1' }} km total
+                  </div>
+                </div>
+
+                <div class="assignment-card__actions">
+                  <button class="assignment-card__btn assignment-card__btn--accept" (click)="acceptDelivery(delivery.orderId)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Aceitar Entrega
+                  </button>
+                </div>
               </div>
             </div>
           }
@@ -78,18 +134,74 @@
       }
     </section>
 
-    <!-- Quick stats -->
-    <section class="courier-dashboard__section courier-dashboard__stats">
-      <div class="stat-card">
-        <span class="stat-card__icon">📦</span>
-        <span class="stat-card__value">{{ availableDeliveries().length }}</span>
-        <span class="stat-card__label">Disponíveis</span>
+    <!-- ============ ENTREGAS ATIVAS ============ -->
+    <section class="courier-dashboard__section">
+      <div class="courier-dashboard__section-header">
+        <div class="courier-dashboard__section-title-wrap">
+          <div class="courier-dashboard__section-icon courier-dashboard__section-icon--blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+              <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+            </svg>
+          </div>
+          <h2 class="courier-dashboard__section-title">Em Andamento</h2>
+        </div>
       </div>
-      <div class="stat-card">
-        <span class="stat-card__icon">🛵</span>
-        <span class="stat-card__value">{{ activeAssignments().length }}</span>
-        <span class="stat-card__label">Em Andamento</span>
-      </div>
+
+      @if (activeAssignments().length === 0) {
+        <div class="courier-dashboard__empty courier-dashboard__empty--subtle">
+          <p class="courier-dashboard__empty-title">Nenhuma entrega ativa</p>
+          <p class="courier-dashboard__empty-sub">Aceite uma entrega acima para começar.</p>
+        </div>
+      } @else {
+        <div class="courier-dashboard__cards">
+          @for (assignment of activeAssignments(); track assignment.id; let i = $index) {
+            <div class="assignment-card assignment-card--active" (click)="goToDeliveryDetail(assignment.id)" [style.animation-delay]="i * 60 + 'ms'">
+              <div class="assignment-card__status-bar {{ getStatusClass(assignment.status) }}"></div>
+              <div class="assignment-card__body">
+                <div class="assignment-card__top">
+                  <div class="assignment-card__store">
+                    <div class="assignment-card__store-avatar assignment-card__store-avatar--active">
+                      {{ assignment.storeName?.[0] }}
+                    </div>
+                    <div>
+                      <p class="assignment-card__store-name">{{ assignment.storeName }}</p>
+                      <p class="assignment-card__meta">#{{ assignment.orderId | slice:0:8 }}</p>
+                    </div>
+                  </div>
+                  <span class="assignment-card__status-pill {{ getStatusClass(assignment.status) }}">
+                    {{ getStatusLabel(assignment.status) }}
+                  </span>
+                </div>
+
+                <div class="assignment-card__progress-info">
+                  @if (assignment.status === AssignmentStatusDto.Accepted) {
+                    <div class="assignment-card__progress-row">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3"/></svg>
+                      <span style="color:#3b82f6;font-weight:600;">A caminho da loja • {{ assignment.distanceKm | number:'1.1-1' }} km</span>
+                    </div>
+                  } @else {
+                    <div class="assignment-card__progress-row">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                      <span style="color:#10b981;font-weight:600;">A caminho do cliente • {{ assignment.clientDistanceKm | number:'1.1-1' }} km</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="assignment-card__footer">
+                  <span class="assignment-card__time">
+                    @if (assignment.acceptedAt) {
+                      Aceito em {{ assignment.acceptedAt | date:"HH:mm" }}
+                    }
+                  </span>
+                  <span class="assignment-card__cta">Ver detalhes →</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </section>
+
   }
 </div>

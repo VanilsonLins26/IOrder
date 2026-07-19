@@ -10,7 +10,7 @@ import type { DeliveryAssignmentResponseDto } from '../../../../core/models';
 @Component({
   selector: 'app-my-deliveries',
   standalone: true,
-  imports: [DatePipe, SlicePipe, EmptyStateComponent, LoadingSkeletonComponent],
+  imports: [DatePipe, SlicePipe],
   templateUrl: './my-deliveries.component.html',
   styleUrl: './my-deliveries.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,4 +63,15 @@ export class MyDeliveriesComponent implements OnInit {
   }
 
   protected readonly trackById = (_: number, item: DeliveryAssignmentResponseDto) => item.id;
+
+  getPageRange(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  }
 }

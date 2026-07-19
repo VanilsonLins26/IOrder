@@ -11,6 +11,9 @@ export enum AssignmentStatusDto {
 export interface DeliveryAssignmentResponseDto {
   id: string;
   orderId: string;
+  storeName?: string;
+  distanceKm?: number;
+  clientDistanceKm?: number;
   courierUserId: string;
   status: AssignmentStatusDto;
   assignedAt: string;

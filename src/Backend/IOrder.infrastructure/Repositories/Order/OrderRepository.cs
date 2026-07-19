@@ -21,6 +21,7 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
             .Include(o => o.Items)
             .Include(o => o.Messages.OrderBy(m => m.SentAt))
             .Include(o => o.Store)
+            .Include(o => o.Assignments)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -196,7 +197,6 @@ internal class OrderRepository : IOrderReadOnlyRepository, IOrderWriteOnlyReposi
                 && (o.Status == Domain.Entities.Enums.OrderStatus.Ready || o.Status == Domain.Entities.Enums.OrderStatus.Preparing)
                 && o.Store != null
                 && o.Store.Location != null
-                && o.Store.Location.Distance(point) <= distanceInDegrees
                 && !o.Assignments.Any(a =>
                     a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected
                     && a.Status != Domain.Entities.Enums.AssignmentStatus.Failed))

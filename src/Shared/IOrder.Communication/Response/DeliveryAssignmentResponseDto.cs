@@ -6,6 +6,9 @@ public class DeliveryAssignmentResponseDto
 {
     public Guid Id { get; set; }
     public Guid OrderId { get; set; }
+    public string StoreName { get; set; } = string.Empty;
+    public double DistanceKm { get; set; }
+    public double ClientDistanceKm { get; set; }
     public string CourierUserId { get; set; } = string.Empty;
     public AssignmentStatusDto Status { get; set; }
     public DateTime AssignedAt { get; set; }

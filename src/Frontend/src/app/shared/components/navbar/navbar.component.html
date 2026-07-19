@@ -1,74 +1,134 @@
 <nav class="navbar" role="navigation" aria-label="Navegação principal">
   <div class="navbar__container">
 
+    <!-- Logo -->
     <a routerLink="/" class="navbar__logo" aria-label="IOrder - Página inicial">
-      <span class="navbar__logo-icon" aria-hidden="true">🛒</span>
+      <div class="navbar__logo-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+      </div>
       <span class="navbar__logo-text">IOrder</span>
     </a>
 
+    <!-- Desktop links -->
     <div class="navbar__links">
       <a routerLink="/stores" routerLinkActive="navbar__link--active" class="navbar__link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        </svg>
         Lojas
       </a>
     </div>
 
+    <!-- Actions -->
     <div class="navbar__actions">
-      <a
-        routerLink="/cart"
-        class="navbar__cart-btn"
-        aria-label="Abrir carrinho"
-      >
-        <span aria-hidden="true">🛒</span>
+
+      <!-- Cart -->
+      <a routerLink="/cart" class="navbar__cart-btn" aria-label="Abrir carrinho">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/>
+        </svg>
         @if (cartStore.itemCount() > 0) {
-          <span class="navbar__cart-badge">{{ cartStore.itemCount() }}</span>
+          <span class="navbar__cart-badge" aria-label="{{ cartStore.itemCount() }} itens no carrinho">
+            {{ cartStore.itemCount() > 9 ? '9+' : cartStore.itemCount() }}
+          </span>
         }
       </a>
 
       @if (auth.isAuthenticated$ | async) {
         @if (auth.user$ | async; as user) {
-          <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()" tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()" style="position: relative;">
+          <!-- User dropdown -->
+          <div class="navbar__user" (click)="toggleDropdown()" (keydown.enter)="toggleDropdown()"
+               tabindex="0" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">
+
             @if (chatNotification.totalUnread() > 0) {
-              <span style="position: absolute; top: -2px; left: -2px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; z-index: 2;"></span>
+              <span class="navbar__unread-dot" aria-label="Mensagens não lidas"></span>
             }
+
             @if (user.picture) {
-              <img [src]="user.picture" [alt]="user.name || 'Avatar'"
-                   class="navbar__avatar" width="32" height="32" />
+              <img [src]="user.picture" [alt]="user.name || 'Avatar'" class="navbar__avatar" width="32" height="32" />
+            } @else {
+              <div class="navbar__avatar-placeholder">{{ (user.name ?? 'U')[0] }}</div>
             }
-            <span class="navbar__user-name">{{ user.name }}</span>
-            <span class="navbar__user-chevron" aria-hidden="true">▼</span>
-            
+
+            <span class="navbar__user-name">{{ (user.name ?? '').split(' ')[0] }}</span>
+            <svg class="navbar__user-chevron" [class.navbar__user-chevron--open]="dropdownOpen()"
+                 width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+
             @if (dropdownOpen()) {
-              <div class="navbar__dropdown">
+              <div class="navbar__dropdown" role="menu" (click)="$event.stopPropagation()">
+                <!-- Header -->
                 <div class="navbar__dropdown-header">
-                  <span class="navbar__dropdown-name">{{ user.name }}</span>
-                  <span class="navbar__dropdown-email">{{ user.email }}</span>
+                  @if (user.picture) {
+                    <img [src]="user.picture" [alt]="user.name || ''" class="navbar__dropdown-avatar" />
+                  } @else {
+                    <div class="navbar__dropdown-avatar navbar__dropdown-avatar--placeholder">
+                      {{ (user.name ?? 'U')[0] }}
+                    </div>
+                  }
+                  <div>
+                    <span class="navbar__dropdown-name">{{ user.name }}</span>
+                    <span class="navbar__dropdown-email">{{ user.email }}</span>
+                  </div>
                 </div>
-                
+
+                <!-- Body -->
                 <div class="navbar__dropdown-body">
-                  <a routerLink="/orders" class="navbar__dropdown-item" (click)="closeDropdown()">
-                    <span class="navbar__dropdown-icon" aria-hidden="true">📦</span>
+                  <a routerLink="/orders" class="navbar__dropdown-item" role="menuitem" (click)="closeDropdown()">
+                    <div class="navbar__dropdown-item-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                      </svg>
+                    </div>
                     Meus Pedidos
                     @if (chatNotification.totalUnread() > 0) {
-                      <span style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; font-size: 0.7rem; margin-left: auto;">
-                        {{ chatNotification.totalUnread() }}
-                      </span>
+                      <span class="navbar__unread-badge">{{ chatNotification.totalUnread() }}</span>
                     }
                   </a>
-                  <a routerLink="/profile" class="navbar__dropdown-item" (click)="closeDropdown()">
-                    <span class="navbar__dropdown-icon" aria-hidden="true">👤</span>
+                  <a routerLink="/profile" class="navbar__dropdown-item" role="menuitem" (click)="closeDropdown()">
+                    <div class="navbar__dropdown-item-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </div>
                     Meu Perfil
                   </a>
                   @if (hasRole(user, 'ShopKeeper')) {
-                    <a routerLink="/admin" class="navbar__dropdown-item" (click)="closeDropdown()">
-                      <span class="navbar__dropdown-icon" aria-hidden="true">🏪</span>
+                    <a routerLink="/admin" class="navbar__dropdown-item" role="menuitem" (click)="closeDropdown()">
+                      <div class="navbar__dropdown-item-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                      </div>
                       Painel Lojista
                     </a>
                   }
+                  @if (hasRole(user, 'Delivery')) {
+                    <a routerLink="/courier/dashboard" class="navbar__dropdown-item" role="menuitem" (click)="closeDropdown()">
+                      <div class="navbar__dropdown-item-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+                          <path d="M8 17.5h7M2 12l3-7h12l2 5H2zm14 0v5"/>
+                        </svg>
+                      </div>
+                      Painel Entregador
+                    </a>
+                  }
                 </div>
-                
+
+                <!-- Footer -->
                 <div class="navbar__dropdown-footer">
-                  <button class="navbar__dropdown-item navbar__dropdown-item--danger" (click)="logout()">
-                    <span class="navbar__dropdown-icon" aria-hidden="true">🚪</span>
+                  <button class="navbar__dropdown-item navbar__dropdown-item--danger" role="menuitem" (click)="logout()">
+                    <div class="navbar__dropdown-item-icon navbar__dropdown-item-icon--danger">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                      </svg>
+                    </div>
                     Sair da conta
                   </button>
                 </div>
@@ -80,31 +140,50 @@
         <button class="navbar__btn navbar__btn--primary" (click)="login()">Entrar</button>
       }
 
-      <button
-        class="navbar__hamburger"
-        (click)="toggleMobileMenu()"
-        [attr.aria-expanded]="mobileMenuOpen()"
-        aria-label="Menu de navegação"
-      >
-        <span class="navbar__hamburger-line"></span>
-        <span class="navbar__hamburger-line"></span>
-        <span class="navbar__hamburger-line"></span>
+      <!-- Hamburger -->
+      <button class="navbar__hamburger" (click)="toggleMobileMenu()"
+              [attr.aria-expanded]="mobileMenuOpen()" aria-label="Menu de navegação">
+        <span class="navbar__hamburger-line" [class.navbar__hamburger-line--open-1]="mobileMenuOpen()"></span>
+        <span class="navbar__hamburger-line" [class.navbar__hamburger-line--open-2]="mobileMenuOpen()"></span>
+        <span class="navbar__hamburger-line" [class.navbar__hamburger-line--open-3]="mobileMenuOpen()"></span>
       </button>
     </div>
   </div>
 
+  <!-- Mobile menu -->
   @if (mobileMenuOpen()) {
     <div class="navbar__mobile-menu" role="menu">
-      <a routerLink="/stores" routerLinkActive="navbar__link--active"
+      <a routerLink="/stores" routerLinkActive="navbar__mobile-link--active"
          class="navbar__mobile-link" (click)="closeMobileMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        </svg>
         Lojas
       </a>
       <a routerLink="/cart" class="navbar__mobile-link" (click)="closeMobileMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/>
+        </svg>
         Carrinho
         @if (cartStore.itemCount() > 0) {
-          ({{ cartStore.itemCount() }})
+          <span class="navbar__mobile-badge">{{ cartStore.itemCount() }}</span>
         }
       </a>
+      @if (auth.isAuthenticated$ | async) {
+        <a routerLink="/orders" class="navbar__mobile-link" (click)="closeMobileMenu()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          </svg>
+          Meus Pedidos
+        </a>
+        <a routerLink="/profile" class="navbar__mobile-link" (click)="closeMobileMenu()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Meu Perfil
+        </a>
+      }
     </div>
   }
 </nav>

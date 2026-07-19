@@ -14,12 +14,17 @@ import { OrderChatOffcanvasComponent } from '../../../../shared/components/order
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { PaymentBrickComponent } from '../../../../shared/components/payment-brick/payment-brick.component';
 import { OrderTimelineComponent } from '../../../../shared/components/order-timeline/order-timeline.component';
+import { DeliveryMapComponent } from '../../../../shared/components/delivery-map/delivery-map.component';
+import { StoreApiService } from '../../../../core/services/api/store-api.service';
+import { DeliveryApiService } from '../../../../core/services/api/delivery-api.service';
+import { Coordinates } from '../../../../core/services/fake-gps.service';
+import { AssignmentStatusDto } from '../../../../core/models';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent, OrderTimelineComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent, OrderTimelineComponent, DeliveryMapComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +39,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly storeApi = inject(StoreApiService);
+  private readonly deliveryApi = inject(DeliveryApiService);
 
   readonly sendingMessage = signal(false);
   readonly cancelling = signal(false);
@@ -49,6 +56,12 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly showPaymentModal = signal(false);
   readonly userEmail = computed(() => this.currentUser()?.email ?? '');
 
+  readonly storeLocation = signal<Coordinates | null>(null);
+  readonly clientLocation = signal<Coordinates | null>(null);
+  readonly courierLocation = signal<Coordinates | null>(null);
+  
+  private locationInterval: any;
+
   readonly unreadMessagesCount = computed(() => {
     const o = this.store.currentOrder();
     const uid = this.currentUser()?.sub;
@@ -63,6 +76,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.chatSignalr.leaveOrderGroup(this.id());
+    if (this.locationInterval) clearInterval(this.locationInterval);
   }
 
   private async initChat() {
@@ -118,6 +132,53 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       const eId = event.orderId || (event as any).OrderId;
       if (!eId || eId.toLowerCase() !== this.id().toLowerCase()) return;
       this.store.loadById(this.id());
+    });
+    
+    // Watch store changes to trigger map setup
+    effect(() => {
+      const o = this.store.currentOrder();
+      if (o) {
+        this.checkMapRequirements(o);
+      }
+    });
+  }
+
+  private checkMapRequirements(order: any) {
+    // Only show map if order is Out For Delivery and has an active assignment
+    const a = order.activeAssignment;
+    const isOutForDelivery = a && (a.status === AssignmentStatusDto.PickedUp || a.status === AssignmentStatusDto.InTransit);
+    
+    if (isOutForDelivery) {
+      if (!this.storeLocation()) {
+        this.storeApi.getById(order.storeId).subscribe(store => {
+          if (store.latitude && store.longitude) {
+            this.storeLocation.set({ lat: store.latitude, lng: store.longitude });
+            this.clientLocation.set({ lat: store.latitude - 0.015, lng: store.longitude + 0.020 });
+            this.startPollingLocation(a.courierUserId);
+          }
+        });
+      }
+    } else {
+      if (this.locationInterval) {
+        clearInterval(this.locationInterval);
+        this.locationInterval = null;
+      }
+    }
+  }
+
+  private startPollingLocation(courierUserId: string) {
+    if (this.locationInterval) return;
+    this.fetchLocation(courierUserId);
+    this.locationInterval = setInterval(() => this.fetchLocation(courierUserId), 5000);
+  }
+
+  private fetchLocation(courierUserId: string) {
+    this.deliveryApi.getCourierLocation(courierUserId).subscribe({
+      next: (res) => {
+        if (res) {
+          this.courierLocation.set({ lat: res.latitude, lng: res.longitude });
+        }
+      }
     });
   }
 

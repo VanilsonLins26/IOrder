@@ -1,27 +1,45 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { combineLatest, filter, map, take } from 'rxjs';
+import { filter, map, switchMap, take, of } from 'rxjs';
+
+export function getUserRoles(user: any): string[] {
+  if (!user) return [];
+  const rawRoles = user['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] 
+                || user['https://iorder.com/roles']
+                || user['roles']
+                || user['role']
+                || [];
+  if (Array.isArray(rawRoles)) return rawRoles;
+  if (typeof rawRoles === 'string') return [rawRoles];
+  return [];
+}
 
 export function roleGuard(requiredRole: string): CanActivateFn {
   return () => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
-    return combineLatest([auth.isLoading$, auth.user$]).pipe(
-      filter(([isLoading]) => !isLoading),
+    return auth.isLoading$.pipe(
+      filter(isLoading => !isLoading),
+      switchMap(() => auth.isAuthenticated$),
       take(1),
-      map(([_, user]) => {
-        const roles: string[] =
-          user?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
-
-        if (roles.includes(requiredRole)) {
-          return true;
+      switchMap(isAuthenticated => {
+        if (!isAuthenticated) {
+          router.navigate(['/']);
+          return of(false);
         }
-
-        router.navigate(['/']);
-        return false;
-      }),
+        return auth.user$.pipe(
+          filter(user => !!user),
+          take(1),
+          map(user => {
+            const roles = getUserRoles(user);
+            if (roles.includes(requiredRole)) return true;
+            router.navigate(['/']);
+            return false;
+          })
+        );
+      })
     );
   };
 }
@@ -29,5 +47,5 @@ export function roleGuard(requiredRole: string): CanActivateFn {
 export const Roles = {
   ShopKeeper: 'ShopKeeper',
   Client: 'Client',
-  Delivery: 'Delivery',
+  Delivery: 'DeliveryPerson',
 } as const;

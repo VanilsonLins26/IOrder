@@ -1,17 +1,50 @@
 <div class="store-orders">
-  <header class="store-orders__header">
-    <h1 class="store-orders__title">Pedidos</h1>
-  </header>
+
+  <!-- Header -->
+  <div class="store-orders__header">
+    <div>
+      <h1 class="store-orders__title">Pedidos</h1>
+      <p class="store-orders__sub">Gerencie todos os pedidos da sua loja</p>
+    </div>
+    @if (!store.loading() && store.orders().length > 0) {
+      <div class="store-orders__count">
+        <span>{{ store.orders().length }}</span> pedido{{ store.orders().length !== 1 ? 's' : '' }}
+      </div>
+    }
+  </div>
 
   @if (store.loading() && store.orders().length === 0) {
-    <p class="store-orders__empty">Carregando...</p>
-  } @else if (store.orders().length === 0) {
-    <p class="store-orders__empty">Nenhum pedido recebido ainda.</p>
-  } @else {
+    <!-- Skeleton -->
+    <div class="store-orders__skeleton">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="order-skeleton">
+          <div class="order-skeleton__id"></div>
+          <div class="order-skeleton__body">
+            <div class="order-skeleton__line order-skeleton__line--wide"></div>
+            <div class="order-skeleton__line order-skeleton__line--short"></div>
+          </div>
+          <div class="order-skeleton__badge"></div>
+        </div>
+      }
+    </div>
 
-    <!-- ══ DESKTOP TABLE ══════════════════════════════════════════════════════ -->
-    <div class="store-orders__table">
-      <div class="store-orders__table-header">
+  } @else if (store.orders().length === 0) {
+    <div class="store-orders__empty">
+      <div class="store-orders__empty-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+      </div>
+      <p class="store-orders__empty-title">Nenhum pedido ainda</p>
+      <p class="store-orders__empty-sub">Os pedidos dos seus clientes aparecerão aqui.</p>
+    </div>
+
+  } @else {
+    <!-- Table -->
+    <div class="store-orders__table-wrap">
+      <!-- Header row -->
+      <div class="store-orders__table-head">
         <span class="col--id">Pedido</span>
         <span class="col--date">Data</span>
         <span class="col--items">Itens</span>
@@ -20,63 +53,81 @@
         <span class="col--actions">Ações</span>
       </div>
 
-      @for (order of store.orders(); track trackByOrderId($index, order)) {
-        <div class="store-orders__row">
-          <span class="col--id">
-            #{{ order.id | slice:0:8 }}
-            @if (getUnreadCount(order) > 0) {
-              <span class="unread-badge">{{ getUnreadCount(order) }}</span>
-            }
-          </span>
-          <span class="col--date">{{ order.createdAt | date:'dd/MM/yyyy' }}</span>
-          <span class="col--items">{{ order.items.length }}</span>
-          <span class="col--total">{{ order.totalAmount | currency:'BRL' }}</span>
-          <span class="col--status">
-            <span class="status-badge {{ getStatusClass(order.status) }}">
-              {{ getStatusLabel(order.status) }}
+      <!-- Data rows -->
+      <div class="store-orders__rows">
+        @for (order of store.orders(); track trackByOrderId($index, order)) {
+          <div class="order-row" (click)="navigateToOrder(order.id)">
+            <!-- ID + unread -->
+            <span class="col--id">
+              <span class="order-row__code">#{{ order.id | slice:0:8 }}</span>
+              @if (getUnreadCount(order) > 0) {
+                <span class="order-row__unread">{{ getUnreadCount(order) }}</span>
+              }
             </span>
-          </span>
-          <span class="col--actions">
-            <a [routerLink]="['/admin/orders', order.id]" class="action-link">Ver</a>
-            @for (action of getNextStatuses(order.status); track action.status) {
-              <button
-                class="action-btn"
-                [class.action-btn--danger]="action.status === OrderStatusDto.Cancelled || action.status === OrderStatusDto.Declined"
-                (click)="updateStatus(order.id, action.status)"
-              >
-                {{ action.label }}
-              </button>
-            }
-          </span>
-        </div>
-      }
+
+            <span class="col--date order-row__date">
+              {{ order.createdAt | date:'dd/MM/yy' }}
+              <span class="order-row__time">{{ order.createdAt | date:'HH:mm' }}</span>
+            </span>
+
+            <span class="col--items order-row__items">
+              {{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'itens' }}
+            </span>
+
+            <span class="col--total order-row__total">{{ order.totalAmount | currency:'BRL' }}</span>
+
+            <span class="col--status">
+              <span class="status-pill {{ getStatusClass(order.status) }}">
+                {{ getStatusLabel(order.status) }}
+              </span>
+            </span>
+
+            <span class="col--actions" (click)="$event.stopPropagation()">
+              <a [routerLink]="['/admin/orders', order.id]" class="order-row__view-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                Ver
+              </a>
+              @for (action of getNextStatuses(order.status); track action.status) {
+                <button class="order-row__action-btn"
+                        [class.order-row__action-btn--danger]="action.status === OrderStatusDto.Cancelled || action.status === OrderStatusDto.Declined"
+                        (click)="updateStatus(order.id, action.status)">
+                  {{ action.label }}
+                </button>
+              }
+            </span>
+          </div>
+        }
+      </div>
     </div>
 
+    <!-- Pagination -->
     @if (store.totalPages() > 1) {
       <div class="store-orders__pagination">
-        <button
-          class="pagination__btn"
-          [disabled]="store.currentPage() <= 1"
-          (click)="changePage(store.currentPage() - 1)"
-          style="position: relative;"
-        >
-          &larr; Anterior
+        <button class="pagination__btn" [disabled]="store.currentPage() <= 1"
+                (click)="changePage(store.currentPage() - 1)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Anterior
           @if (hasUnreadOnPreviousPage()) {
-            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+            <span class="pagination__unread-dot"></span>
           }
         </button>
+
         <span class="pagination__info">
-          Página {{ store.currentPage() }} de {{ store.totalPages() }}
+          Página <strong>{{ store.currentPage() }}</strong> de <strong>{{ store.totalPages() }}</strong>
         </span>
-        <button
-          class="pagination__btn"
-          [disabled]="store.currentPage() >= store.totalPages()"
-          (click)="changePage(store.currentPage() + 1)"
-          style="position: relative;"
-        >
-          Pr&oacute;xima &rarr;
+
+        <button class="pagination__btn" [disabled]="store.currentPage() >= store.totalPages()"
+                (click)="changePage(store.currentPage() + 1)">
+          Próxima
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
           @if (hasUnreadOnNextPage()) {
-            <span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--surface-default);"></span>
+            <span class="pagination__unread-dot"></span>
           }
         </button>
       </div>

@@ -37,6 +37,7 @@ internal class DeliveryAssignmentRepository : IDeliveryAssignmentReadOnlyReposit
             .AsNoTracking()
             .Where(a => a.CourierUserId == courierUserId)
             .Include(a => a.Order)
+                .ThenInclude(o => o.Store)
             .OrderByDescending(a => a.AssignedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)

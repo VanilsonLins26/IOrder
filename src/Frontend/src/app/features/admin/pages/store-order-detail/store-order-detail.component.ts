@@ -57,11 +57,23 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
   readonly canBroadcastDeliveryOffer = computed(() => {
     const o = this.order();
     if (!o) return false;
+
+    let isTimeAllowed = o.requestedEarlyDelivery;
+    if (!isTimeAllowed && o.deliveryDate) {
+      const deliveryTime = new Date(o.deliveryDate).getTime();
+      const currentTime = new Date().getTime();
+      const thirtyMinsInMs = 30 * 60 * 1000;
+      if (currentTime >= deliveryTime - thirtyMinsInMs) {
+        isTimeAllowed = true;
+      }
+    }
+
     return (o.status === OrderStatusDto.Paid || o.status === OrderStatusDto.Preparing || o.status === OrderStatusDto.Ready)
       && o.deliveryType === 0
       && o.deliveryPartner === 0
       && !o.activeAssignment
-      && !o.isSearchingCourier;
+      && !o.isSearchingCourier
+      && isTimeAllowed;
   });
 
   readonly showNegotiate = signal(false);
@@ -90,8 +102,8 @@ export class StoreOrderDetailComponent implements OnInit, OnDestroy {
 
     effect(() => {
       const times = this.availableTimes();
-      if (times.length > 0 && !times.includes(this.proposedTimeString())) {
-        untracked(() => this.proposedTimeString.set(times[0]));
+      if (times.length > 0 && !times.some(t => t.value === this.proposedTimeString())) {
+        untracked(() => this.proposedTimeString.set(times[0].value));
       }
     });
   }

@@ -79,6 +79,7 @@ export interface OrderResponseDto {
   id: string;
   userId: string;
   storeId: string;
+  storeName: string;
   status: OrderStatusDto;
   totalAmount: number;
   originalAmount: number;

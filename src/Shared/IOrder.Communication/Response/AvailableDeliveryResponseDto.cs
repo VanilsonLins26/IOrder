@@ -8,6 +8,7 @@ public class AvailableDeliveryResponseDto
     public string StoreAddress { get; set; } = string.Empty;
     public decimal DeliveryFee { get; set; }
     public double DistanceKm { get; set; }
+    public double ClientDistanceKm { get; set; }
     public DateTime? DeliveryDate { get; set; }
     public DateTime? DeliveryDateEnd { get; set; }
     public bool RequestedEarlyDelivery { get; set; }

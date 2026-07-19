@@ -117,7 +117,32 @@
   }
 }
 
-// ── Action bar ────────────────────────────────────────────────────────────────
+  // 🌍 Map Section
+  .order-detail__map-container {
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .order-detail__map-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &::before {
+      content: '📍';
+      font-size: 1.25rem;
+    }
+  }
+
+  // 🖱️ Action bar ────────────────────────────────────────────────────────────────
 .order-detail__actions {
   display: flex;
   gap: var(--space-3);

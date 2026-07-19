@@ -7,6 +7,7 @@ public class OrderResponseDto
     public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public Guid StoreId { get; set; }
+    public string StoreName { get; set; } = string.Empty;
     public OrderStatusDto Status { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal OriginalAmount { get; set; }

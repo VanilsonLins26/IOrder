@@ -27,7 +27,12 @@ public class GetOrderByIdUseCase : IGetOrderByIdUseCase
         var order = await _readOnlyRepository.GetByIdAsync(id)
             ?? throw new NotFoundException([ResourceMessagesException.ORDER_NOT_FOUND]);
 
-        if (order.UserId != userId && order.Store?.UserId != userId)
+        var isAssignedCourier = order.Assignments.Any(a => 
+            a.CourierUserId == userId && 
+            a.Status != Domain.Entities.Enums.AssignmentStatus.Rejected && 
+            a.Status != Domain.Entities.Enums.AssignmentStatus.Failed);
+
+        if (order.UserId != userId && order.Store?.UserId != userId && !isAssignedCourier)
             throw new UnauthorizedStoreException([ResourceMessagesException.ORDER_NOT_FOUND]);
 
         return order.Adapt<OrderResponseDto>();

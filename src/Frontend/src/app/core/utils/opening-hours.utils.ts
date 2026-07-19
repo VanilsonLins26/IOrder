@@ -83,7 +83,12 @@ export function generateAvailableDates(openingHours: OpeningHourResponse[], days
   return dates;
 }
 
-export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResponse[], intervalMin: number = 30): string[] {
+export interface TimeSlot {
+  value: string;
+  label: string;
+}
+
+export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResponse[], intervalMin: number = 30): TimeSlot[] {
   if (!dateStr) return [];
 
   const parts = dateStr.split('-');
@@ -97,7 +102,7 @@ export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResp
 
   if (hoursForDay.length === 0) return [];
 
-  const slots: string[] = [];
+  const slotsMap = new Map<string, TimeSlot>();
   const now = new Date();
   
   const yyyy = now.getFullYear();
@@ -127,8 +132,6 @@ export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResp
       const mInDay = m % (24 * 60);
       
       if (isToday) {
-        // If it's today, the slot must be in the future (+ buffer)
-        // Note: if the slot crossed midnight, m is > 1440, so m > currentMinutes is always true.
         if (m < currentMinutes + bufferMinutes) {
           continue;
         }
@@ -137,14 +140,19 @@ export function generateTimeSlots(dateStr: string, openingHours: OpeningHourResp
       const hh = String(Math.floor(mInDay / 60)).padStart(2, '0');
       const mm = String(mInDay % 60).padStart(2, '0');
       
-      // Avoid duplicate slots if ranges overlap
-      const slotStr = `${hh}:${mm}`;
-      if (!slots.includes(slotStr)) {
-        slots.push(slotStr);
+      const nextM = m + intervalMin;
+      const nextMInDay = nextM % (24 * 60);
+      const nextHh = String(Math.floor(nextMInDay / 60)).padStart(2, '0');
+      const nextMm = String(nextMInDay % 60).padStart(2, '0');
+
+      const value = `${hh}:${mm}`;
+      const label = `${hh}:${mm} a ${nextHh}:${nextMm}`;
+
+      if (!slotsMap.has(value)) {
+        slotsMap.set(value, { value, label });
       }
     }
   }
 
-  // Sort slots in case of overlapping or unordered ranges
-  return slots.sort((a, b) => parseTimeStringToMinutes(a) - parseTimeStringToMinutes(b));
+  return Array.from(slotsMap.values()).sort((a, b) => parseTimeStringToMinutes(a.value) - parseTimeStringToMinutes(b.value));
 }
