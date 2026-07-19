@@ -90,6 +90,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         }
 
         var profile = await _profileReadOnlyRepository.GetByUserId(userId);
+        var customerName = _loggedUserService.GetUserName();
         var customerEmail = _loggedUserService.GetUserEmail() ?? profile?.Email;
         var phone = request.CustomerPhone ?? _loggedUserService.GetUserPhone() ?? profile?.Phone;
 
@@ -105,6 +106,7 @@ public class CreateOrderUseCase : ICreateOrderUseCase
         var order = new Domain.Entities.Order
         {
             UserId = userId,
+            CustomerName = customerName,
             CustomerEmail = customerEmail,
             CustomerPhone = phone,
             StoreId = storeId,

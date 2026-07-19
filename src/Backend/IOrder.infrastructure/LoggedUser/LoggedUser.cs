@@ -28,6 +28,17 @@ internal class LoggedUserService : ILoggedUserService
             ?? throw new UnauthorizedException("Usuário não autenticado.");
     }
 
+    public string? GetUserName()
+    {
+        var name = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value;
+        if (string.IsNullOrEmpty(name))
+            name = _accessor.HttpContext?.User?.FindFirst("name")?.Value;
+        if (string.IsNullOrEmpty(name))
+            name = _accessor.HttpContext?.User?.FindFirst("nickname")?.Value;
+        
+        return name;
+    }
+
     public string GetUserEmail()
     {
         var email = _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
