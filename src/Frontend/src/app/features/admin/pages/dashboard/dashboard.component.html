@@ -89,7 +89,7 @@
             <tbody>
               @for (order of recentOrders(); track order.id) {
                 <tr>
-                  <td>{{ order.customerEmail ? order.customerEmail.split('@')[0] : (order.userId.substring(0, 8) || 'Cliente') }}</td>
+                  <td>{{ order.customerName || (order.customerEmail ? order.customerEmail.split('@')[0] : 'Cliente') }}</td>
                   <td class="font-bold">{{ order.totalAmount | currency:'BRL' }}</td>
                   <td>
                     <span class="status-badge" [class]="getStatusClass(order.status)">

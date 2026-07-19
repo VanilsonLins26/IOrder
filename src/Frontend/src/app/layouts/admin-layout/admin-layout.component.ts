@@ -500,6 +500,7 @@ import { ChatNotificationService } from '../../core/services/chat-notification.s
     .admin-content {
       flex: 1;
       background: var(--surface-secondary);
+      padding: 32px 32px;
     }
 
     .admin-sidebar__overlay { display: none; }

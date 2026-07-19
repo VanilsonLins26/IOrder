@@ -93,6 +93,7 @@ export interface OrderResponseDto {
   deliveryDateEnd: string | null;
   requestedEarlyDelivery: boolean;
   isSearchingCourier: boolean;
+  customerName?: string | null;
   customerEmail?: string | null;
   customerPhone?: string | null;
   customerNotes: string | null;
