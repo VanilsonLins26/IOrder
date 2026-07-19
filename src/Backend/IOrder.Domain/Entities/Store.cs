@@ -31,6 +31,18 @@ public class Store : EntityBase, IAggregateRoot
     public double FreeDeliveryRadiusKm { get; set; } = 0;
     public NetTopologySuite.Geometries.Point? Location { get; set; }
 
+    // Rating Fields
+    public int TotalReviews { get; private set; } = 0;
+    public int RatingSum { get; private set; } = 0;
+    
+    public double AverageRating => TotalReviews > 0 ? (double)RatingSum / TotalReviews : 0;
+
+    public void AddRating(int rating)
+    {
+        TotalReviews++;
+        RatingSum += rating;
+    }
+
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public double? DistanceKm { get; set; }
 
