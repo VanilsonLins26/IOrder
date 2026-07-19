@@ -52,6 +52,11 @@
           {{ updatingStatus() ? 'Solicitando...' : '⚡ Receber Agora' }}
         </button>
       }
+      @if (order.status === OrderStatusDto.Delivered && !hasReview()) {
+        <button class="order-detail__review-btn" (click)="openReviewModal()">
+          ⭐ Avaliar Pedido
+        </button>
+      }
     </div>
 
     <div class="order-detail__grid">
@@ -230,6 +235,14 @@
     (cancel)="showDeclineConfirm.set(false)"
     (close)="showDeclineConfirm.set(false)"
   ></app-confirmation-modal>
+
+  <app-review-modal
+    [isOpen]="showReviewModal()"
+    [hasCourier]="order?.deliveryType === 0 && order?.activeAssignment?.status === AssignmentStatusDto.Delivered"
+    [loading]="submittingReview()"
+    (submitReview)="submitReview($event)"
+    (close)="showReviewModal.set(false)"
+  ></app-review-modal>
 
   @if (expandedImage()) {
     <div class="image-modal" (click)="closeImage()">

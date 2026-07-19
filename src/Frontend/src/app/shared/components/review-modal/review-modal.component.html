@@ -1,0 +1,57 @@
+@if (isOpen()) {
+  <div class="review-modal" (click)="onClose()">
+    <div class="review-modal__content" (click)="$event.stopPropagation()">
+      <button class="review-modal__close" (click)="onClose()">✕</button>
+      
+      <h2 class="review-modal__title">Avaliar Pedido</h2>
+      
+      <div class="review-modal__section">
+        <h3 class="review-modal__subtitle">Como foi sua experiência com a loja?</h3>
+        <div class="review-modal__stars">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <button 
+              class="review-modal__star" 
+              [class.review-modal__star--active]="star <= storeRating()"
+              (click)="setStoreRating(star)">
+              ★
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (hasCourier()) {
+        <div class="review-modal__section">
+          <h3 class="review-modal__subtitle">Como foi a entrega?</h3>
+          <div class="review-modal__stars">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <button 
+                class="review-modal__star" 
+                [class.review-modal__star--active]="star <= courierRating()"
+                (click)="setCourierRating(star)">
+                ★
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="review-modal__section">
+        <h3 class="review-modal__subtitle">Comentário (Opcional)</h3>
+        <textarea 
+          class="review-modal__textarea" 
+          [ngModel]="comment()" 
+          (ngModelChange)="comment.set($event)"
+          placeholder="Deixe um comentário sobre o pedido..."
+          rows="3">
+        </textarea>
+      </div>
+
+      <button 
+        class="review-modal__submit" 
+        [disabled]="storeRating() === 0 || (hasCourier() && courierRating() === 0) || loading()"
+        (click)="onSubmit()">
+        {{ loading() ? 'Enviando...' : 'Enviar Avaliação' }}
+      </button>
+    </div>
+  </div>
+}

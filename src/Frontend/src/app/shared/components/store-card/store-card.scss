@@ -205,3 +205,12 @@
 
   svg { flex-shrink: 0; }
 }
+.store-card__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  font-weight: 600;
+  white-space: nowrap;
+}

@@ -565,3 +565,24 @@
   &:disabled { opacity: .6; cursor: not-allowed; }
 }
 
+.order-detail__review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #eab308, #fbbf24);
+  color: #713f12;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(234,179,8,.4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(234,179,8,.5);
+  }
+  &:active { transform: translateY(0); }
+}

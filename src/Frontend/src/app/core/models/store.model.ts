@@ -27,6 +27,8 @@ export interface StoreResponse {
   deliveryPartner: number;
   latitude?: number | null;
   longitude?: number | null;
+  ratingSum: number;
+  totalReviews: number;
 }
 
 export interface UpdateStoreRequest {

@@ -10,3 +10,4 @@ export { UploadApiService }        from './upload-api.service';
 export { CustomizationApiService } from './customization-api.service';
 export { PaymentApiService } from './payment-api.service';
 export { DeliveryApiService } from './delivery-api.service';
+export * from './review-api.service';

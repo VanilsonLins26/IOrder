@@ -45,7 +45,11 @@
         }
         <span class="detail-item">
           <span class="detail-icon">⭐</span>
-          4.8 (120 avaliações)
+          @if (store().totalReviews > 0) {
+            {{ (store().ratingSum / store().totalReviews) | number:'1.1-1' }} ({{ store().totalReviews }} avaliações)
+          } @else {
+            Novo
+          }
         </span>
       </div>
     </div>

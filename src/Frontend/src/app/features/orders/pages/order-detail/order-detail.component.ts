@@ -20,11 +20,13 @@ import { DeliveryApiService } from '../../../../core/services/api/delivery-api.s
 import { Coordinates } from '../../../../core/services/fake-gps.service';
 import { AssignmentStatusDto } from '../../../../core/models';
 import { getOrderStatusLabel, getOrderStatusClass } from '../../../../shared/utils/order-status.utils';
+import { ReviewApiService } from '../../../../core/services/api/review-api.service';
+import { ReviewModalComponent } from '../../../../shared/components/review-modal/review-modal.component';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent, OrderTimelineComponent, DeliveryMapComponent],
+  imports: [SlicePipe, DatePipe, CurrencyPipe, RouterLink, FormsModule, OrderChatOffcanvasComponent, ConfirmationModalComponent, PaymentBrickComponent, OrderTimelineComponent, DeliveryMapComponent, ReviewModalComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +43,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly storeApi = inject(StoreApiService);
   private readonly deliveryApi = inject(DeliveryApiService);
+  private readonly reviewApi = inject(ReviewApiService);
 
   readonly sendingMessage = signal(false);
   readonly cancelling = signal(false);
@@ -59,6 +62,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly storeLocation = signal<Coordinates | null>(null);
   readonly clientLocation = signal<Coordinates | null>(null);
   readonly courierLocation = signal<Coordinates | null>(null);
+
+  readonly hasReview = signal(false);
+  readonly showReviewModal = signal(false);
+  readonly submittingReview = signal(false);
   
   private locationInterval: any;
 
@@ -82,6 +89,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.store.loadById(this.id());
     this.initChat();
+    this.checkReviewStatus();
   }
 
   ngOnDestroy() {
@@ -193,6 +201,34 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: OrderStatusDto): string {
     return getOrderStatusClass(status);
+  }
+
+  private checkReviewStatus() {
+    this.reviewApi.getByOrder(this.id()).subscribe(review => {
+      if (review) {
+        this.hasReview.set(true);
+      }
+    });
+  }
+
+  openReviewModal() {
+    this.showReviewModal.set(true);
+  }
+
+  submitReview(data: { storeRating: number; courierRating?: number; comment?: string }) {
+    this.submittingReview.set(true);
+    this.reviewApi.create(this.id(), data).subscribe({
+      next: () => {
+        this.submittingReview.set(false);
+        this.showReviewModal.set(false);
+        this.hasReview.set(true);
+        this.toast.success('Avaliação enviada com sucesso!');
+      },
+      error: (err) => {
+        this.submittingReview.set(false);
+        this.toast.error(err.error?.errors?.[0] || 'Erro ao enviar avaliação.');
+      }
+    });
   }
 
   readonly canRequestEarlyDelivery = computed(() => {
@@ -326,4 +362,5 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   protected readonly OrderStatusDto = OrderStatusDto;
   protected readonly MessageTypeDto = MessageTypeDto;
+  protected readonly AssignmentStatusDto = AssignmentStatusDto;
 }
