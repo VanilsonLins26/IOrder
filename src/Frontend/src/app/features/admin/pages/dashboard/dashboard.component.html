@@ -1,0 +1,93 @@
+<div class="admin-page dashboard-page">
+  <header class="admin-header">
+    <div class="admin-header-main">
+      <div>
+        <h1 class="admin-title">Dashboard</h1>
+        <p class="admin-subtitle">Visão geral do desempenho da sua loja</p>
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="dashboard-skeleton">
+      <div class="metrics-grid">
+        <app-loading-skeleton height="120px" />
+        <app-loading-skeleton height="120px" />
+        <app-loading-skeleton height="120px" />
+        <app-loading-skeleton height="120px" />
+      </div>
+      <app-loading-skeleton height="300px" />
+    </div>
+  } @else if (metrics()) {
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon metric-icon--blue">🛍️</div>
+        <div class="metric-content">
+          <h3>Total de Pedidos</h3>
+          <p class="metric-value">{{ metrics()!.totalOrders }}</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon metric-icon--green">💰</div>
+        <div class="metric-content">
+          <h3>Receita Total</h3>
+          <p class="metric-value">{{ metrics()!.totalRevenue | currency:'BRL' }}</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon metric-icon--orange">⏳</div>
+        <div class="metric-content">
+          <h3>Pedidos Pendentes</h3>
+          <p class="metric-value">{{ metrics()!.pendingOrders }}</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon metric-icon--purple">✅</div>
+        <div class="metric-content">
+          <h3>Pedidos Entregues</h3>
+          <p class="metric-value">{{ metrics()!.deliveredOrders }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-orders-section">
+      <h2 class="section-title">Pedidos Recentes</h2>
+      
+      @if (recentOrders().length === 0) {
+        <div class="empty-state">
+          <p>Nenhum pedido recente encontrado.</p>
+        </div>
+      } @else {
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrders(); track order.id) {
+                <tr>
+                  <td class="font-mono">#{{ order.id.substring(0, 8).toUpperCase() }}</td>
+                  <td>{{ order.userId.substring(0, 8) || 'Cliente' }}</td>
+                  <td class="font-bold">{{ order.totalAmount | currency:'BRL' }}</td>
+                  <td>
+                    <span class="status-badge" [class]="getStatusClass(order.status)">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

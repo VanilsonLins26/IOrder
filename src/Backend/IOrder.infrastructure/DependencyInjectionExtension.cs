@@ -115,6 +115,9 @@ public static class DependencyInjectionExtension
         services.AddScoped<IReviewReadOnlyRepository, ReviewRepository>();
         services.AddScoped<IReviewWriteOnlyRepository, ReviewRepository>();
 
+        services.AddScoped<IOrder.Domain.Repositories.Dashboard.IDashboardReadOnlyRepository, IOrder.infrastructure.Repositories.Dashboard.DashboardRepository>();
+
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 

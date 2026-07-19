@@ -394,3 +394,9 @@ IOrderNew/
 ## 📄 Licença
 
 Projeto pessoal para portfólio. Todos os direitos reservados.
+
+## Dashboard do Lojista
+O painel principal (Dashboard) foi implementado para exibir métricas importantes de desempenho e faturamento da loja:
+- **Visão Geral**: Receita total, quantidade de pedidos (entregues e pendentes).
+- **Pedidos Recentes**: Lista dos 5 últimos pedidos com status dinâmicos.
+- **Integração Real-Time**: Funciona utilizando consultas agregadas no banco via Entity Framework Core.
