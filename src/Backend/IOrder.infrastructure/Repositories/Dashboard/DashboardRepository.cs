@@ -27,30 +27,20 @@ internal class DashboardRepository : IDashboardReadOnlyRepository
         var totalOrders = await orders.CountAsync();
 
         // Consider pending as everything that is not delivered, cancelled or declined
-        var pendingStatuses = new[] { 
-            OrderStatus.Pending, 
-            OrderStatus.Negotiating, 
-            OrderStatus.AwaitingPayment, 
-            OrderStatus.Paid, 
-            OrderStatus.Preparing, 
-            OrderStatus.Ready, 
-            OrderStatus.OutForDelivery 
-        };
-        
-        var pendingOrders = await orders.CountAsync(o => pendingStatuses.Contains(o.Status));
+        var pendingOrders = await orders.CountAsync(o => 
+            o.Status != OrderStatus.Delivered && 
+            o.Status != OrderStatus.Cancelled && 
+            o.Status != OrderStatus.Declined);
+
         var deliveredOrders = await orders.CountAsync(o => o.Status == OrderStatus.Delivered);
 
         // Revenue is calculated only for orders that are delivered or paid/preparing/ready/out for delivery
-        var revenueStatuses = new[] {
-            OrderStatus.Paid,
-            OrderStatus.Preparing,
-            OrderStatus.Ready,
-            OrderStatus.OutForDelivery,
-            OrderStatus.Delivered
-        };
-
         var totalRevenue = await orders
-            .Where(o => revenueStatuses.Contains(o.Status))
+            .Where(o => o.Status == OrderStatus.Paid ||
+                        o.Status == OrderStatus.Preparing ||
+                        o.Status == OrderStatus.Ready ||
+                        o.Status == OrderStatus.OutForDelivery ||
+                        o.Status == OrderStatus.Delivered)
             .SumAsync(o => o.TotalAmount);
 
         return new StoreDashboardSummary
