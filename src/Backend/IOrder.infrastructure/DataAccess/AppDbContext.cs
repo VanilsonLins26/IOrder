@@ -27,6 +27,7 @@ internal class AppDbContext  : DbContext
     public DbSet<UserAddress> UserAddresses { get; set; }
     public DbSet<DeliveryAssignment> DeliveryAssignments { get; set; }
     public DbSet<CourierLocation> CourierLocations { get; set; }
+    public DbSet<OrderReview> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
