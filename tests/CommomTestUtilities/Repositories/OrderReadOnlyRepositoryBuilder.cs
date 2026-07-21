@@ -45,5 +45,17 @@ public class OrderReadOnlyRepositoryBuilder
         return this;
     }
 
+    public OrderReadOnlyRepositoryBuilder GetEligibleForAutoSearchAsync(List<Order> orders)
+    {
+        _mock.Setup(r => r.GetEligibleForAutoSearchAsync()).ReturnsAsync(orders);
+        return this;
+    }
+
+    public OrderReadOnlyRepositoryBuilder GetAvailableForDeliveryAsync(List<Order> orders)
+    {
+        _mock.Setup(r => r.GetAvailableForDeliveryAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<double>())).ReturnsAsync(orders);
+        return this;
+    }
+
     public IOrderReadOnlyRepository Build() => _mock.Object;
 }
