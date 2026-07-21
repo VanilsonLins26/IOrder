@@ -432,5 +432,5 @@ AGENTS.md
 *.msp
 
 # Code Coverage
-coverage/
+/coverage/
 coveragereport/
