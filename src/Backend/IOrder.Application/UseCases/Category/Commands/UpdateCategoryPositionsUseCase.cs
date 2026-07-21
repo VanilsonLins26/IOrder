@@ -38,6 +38,7 @@ public class UpdateCategoryPositionsUseCase : IUpdateCategoryPositionsUseCase
             if (category != null && category.StoreId == loggedStoreId)
             {
                 category.Position = pos.Position;
+                _writeOnlyRepository.Update(category);
             }
         }
 

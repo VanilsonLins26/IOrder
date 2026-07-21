@@ -70,14 +70,35 @@ public static class DependencyInjectionExtension
 
     private static void AddRepositories(IServiceCollection services)
     {
-        services.AddScoped<IProductWriteOnlyRepository, ProductRepository>();
-        services.AddScoped<IProductReadOnlyRepository, ProductRepository>();
+        services.AddScoped<ProductRepository>();
+        services.AddScoped<IProductWriteOnlyRepository>(provider =>
+            new IOrder.infrastructure.Repositories.Product.CachedProductWriteOnlyRepository(
+                provider.GetRequiredService<ProductRepository>(),
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
+        services.AddScoped<IProductReadOnlyRepository>(provider => 
+            new IOrder.infrastructure.Repositories.Product.CachedProductReadOnlyRepository(
+                provider.GetRequiredService<ProductRepository>(), 
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
 
-        services.AddScoped<IStoreWriteOnlyRepository, StoreRepository>();
-        services.AddScoped<IStoreReadOnlyRepository, StoreRepository>();
+        services.AddScoped<StoreRepository>();
+        services.AddScoped<IStoreWriteOnlyRepository>(provider =>
+            new IOrder.infrastructure.Repositories.Store.CachedStoreWriteOnlyRepository(
+                provider.GetRequiredService<StoreRepository>(),
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
+        services.AddScoped<IStoreReadOnlyRepository>(provider => 
+            new IOrder.infrastructure.Repositories.Store.CachedStoreReadOnlyRepository(
+                provider.GetRequiredService<StoreRepository>(), 
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
 
-        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryWriteOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
-        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryReadOnlyRepository, IOrder.infrastructure.Repositories.Category.CategoryRepository>();
+        services.AddScoped<IOrder.infrastructure.Repositories.Category.CategoryRepository>();
+        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryWriteOnlyRepository>(provider =>
+            new IOrder.infrastructure.Repositories.Category.CachedCategoryWriteOnlyRepository(
+                provider.GetRequiredService<IOrder.infrastructure.Repositories.Category.CategoryRepository>(),
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
+        services.AddScoped<IOrder.Domain.Repositories.Category.ICategoryReadOnlyRepository>(provider => 
+            new IOrder.infrastructure.Repositories.Category.CachedCategoryReadOnlyRepository(
+                provider.GetRequiredService<IOrder.infrastructure.Repositories.Category.CategoryRepository>(), 
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
 
         services.AddScoped<IOrder.Domain.Repositories.StoreCategory.IStoreCategoryReadOnlyRepository, IOrder.infrastructure.Repositories.StoreCategory.StoreCategoryRepository>();
 
@@ -87,9 +108,13 @@ public static class DependencyInjectionExtension
         services.AddScoped<ICouponWriteOnlyRepository, CouponRepository>();
         services.AddScoped<ICouponReadOnlyRepository, CouponRepository>();
 
-        services.AddScoped<IOrderWriteOnlyRepository, OrderRepository>();
-        services.AddScoped<IOrderReadOnlyRepository, OrderRepository>();
-        services.AddScoped<IChatReadOnlyRepository, OrderRepository>();
+        services.AddScoped<OrderRepository>();
+        services.AddScoped<IOrderWriteOnlyRepository>(provider =>
+            new IOrder.infrastructure.Repositories.Order.CachedOrderWriteOnlyRepository(
+                provider.GetRequiredService<OrderRepository>(),
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
+        services.AddScoped<IOrderReadOnlyRepository>(p => p.GetRequiredService<OrderRepository>());
+        services.AddScoped<IChatReadOnlyRepository>(p => p.GetRequiredService<OrderRepository>());
 
         services.AddScoped<IProfileReadOnlyRepository, ProfileRepository>();
         services.AddScoped<IProfileWriteOnlyRepository, ProfileRepository>();
@@ -115,7 +140,11 @@ public static class DependencyInjectionExtension
         services.AddScoped<IReviewReadOnlyRepository, ReviewRepository>();
         services.AddScoped<IReviewWriteOnlyRepository, ReviewRepository>();
 
-        services.AddScoped<IOrder.Domain.Repositories.Dashboard.IDashboardReadOnlyRepository, IOrder.infrastructure.Repositories.Dashboard.DashboardRepository>();
+        services.AddScoped<IOrder.infrastructure.Repositories.Dashboard.DashboardRepository>();
+        services.AddScoped<IOrder.Domain.Repositories.Dashboard.IDashboardReadOnlyRepository>(provider => 
+            new IOrder.infrastructure.Repositories.Dashboard.CachedDashboardReadOnlyRepository(
+                provider.GetRequiredService<IOrder.infrastructure.Repositories.Dashboard.DashboardRepository>(), 
+                provider.GetRequiredService<IOrder.Application.Services.Cache.ICacheService>()));
 
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -123,6 +152,7 @@ public static class DependencyInjectionExtension
 
     private static void AddServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<IOrder.Application.Services.Cache.ICacheService, IOrder.infrastructure.Services.Cache.RedisCacheService>();
         services.AddScoped<ILoggedUserService, LoggedUser.LoggedUserService>();
         services.AddScoped<IStorageService, CloudinaryStorageService>();
         services.AddSingleton<RabbitMQConnectionFactory>();

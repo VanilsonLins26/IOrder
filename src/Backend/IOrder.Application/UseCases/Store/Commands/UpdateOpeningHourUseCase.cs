@@ -48,6 +48,7 @@ public class UpdateOpeningHourUseCase : IUpdateOpeningHourUseCase
 
         store.UpdateOpeningHours(newHours);
 
+        _writeOnlyRepository.Update(store);
         await _uof.Commit();
 
         return store.Adapt<StoreResponseDto>();

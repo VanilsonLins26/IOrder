@@ -44,6 +44,7 @@ public class UpdateCategoryUseCase : IUpdateCategoryUseCase
         category.Name = request.Name;
         category.Position = request.Position.Value;
 
+        _writeOnlyRepository.Update(category);
         await _uof.Commit();
 
         return category.Adapt<CategoryResponseDto>();
