@@ -134,7 +134,7 @@ public class OrderIntegrationTest : IOrderClassFixture
 
         var request = new UpdateOrderStatusRequestDto
         {
-            Status = OrderStatusDto.AwaitingPayment
+            Status = OrderStatusDto.Preparing
         };
 
         var response = await DoPatch($"order/{orderId}/status", request, _userToken);
