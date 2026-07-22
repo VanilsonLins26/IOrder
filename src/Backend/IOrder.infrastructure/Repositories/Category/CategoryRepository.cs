@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities;
 using IOrder.Domain.Repositories.Category;
 using IOrder.infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +30,11 @@ internal class CategoryRepository : ICategoryReadOnlyRepository, ICategoryWriteO
         _dbContext.Categories.Remove(category);
 
         return category;
+    }
+
+    public void Update(Domain.Entities.Category category)
+    {
+        _dbContext.Categories.Update(category);
     }
 
     public async Task<IList<Domain.Entities.Category>> GetAll(Guid storeId)

@@ -1,4 +1,4 @@
-﻿using IOrder.Application.Services.StorePermission;
+using IOrder.Application.Services.StorePermission;
 using IOrder.Domain.Repositories;
 using IOrder.Domain.Repositories.Store;
 using IOrder.Domain.Services;
@@ -41,6 +41,7 @@ public class UpdateStoreImageUseCase : IUpdateStoreImageUseCase
             await _storageService.DeleteImageAsync(store.ImageUrl);
         }
         store.ImageUrl = imageUrl;
+        _writeOnlyRepository.Update(store);
         await _unitOfWork.Commit();
         return imageUrl;
     }

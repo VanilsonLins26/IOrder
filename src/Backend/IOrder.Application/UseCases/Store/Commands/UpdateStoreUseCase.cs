@@ -42,6 +42,7 @@ public class UpdateStoreUseCase : IUpdateStoreUseCase
 
         request.Adapt(store);
 
+        _writeOnlyRepository.Update(store);
         await _uof.Commit();
 
         return store.Adapt<StoreResponseDto>();

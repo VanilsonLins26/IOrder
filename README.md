@@ -32,6 +32,7 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 - ✅ Redis Cache para carrinho de compras
 - ✅ Seed Data populado (lojas, categorias, produtos)
 - ✅ Carrinho de Compras (Redis-based)
+- ✅ Cache-Aside (Redis Decorators): Cache distribuído para consultas frequentes (Store, Product, Category, Profile, Dashboard) com invalidação automática em comandos de escrita
 - ✅ Customização Avançada de Produtos:
   - ✅ CRUD de grupos de customização (SingleChoice / MultipleChoice) com opções e price modifiers
   - ✅ `SelectedOption` como entidade aninhada em `CartItem` e `OrderItem` (cálculo automático do preço)
@@ -129,6 +130,19 @@ O usuário escolhe a loja ou busca por categoria, personaliza seus produtos, esc
 | **IOrder.Infrastructure** | Implementação concreta: EF Core + MySQL, Redis, Cloudinary, Workers |
 | **IOrder.Communication** | DTOs compartilhados (Request/Response/Enums) |
 | **IOrder.Exceptions** | Exceções customizadas e mensagens de erro em português |
+
+---
+
+## ⚡ Sistema de Cache Distribuído (Redis)
+
+A API utiliza uma estratégia de **Cache-Aside** (Lazy Loading) baseada em Decorator Pattern no repositório. O fluxo funciona da seguinte forma:
+
+1. **Repositórios de Leitura (`Cached*ReadOnlyRepository`)**:
+   Interceptam chamadas como `GetByIdAsync`, `GetAllAsync`, etc. Caso os dados não estejam no Redis, a query é executada no EF Core, o resultado é guardado no Redis com um Time-To-Live (TTL) de 10-30 minutos e retornado ao usuário.
+2. **Repositórios de Escrita (`Cached*WriteOnlyRepository`)**:
+   Sempre que ocorre uma mutação (`Create`, `Update`, `Delete`), o repositório original executa a ação no banco de dados e, em seguida, o Decorator emite um comando de deleção (`RemoveAsync`) no Redis para a chave afetada, invalidando o cache.
+
+Este modelo foi implementado sem poluir os _Use Cases_ da Application layer, garantindo que o Caching pertença inteiramente à Infrastructure layer de forma invisível.
 
 ---
 

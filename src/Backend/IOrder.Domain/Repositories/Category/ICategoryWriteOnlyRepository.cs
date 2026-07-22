@@ -1,4 +1,4 @@
-﻿using IOrder.Domain.Entities;
+using IOrder.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +12,8 @@ public interface ICategoryWriteOnlyRepository
     Entities.Category Delete(Entities.Category category);
 
     Task<Entities.Category> GetByIdTracking(Guid id);
+
+    void Update(Entities.Category category);
 
 
 }

@@ -58,6 +58,7 @@ public class UpdateAddressUseCase : IUpdateAddressUseCase
             store.Location = new NetTopologySuite.Geometries.Point(coords.Value.Longitude, coords.Value.Latitude) { SRID = 4326 };
         }
 
+        _writeOnlyRepository.Update(store);
         await _uof.Commit();
 
         return store.Adapt<StoreResponseDto>();

@@ -10,4 +10,5 @@ public interface IStoreWriteOnlyRepository
     Task<Entities.Store> Create(Entities.Store store);
     Entities.Store Delete(Entities.Store store);
     Task<Entities.Store> GetByIdTracking(Guid id);
+    void Update(Entities.Store store);
 }

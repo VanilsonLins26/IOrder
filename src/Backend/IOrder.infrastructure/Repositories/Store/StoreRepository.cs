@@ -31,6 +31,11 @@ internal class StoreRepository : IStoreReadOnlyRepository, IStoreWriteOnlyReposi
         return store;
     }
 
+    public void Update(Domain.Entities.Store store)
+    {
+        _dbContext.Stores.Update(store);
+    }
+
     public async Task<(IList<Domain.Entities.Store> Items, int TotalCount)> GetAllPaged(StoreSearchCriteria criteria)
     {
         var query = _dbContext.Stores.Include(store => store.OpeningHours).Include(store => store.Category).AsNoTracking();
