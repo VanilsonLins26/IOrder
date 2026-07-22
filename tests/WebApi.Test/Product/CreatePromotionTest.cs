@@ -98,16 +98,16 @@ public class CreatePromotionTest : IOrderClassFixture
     [Fact]
     public async Task Error_Exists_Promotion_In_Date()
     {
-        var product = _dbContext.Products.First();
+        var product = _dbContext.Products.OrderBy(p => p.Id).Last();
 
         var request1 = RequestPromotionPriceBuilder.Build();
         request1.ProductId = product.Id;
-        request1.Price = product.Price - 1;
+        request1.Price = 0.01m;
         await DoPost(method, request1);
 
         var request2 = RequestPromotionPriceBuilder.Build();
         request2.ProductId = product.Id;
-        request2.Price = product.Price - 1;
+        request2.Price = 0.01m;
         request2.InitialTime = request1.InitialTime;
         request2.FinalTime = request1.FinalTime;
 
