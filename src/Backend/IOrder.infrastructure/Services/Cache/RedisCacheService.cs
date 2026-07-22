@@ -7,11 +7,18 @@ namespace IOrder.infrastructure.Services.Cache;
 public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
-    private static readonly JsonSerializerOptions _jsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = CreateJsonOptions();
+
+    private static JsonSerializerOptions CreateJsonOptions()
     {
-        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
-    };
+        var options = new JsonSerializerOptions
+        {
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
+        };
+        options.Converters.Add(new NetTopologySuite.IO.Converters.GeoJsonConverterFactory());
+        return options;
+    }
 
     public RedisCacheService(IDistributedCache cache)
     {
