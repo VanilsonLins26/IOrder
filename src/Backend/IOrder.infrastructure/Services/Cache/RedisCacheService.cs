@@ -9,7 +9,8 @@ public class RedisCacheService : ICacheService
     private readonly IDistributedCache _cache;
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
-        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
     };
 
     public RedisCacheService(IDistributedCache cache)
