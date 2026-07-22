@@ -228,7 +228,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             DiscountType = CouponDiscountType.Percentage,
             DiscountValue = 10m,
             MaxDiscountAmount = 50m,
-            MinPurchaseAmount = 20m,
+            MinPurchaseAmount = 0m,
             ExpiresAt = DateTime.UtcNow.AddMonths(1),
             MaxUsageCount = 100,
             CurrentUsageCount = 0

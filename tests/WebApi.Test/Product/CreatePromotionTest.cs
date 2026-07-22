@@ -102,10 +102,12 @@ public class CreatePromotionTest : IOrderClassFixture
 
         var request1 = RequestPromotionPriceBuilder.Build();
         request1.ProductId = product.Id;
+        request1.Price = product.Price - 1;
         await DoPost(method, request1);
 
         var request2 = RequestPromotionPriceBuilder.Build();
         request2.ProductId = product.Id;
+        request2.Price = product.Price - 1;
         request2.InitialTime = request1.InitialTime;
         request2.FinalTime = request1.FinalTime;
 
