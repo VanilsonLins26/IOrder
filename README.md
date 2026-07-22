@@ -152,7 +152,7 @@ Este modelo foi implementado sem poluir os _Use Cases_ da Application layer, gar
 O sistema dispara eventos de domínio nas seguintes entidades:
 
 | Evento | Disparado por | Destinatário | Canais |
-|---|---|---|---|---|
+|---|---|---|---|
 | `OrderCreatedEvent` | `Order.CreateOrder()` | Dono da loja | Email + WhatsApp |
 | `OrderStatusChangedEvent` | `Order.Accept()`, `Order.Cancel()`, etc. | Cliente | Email + WhatsApp |
 | `StoreCreatedEvent` | `Store.CreateStore()` | Admin | Email |
