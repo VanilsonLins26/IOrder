@@ -279,18 +279,18 @@
       </div>
     </div>
 
-    <div class="sod__chat-cta">
-      <button class="sod__chat-btn-bottom" (click)="openChat()">
-        💬 Negociação / Chat
-        @if (unreadMessagesCount() > 0) {
-          <span class="sod__chat-badge">{{ unreadMessagesCount() }}</span>
-        }
-      </button>
-    </div>
   }
 </div>
 
 @if (o) {
+  <div class="sod__chat-cta">
+    <button class="sod__chat-btn-bottom" (click)="openChat()">
+      💬 Negociação / Chat
+      @if (unreadMessagesCount() > 0) {
+        <span class="sod__chat-badge">{{ unreadMessagesCount() }}</span>
+      }
+    </button>
+  </div>
   <app-order-chat-offcanvas
     [isOpen]="chatOpen()"
     [messages]="o.messages"

@@ -418,7 +418,10 @@
 
 // ── Chat CTA ──────────────────────────────────────────────────────────────────
 .order-detail__chat-cta {
-  margin-top: 24px;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: flex-end;
