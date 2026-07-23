@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IOrder.API.Controllers;
 
-[Route("api/[controller]")]
-[ApiController]
-public class ReviewsController : ControllerBase
+public class ReviewsController : IOrderBaseController
 {
     [HttpPost("{orderId}")]
     [Authorize]
