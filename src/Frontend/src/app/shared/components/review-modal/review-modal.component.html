@@ -48,7 +48,7 @@
 
       <button 
         class="review-modal__submit" 
-        [disabled]="storeRating() === 0 || (hasCourier() && courierRating() === 0) || loading()"
+        [disabled]="storeRating() === 0 || loading()"
         (click)="onSubmit()">
         {{ loading() ? 'Enviando...' : 'Enviar Avaliação' }}
       </button>

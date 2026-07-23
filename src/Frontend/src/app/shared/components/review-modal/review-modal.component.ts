@@ -35,11 +35,10 @@ export class ReviewModalComponent {
 
   onSubmit() {
     if (this.storeRating() === 0) return;
-    if (this.hasCourier() && this.courierRating() === 0) return;
 
     this.submitReview.emit({
       storeRating: this.storeRating(),
-      courierRating: this.hasCourier() ? this.courierRating() : undefined,
+      courierRating: (this.hasCourier() && this.courierRating() > 0) ? this.courierRating() : undefined,
       comment: this.comment()
     });
   }
