@@ -283,11 +283,11 @@
 </div>
 
 @if (o) {
-  <div class="sod__chat-cta">
-    <button class="sod__chat-btn-bottom" (click)="openChat()">
+  <div class="chat-fab-container">
+    <button class="chat-fab-btn" (click)="openChat()">
       💬 Negociação / Chat
       @if (unreadMessagesCount() > 0) {
-        <span class="sod__chat-badge">{{ unreadMessagesCount() }}</span>
+        <span class="chat-fab-badge">{{ unreadMessagesCount() }}</span>
       }
     </button>
   </div>

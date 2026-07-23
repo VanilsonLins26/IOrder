@@ -171,11 +171,11 @@
 </div>
 
 @if (order) {
-  <div class="order-detail__chat-cta">
-    <button class="order-detail__chat-btn" (click)="openChat()">
+  <div class="chat-fab-container">
+    <button class="chat-fab-btn" (click)="openChat()">
       💬 Negociação / Chat
       @if (unreadMessagesCount() > 0) {
-        <span class="order-detail__chat-badge">{{ unreadMessagesCount() }}</span>
+        <span class="chat-fab-badge">{{ unreadMessagesCount() }}</span>
       }
     </button>
   </div>
