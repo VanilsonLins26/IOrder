@@ -25,7 +25,8 @@
 
     <app-order-timeline [status]="order.status"></app-order-timeline>
     
-    @if (storeLocation() && clientLocation()) {
+    @let a = order.activeAssignment;
+    @if (storeLocation() && clientLocation() && a && (a.status === AssignmentStatusDto.PickedUp || a.status === AssignmentStatusDto.InTransit)) {
       <div class="order-detail__map-container">
         <h3 class="order-detail__map-title">Acompanhe sua entrega</h3>
         <app-delivery-map 

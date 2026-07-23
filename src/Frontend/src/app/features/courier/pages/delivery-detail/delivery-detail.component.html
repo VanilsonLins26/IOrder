@@ -179,10 +179,10 @@
         </div>
 
         <!-- In Transit -->
-        <div class="delivery-timeline__item" [class.delivery-timeline__item--done]="!!a.inTransitAt" [class.delivery-timeline__item--pending]="!a.inTransitAt">
+        <div class="delivery-timeline__item" [class.delivery-timeline__item--done]="!!a.inTransitAt || !!a.deliveredAt" [class.delivery-timeline__item--pending]="!a.inTransitAt && !a.deliveredAt">
           <div class="delivery-timeline__track">
-            <div class="delivery-timeline__dot" [class.delivery-timeline__dot--done]="!!a.inTransitAt" [class.delivery-timeline__dot--pending]="!a.inTransitAt">
-              @if (a.inTransitAt) {
+            <div class="delivery-timeline__dot" [class.delivery-timeline__dot--done]="!!a.inTransitAt || !!a.deliveredAt" [class.delivery-timeline__dot--pending]="!a.inTransitAt && !a.deliveredAt">
+              @if (a.inTransitAt || a.deliveredAt) {
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
               }
             </div>
@@ -192,6 +192,8 @@
             <span class="delivery-timeline__label">Saiu para Entrega</span>
             @if (a.inTransitAt) {
               <span class="delivery-timeline__time">{{ a.inTransitAt | date:"dd/MM 'às' HH:mm" }}</span>
+            } @else if (a.deliveredAt) {
+              <span class="delivery-timeline__time">{{ a.deliveredAt | date:"dd/MM 'às' HH:mm" }}</span>
             } @else {
               <span class="delivery-timeline__time delivery-timeline__time--pending">Aguardando</span>
             }
