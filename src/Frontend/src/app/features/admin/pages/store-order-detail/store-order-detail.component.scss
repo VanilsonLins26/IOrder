@@ -233,10 +233,7 @@
 }
 
 .sod__chat-cta {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 100;
+  margin-top: 24px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
