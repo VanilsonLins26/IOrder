@@ -98,7 +98,7 @@ public class CreatePromotionTest : IOrderClassFixture
     [Fact]
     public async Task Error_Exists_Promotion_In_Date()
     {
-        var product = _dbContext.Products.OrderBy(p => p.Id).Last();
+        var product = await _dbContext.Products.OrderBy(p => p.Id).Skip(1).FirstAsync();
 
         var request1 = RequestPromotionPriceBuilder.Build();
         request1.ProductId = product.Id;
